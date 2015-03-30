@@ -68,6 +68,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
 
     try {
 
+        var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
         console.log(file.path);
@@ -81,10 +82,12 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
             "tenent":req.params.ten,
             "company":req.params.cmp,
             "filename":file.name,
-            "ext":file.type
+            "type":file.type,
+            "id":rand2
         }
 
         var AttchVal=JSON.stringify(ValObj);
+        console.log(AttchVal);
 
 
 
@@ -94,7 +97,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
             {
                 if(resz)
                 {
-                    FileHandler.SaveUploadFileDetails(req.params.cmp,req.params.ten,file,function(errz,respg)
+                    FileHandler.SaveUploadFileDetails(req.params.cmp,req.params.ten,file,rand2,function(errz,respg)
                     {
                         if(respg) {
 

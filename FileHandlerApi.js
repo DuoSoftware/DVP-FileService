@@ -269,10 +269,10 @@ function UploadFile(req,res)
 }
 
 
-function SaveUploadFileDetails(cmp,ten,req,callback)
+function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
 {
     try {
-        var rand2 = uuid.v4().toString();
+
         var DisplyArr = req.path.split('\\');
 
         var DisplayName=DisplyArr[DisplyArr.length-1];
@@ -507,7 +507,7 @@ function DownloadFileByID(res,req,callback)
     catch (ex) {
        // console.log("Exce "+ex);
        // var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
-        callback(ex, undefined);
+        callback("No record Found for the rerquest", undefined);
     }
 }
 

@@ -17,7 +17,7 @@ client.on("error", function (err) {
 function RedisPublish(SID,AID,callback)
 {
     try{
-        client.publish("CSCOMMAND:"+SID+":profile",AID,function(err,reply)
+        client.publish("CSCOMMAND:"+SID+":downloadfile",AID,function(err,reply)
         {
             if(err)
             {
