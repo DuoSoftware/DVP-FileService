@@ -118,7 +118,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
 
                                     }
 
-                                    resRDS.end();
+
                                 }
 
                             );

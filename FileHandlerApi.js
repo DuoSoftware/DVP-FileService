@@ -422,6 +422,7 @@ function DownloadFileByID(res,req,callback)
 {
     try {
 
+        console.log('Hit');
         DbConn.FileUpload.find({where: [{UniqueId: req}]}).complete(function (err, UploadRecObject) {
 
             if(err)
@@ -432,13 +433,10 @@ function DownloadFileByID(res,req,callback)
             else {
 
                 if (UploadRecObject) {
-                    res.setHeader('Content-Type', UploadRecObject.FileStructure);
+
                     console.log("................................... Record Found ................................ ");
-
+                    res.setHeader('Content-Type', UploadRecObject.FileStructure);
                     var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
-
-
-
 
                     var source = fs.createReadStream(SourcePath);
 
@@ -449,22 +447,19 @@ function DownloadFileByID(res,req,callback)
                     });
                     source.on('error', function (err) {
 
-                        res.end();
+                        res.end('Error on pipe');
                     });
 
-                    /*
+
                      var AppObject = DbConn.FileDownload
                      .build(
                      {
-                     UniqueId: UploadRecObject.UniqueId,
-                     FileStructure: UploadRecObject.FileStructure,
+                     DownloadId: UploadRecObject.UniqueId,
                      ObjClass: UploadRecObject.ObjClass,
                      ObjType: UploadRecObject.ObjType,
                      ObjCategory: UploadRecObject.ObjCategory,
-                     URL: UploadRecObject.URL,
                      DownloadTimestamp: Date.now(),
                      Filename: UploadRecObject.Filename,
-                     DisplayName: UploadRecObject.DisplayName,
                      CompanyId: UploadRecObject.CompanyId,
                      TenantId: UploadRecObject.TenantId
 
@@ -495,7 +490,7 @@ function DownloadFileByID(res,req,callback)
 
                      });
 
-                     */
+
                 }
 
                 else {

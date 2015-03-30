@@ -8,7 +8,7 @@ var DbConn = require('./DVP-DBModels');
 
 
 
-var client = redis.createClient(6379,"192.168.0.73");
+var client = redis.createClient(6379,"192.168.0.68");
 client.on("error", function (err) {
     console.log("Error " + err);
 });
