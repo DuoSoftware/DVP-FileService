@@ -36,6 +36,25 @@ function RedisPublish(SID,AID,callback)
 
 }
 
+function SharedServerRedisUpdate(SID,AID)
+{
+    SID.forEach(function(entry)
+    {
+        client.publish("CSCOMMAND:"+entry+":downloadfile",AID,function(err,reply)
+        {
+            if(err)
+            {
+                console.log("error in saving "+entry)
+            }
+            else if(reply)
+            {
+                console.log("Successfully saved "+entry)
+            }
+        });
+    });
+
+}
+
 function RedisGet()
 {
     client.get("CSCOMMAND:1:downloadfile",function(res)
@@ -70,4 +89,4 @@ function RedisGet()
  */
 module.exports.RedisPublish = RedisPublish;
 module.exports.RedisGet = RedisGet;
-//module.exports.TestIt = TestIt;
+module.exports.SharedServerRedisUpdate = SharedServerRedisUpdate;

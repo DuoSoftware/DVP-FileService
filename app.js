@@ -63,9 +63,11 @@ RestServer.use(restify.queryParser());
 
 //callback Done.......................................................................................................................
 
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten',function(req,res,next)
+RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
 {
-
+// instance 1,
+    // profile 2,
+    //shared 3
 
     try {
 
@@ -90,74 +92,178 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
         var AttchVal=JSON.stringify(ValObj);
         console.log(AttchVal);
 
+        var ProvTyp=req.params.prov;
 
 
 
-        try {
-            CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp,req.params.ten,function(err,resz)
-            {
-                if(resz)
-                {
-                    FileHandler.SaveUploadFileDetails(req.params.cmp,req.params.ten,file,rand2,function(errz,respg)
-                    {
-                        if(respg) {
+        if(ProvTyp==1) {
+            try {
+                CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+                    if (resz) {
 
 
-                            RedisPublisher.RedisPublish(resz,AttchVal,function(errRDS,resRDS)
-                                {
-                                    if(errRDS)
-                                    {
-                                        // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
-                                        res.end(resRDS);
+
+                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2, function (errz, respg) {
+                            if (respg) {
+
+
+                                RedisPublisher.RedisPublish(resz, AttchVal, function (errRDS, resRDS) {
+                                        if (errRDS) {
+                                            // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
+
+                                            res.end(resRDS);
+
+
+
+                                        }
+                                        else {
+                                            //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS redis", true, resRDS);
+
+                                            res.end(resRDS);
+
+
+
+
+                                        }
+
 
                                     }
-                                    else
-                                    {
-                                        //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS redis", true, resRDS);
-                                        res.end(resRDS);
-
-                                    }
+                                );
 
 
-                                }
+                            }
 
-                            );
+                            else if (errz) {
+                                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
+                                res.end(jsonString);
+                            }
 
+                            //respg.end();
+                        });
 
-                        }
+                    }
+                    else if (err) {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
+                        res.end(jsonString);
 
-                        else if(errz)
-                        {
-                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
-
-                        }
-
-                        //respg.end();
-                    });
-
-                }
-                else if(err)
-                {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
-                    res.end(jsonString);
-
-                }
+                    }
 
 //resz.end();
-            });
+                });
 
+
+            }
+            catch (ex) {
+                var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
+                res.end(jsonString);
+            }
 
 
         }
-        catch(ex)
+
+        else if(ProvTyp==2)
         {
-            var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
-            res.end(jsonString);
+            try {
+                CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+                    if (resz) {
+
+
+                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2, function (errz, respg) {
+                            if (respg) {
+
+
+                                RedisPublisher.RedisPublish(resz, AttchVal, function (errRDS, resRDS) {
+                                        if (errRDS) {
+                                            // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
+                                            res.end(resRDS);
+
+                                        }
+                                        else {
+                                            //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS redis", true, resRDS);
+                                            res.end(resRDS);
+
+                                        }
+
+                                    }
+                                );
+
+
+                            }
+
+                            else if (errz) {
+                                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
+                                res.end(jsonString);
+
+                            }
+
+                            //respg.end();
+                        });
+
+                    }
+                    else if (err) {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
+                        res.end(jsonString);
+
+                    }
+
+//resz.end();
+                });
+
+
+            }
+            catch (ex) {
+                var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
+                res.end(jsonString);
+            }
         }
 
 
 
 
+        else
+        {
+            try {
+                CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+
+                    if (resz) {
+
+
+                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2, function (errz, respg) {
+                            if (respg) {
+
+
+                                RedisPublisher.SharedServerRedisUpdate(resz,AttchVal);
+                                res.end('Done');
+
+
+
+                            }
+
+                            else if (errz) {
+                                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
+                                res.end(jsonString);
+                            }
+
+                            //respg.end();
+                        });
+
+                    }
+                    else if (err) {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
+                        res.end(jsonString);
+
+                    }
+
+//resz.end();
+                });
+
+
+            }
+            catch (ex) {
+                var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
+                res.end(jsonString);
+            }
+        }
 
     }
     catch(ex)
@@ -300,7 +406,7 @@ RestServer.get('/DVP',function(req,res,next)
 
 
 
-RedisPublisher.RedisGet();
+    RedisPublisher.RedisGet();
 
 });
 
