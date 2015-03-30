@@ -428,7 +428,7 @@ function DownloadFileByID(res,req,callback)
             else if (!err && !ScheduleObject) {
                 // console.log(cloudEndObject);
                // var jsonString = messageFormatter.FormatMessage(null, "Record not Found", false, null);
-                callback(new Error('No record for id : '+req),undefined);
+                callback('No record for id : '+req,undefined);
 
             }
             else if (ScheduleObject) {
