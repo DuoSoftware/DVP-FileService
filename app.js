@@ -241,6 +241,7 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/DownloadFile/:id',func
             {
                 // var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 //res.end();
+                console.log("Done");
             }
 
         });
@@ -291,6 +292,15 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetAttachmentMetaData/
     }
 
     return next();
+
+});
+
+RestServer.get('/DVP',function(req,res,next)
+{
+
+
+
+RedisPublisher.RedisGet();
 
 });
 

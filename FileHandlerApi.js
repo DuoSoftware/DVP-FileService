@@ -430,16 +430,17 @@ function DownloadFileByID(res,req,callback)
             }
 
             else {
-                res.setHeader('Content-Type', UploadRecObject.FileStructure);
+
                 if (UploadRecObject) {
+                    res.setHeader('Content-Type', UploadRecObject.FileStructure);
                     console.log("................................... Record Found ................................ ");
 
-                    var s = (UploadRecObject.URL.toString()).replace('\',' / '');
+                    var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
 
 
 
 
-                    var source = fs.createReadStream(s);
+                    var source = fs.createReadStream(SourcePath);
 
                     source.pipe(res);
                     source.on('end', function () {

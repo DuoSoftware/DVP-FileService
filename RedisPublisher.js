@@ -8,7 +8,7 @@ var DbConn = require('./DVP-DBModels');
 
 
 
-var client = redis.createClient(6379,"192.168.2.33");
+var client = redis.createClient(6379,"192.168.0.73");
 client.on("error", function (err) {
     console.log("Error " + err);
 });
@@ -36,6 +36,14 @@ function RedisPublish(SID,AID,callback)
 
 }
 
+function RedisGet()
+{
+    client.get("CSCOMMAND:1:downloadfile",function(res)
+    {
+       console.log(res);
+    });
+}
+
 
 /*
  function TestIt()
@@ -61,4 +69,5 @@ function RedisPublish(SID,AID,callback)
  }
  */
 module.exports.RedisPublish = RedisPublish;
+module.exports.RedisGet = RedisGet;
 //module.exports.TestIt = TestIt;
