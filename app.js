@@ -37,28 +37,28 @@ RestServer.use(restify.queryParser());
 //.......................................post............................................................................
 
 /*
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile',function(req,res,next)
-{
+ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile',function(req,res,next)
+ {
 
 
-    try {
-        FileHandler.AddToCouchBase(req.body,function(err,res)
-        {
-            var jsonString = messageFormatter.FormatMessage(ex, "Upload succeeded", true, res);
-            res.end(jsonString);
-        });
+ try {
+ FileHandler.AddToCouchBase(req.body,function(err,res)
+ {
+ var jsonString = messageFormatter.FormatMessage(ex, "Upload succeeded", true, res);
+ res.end(jsonString);
+ });
 
 
 
-    }
-    catch(ex)
-    {
-        var jsonString = messageFormatter.FormatMessage(ex, "Upload failed", false, res);
-        res.end(jsonString);
-    }
-    return next();
-});
-*/
+ }
+ catch(ex)
+ {
+ var jsonString = messageFormatter.FormatMessage(ex, "Upload failed", false, res);
+ res.end(jsonString);
+ }
+ return next();
+ });
+ */
 
 //callback Done.......................................................................................................................
 
@@ -72,6 +72,22 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
         var file = req.files[fileKey];
         console.log(file.path);
 
+        var DisplyArr = file.path.split('\\');
+
+        var DisplayName=DisplyArr[DisplyArr.length-1];
+
+        var ValObj={
+
+            "tenent":req.params.ten,
+            "company":req.params.cmp,
+            "filename":file.name,
+            "ext":file.type
+        }
+
+        var AttchVal=JSON.stringify(ValObj);
+
+
+
 
         try {
             CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp,req.params.ten,function(err,resz)
@@ -83,18 +99,22 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
                         if(respg) {
 
 
-                            RedisPublisher.RedisPublish(resz,respg,function(errRDS,resRDS)
+                            RedisPublisher.RedisPublish(resz,AttchVal,function(errRDS,resRDS)
                                 {
                                     if(errRDS)
                                     {
                                         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
                                         res.end(jsonString);
+
                                     }
                                     else
                                     {
                                         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRDS);
                                         res.end(jsonString);
+
                                     }
+
+                                    resRDS.end();
                                 }
 
                             );
@@ -105,8 +125,10 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
                         else if(errz)
                         {
                             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
-                            res.end(jsonString);
+
                         }
+
+                        //respg.end();
                     });
 
                 }
@@ -114,9 +136,10 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
                 {
                     var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
                     res.end(jsonString);
+
                 }
 
-
+//resz.end();
             });
 
 
@@ -136,7 +159,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
     catch(ex)
     {
         //var jsonString = messageFormatter.FormatMessage(ex, "Upload failed", false, res);
-       // res.end(jsonString);
+        // res.end(jsonString);
         var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
         res.end(jsonString);
     }
@@ -146,55 +169,55 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
 //.......................................................................................................................
 
 /*
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/Download_file_remote',function(req,res,next)
-{
+ RestServer.post('/DVP/API/:version/FIleService/FileHandler/Download_file_remote',function(req,res,next)
+ {
 
 
-    try {
+ try {
 
-        FileHandler.downF();
-        res.end();
+ FileHandler.downF();
+ res.end();
 
-    }
-    catch(ex)
-    {
+ }
+ catch(ex)
+ {
 
-        var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
-        res.end(jsonString);
-    }
-    return next();
-});
+ var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
+ res.end(jsonString);
+ }
+ return next();
+ });
 
 
-*/
+ */
 /*
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/ProfileTypeCallserverChooser',function(req,res,next)
-{
-    try {
-        CallServerChooser.ProfileTypeCallserverChooser(req,function(err,resz)
-        {
-            if(err==null)
-            {
+ RestServer.post('/DVP/API/:version/FIleService/FileHandler/ProfileTypeCallserverChooser',function(req,res,next)
+ {
+ try {
+ CallServerChooser.ProfileTypeCallserverChooser(req,function(err,resz)
+ {
+ if(err==null)
+ {
 
-                res.end(resz);
-            }
-
-
-        });
+ res.end(resz);
+ }
 
 
+ });
 
-    }
-    catch(ex)
-    {
-        var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
-        res.end(jsonString);
-    }
 
-    return next();
 
-});
-*/
+ }
+ catch(ex)
+ {
+ var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
+ res.end(jsonString);
+ }
+
+ return next();
+
+ });
+ */
 
 //callback done.......................................get.............................................................................
 
@@ -251,7 +274,7 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetAttachmentMetaData/
 
 
 
-    });
+        });
 
 
 
@@ -268,25 +291,25 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetAttachmentMetaData/
 
 
 /*
-RestServer.get('/testit',function(req,res,next)
-{
-    try {
+ RestServer.get('/testit',function(req,res,next)
+ {
+ try {
 
 
-RedisPublisher.TestIt();
+ RedisPublisher.TestIt();
 
 
 
 
-    }
-    catch(ex)
-    {
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, res);
-        res.end(jsonString);
-    }
+ }
+ catch(ex)
+ {
+ var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, res);
+ res.end(jsonString);
+ }
 
-    return next();
+ return next();
 
-});
+ });
 
-*/
+ */

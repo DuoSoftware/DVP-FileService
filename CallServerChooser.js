@@ -23,27 +23,23 @@ function ProfileTypeCallserverChooser(CompId,TenId,callback)
                 console.log("................................... Given Cloud End User found ................................ ");
                 try {
                     //DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
-                    DbConn.SipNetworkProfile.find({where: [{id:CUserObject.SipNetworkProfilesId}]}).complete(function (err, CSObject) {
+                    DbConn.SipNetworkProfile.find({where: [{id:CUserObject.SipNetworkProfileId}]}).complete(function (err, CSObject) {
 
                         if(err)
                         {
                             callback(err,undefined);
                         }
                         else if (CSObject) {
-                            console.log("................................... Given Call server found ................................  : "+CSObject.CSDBCallServerId);
+                            console.log("................................... Given Call server found ................................  : "+CSObject.CallServerId);
                             callback(undefined, CSObject.id);
                             //res.end();
                         }
 
-                        if (!err && !CSObject) {
+                        else if (!err && !CSObject) {
                             // console.log(cloudEndObject);
-                            console.log("................................... empty in  Call server searching ................................  : "+CSObject.CSDBCallServerId);
+                            console.log("................................... empty in  Call server searching ................................  : "+CSObject.CallServerId);
 
-
-
-
-                            // var jsonString = messageFormatter.FormatMessage(null, "Record already in DB", true, CSObject.id);
-                            callback(new Error('No record found for id : '+CUserObject.SipNetworkProfilesId), undefined);
+                            callback(new Error('No record found for id : '+CUserObject.SipNetworkProfileId), undefined);
                         }
 
                         else {
