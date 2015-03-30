@@ -107,14 +107,14 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten'
                                 {
                                     if(errRDS)
                                     {
-                                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
-                                        res.end(jsonString);
+                                        // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
+                                        res.end(resRDS);
 
                                     }
                                     else
                                     {
-                                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRDS);
-                                        res.end(jsonString);
+                                        //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS redis", true, resRDS);
+                                        res.end(resRDS);
 
                                     }
 
@@ -233,13 +233,14 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/DownloadFile/:id',func
         {
             if(err)
             {
-                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
-                res.end(jsonString);
+                //var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION Download", false, resz);
+                // console.log(err);
+                res.end("Error Returns");
             }
             else if(resz)
             {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                res.end(jsonString);
+                // var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //res.end();
             }
 
         });

@@ -38,27 +38,27 @@ function RedisPublish(SID,AID,callback)
 
 
 /*
-function TestIt()
-{
-    try{
+ function TestIt()
+ {
+ try{
 
-        client.hexists('aps','T',function(err,res)
-        {
-            if(err)
-            {
-                console.log("error "+err);
-            }
-            else
-            {
-                console.log("Res "+res);
-            }
-        })
-    }
-    catch (ex)
-    {
+ client.hexists('aps','T',function(err,res)
+ {
+ if(err)
+ {
+ console.log("error "+err);
+ }
+ else
+ {
+ console.log("Res "+res);
+ }
+ })
+ }
+ catch (ex)
+ {
 
-    }
-}
-*/
+ }
+ }
+ */
 module.exports.RedisPublish = RedisPublish;
 //module.exports.TestIt = TestIt;
