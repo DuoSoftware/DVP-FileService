@@ -16,42 +16,67 @@ client.on("error", function (err) {
 
 function RedisPublish(SID,AID,callback)
 {
-    try{
-        client.publish("CSCOMMAND:"+SID+":downloadfile",AID,function(err,reply)
-        {
-            if(err)
-            {
-                callback(err,undefined);
+
+if(client.connected)
+{
+    console.log('Redis Client is availabel');
+
+
+            try{
+                client.publish("CSCOMMAND:"+SID+":downloadfile",AID,function(err,reply)
+                {
+                    if(err)
+                    {
+                        callback(err,undefined);
+                    }
+                    else
+                    {
+                        callback(undefined,reply);
+                    }
+                });
             }
-            else
+            catch(ex)
             {
-                callback(undefined,reply);
+                callback(ex,undefined);
             }
-        });
-    }
-    catch(ex)
-    {
-        callback(ex,undefined);
-    }
+
+
+}
+    else
+{
+    callback('Redis Client is not avalable',undefined);
+}
+
 
 }
 
 function SharedServerRedisUpdate(SID,AID)
 {
-    SID.forEach(function(entry)
-    {
-        client.publish("CSCOMMAND:"+entry+":downloadfile",AID,function(err,reply)
-        {
-            if(err)
-            {
-                console.log("error in saving "+entry)
+    if(client.connected) {
+        console.log('Redis client is available');
+
+try {
+    SID.forEach(function (entry) {
+        client.publish("CSCOMMAND:" + entry + ":downloadfile", AID, function (err, reply) {
+            if (err) {
+                console.log("error in saving " + entry)
             }
-            else if(reply)
-            {
-                console.log("Successfully saved "+entry)
+            else if (reply) {
+                console.log("Successfully saved " + entry)
             }
         });
     });
+
+}
+        catch(ex)
+        {
+            console.log('Exception Found');
+        }
+    }
+    else
+    {
+        console.log('Redis Client is not connected');
+    }
 
 }
 

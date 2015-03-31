@@ -44,7 +44,7 @@ function ProfileTypeCallserverChooser(CompId,TenId,callback)
 
                             else {
                                 // var jsonString = messageFormatter.FormatMessage(err, "ERROR found", false, null);
-                                callback(err, 0);
+                                callback(err, undefined);
                                 // res.end();
                             }
 
@@ -82,7 +82,7 @@ function InstanceTypeCallserverChooser(CompId,TenId,callback)
 {
     try
     {
-        DbConn.CallServer.find({where: [{CompanyId:CompId},{TenantId:TenId},{SIPConnectivityProvision:'1'}]}).complete(function (err, InsObject) {
+        DbConn.CallServer.find({where: [{CompanyId:CompId},{TenantId:TenId}]}).complete(function (err, InsObject) {
 
             if(err)
             {
@@ -91,13 +91,13 @@ function InstanceTypeCallserverChooser(CompId,TenId,callback)
             else
             {
                 if (InsObject) {
-                    console.log("................................... Given Call server found ................................  : " + CSObject.CallServerId);
+                    console.log("................................... Given Call server found ................................  : " + InsObject.id);
                     callback(undefined, InsObject.id);
                     //res.end();
                 }
                 else {
                     // var jsonString = messageFormatter.FormatMessage(err, "ERROR found", false, null);
-                    callback("Error Found", 0);
+                    callback("Error Found", undefined);
                     // res.end();
                 }
             }
@@ -106,7 +106,7 @@ function InstanceTypeCallserverChooser(CompId,TenId,callback)
     }
     catch(ex)
     {
-        callback("Exception Found", 0);
+        callback("Exception Found", undefined);
     }
 
 }
@@ -130,7 +130,7 @@ function SharedTypeCallsereverChooser(CompId,TenId,callback)
     }
     catch(ex)
     {
-
+        callback('Exception',undefined);
     }
 }
 

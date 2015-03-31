@@ -107,11 +107,12 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten/
                             if (respg) {
 
 
+
                                 RedisPublisher.RedisPublish(resz, AttchVal, function (errRDS, resRDS) {
                                         if (errRDS) {
                                             // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
 
-                                            res.end(resRDS);
+                                            res.end(errRDS);
 
 
 
