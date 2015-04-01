@@ -1,0 +1,29 @@
+{
+  "appenders": [
+    {
+      "type": "file",
+      "filename": "./app.log",
+      "level":"DEBUG",
+      "category": "app"
+    },
+    {
+      "type": "file",
+      "filename": "./RedisPublish.log",
+      "level":"DEBUG",
+      "category": "redis"
+    },
+    {
+      "type": "file",
+      "filename": "./CallServerPicker.log",
+      "level":"DEBUG",
+      "category": "cspicker"
+    },
+    {
+      "type": "file",
+      "filename": "./FileHandler.log",
+      "level":"DEBUG",
+      "category": "fhandler"
+    }
+
+  ]
+}

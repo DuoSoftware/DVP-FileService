@@ -12,6 +12,14 @@ var multer     =       require('multer');
 var app        =       express();
 var done       =       false;
 var fs=require('fs');
+var log4js=require('log4js');
+
+
+log4js.configure('./config/log4js_config.json', { cwd: './logs' });
+var log = log4js.getLogger("fhandler");
+
+
+log.info('\n.............................................File handler Starts....................................................\n');
 
 /*
  var bucket = new couchbase.Connection({
@@ -268,17 +276,20 @@ function UploadFile(req,res)
     // req.end();
 }
 
-
+//log done...............................................................................................................
 function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
 {
-    try {
+    log.info('\n.............................................SaveUploadFileDetails Starts....................................................\n');
 
+    try {
+        log.info('Inputs :- CompanyID :'+cmp+" TenentID : "+ten+" File : "+req+" UUID : "+rand2);
         var DisplyArr = req.path.split('\\');
 
         var DisplayName=DisplyArr[DisplyArr.length-1];
     }
     catch(ex)
     {
+        log.fatal('Exception in DisplyName splitting : '+ex);
         callback(ex,undefined);
     }
 
@@ -286,28 +297,31 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
 
     try {
         //DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
-        DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
+        DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, CurFileObject) {
 
             if(err)
             {
+                log.error('Error in Searching upload record : '+rand2);
                 callback(err,undefined);
+
             }
 
 
             else {
 
-                if (ScheduleObject) {
+                if (CurFileObject) {
                     console.log("................................... Given Cloud End User is invalid ................................ ");
                     // var jsonString = messageFormatter.FormatMessage(err, "Record already in DB", false, null);
+                    log.error('Already in DB : '+rand2);
                     callback(undefined, undefined);
                     //res.end();
                 }
 
-                else if (!err && !ScheduleObject) {
+                else {
                     // console.log(cloudEndObject);
 
 
-                    var AppObject = DbConn.FileUpload
+                    var NewUploadObj = DbConn.FileUpload
                         .build(
                         {
                             UniqueId: rand2,
@@ -325,20 +339,21 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
 
                         }
                     )
-
-                    AppObject.save().complete(function (err, result) {
+                    log.info('New Uploading record  : '+NewUploadObj);
+                    NewUploadObj.save().complete(function (err, result) {
                         if (!err) {
                             var status = 1;
 
-
+                            log.info('Successfully saved '+NewUploadObj.UniqueId);
                             console.log("..................... Saved Successfully ....................................");
                             // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
-                            callback(undefined, AppObject.UniqueId);
+                            callback(undefined, NewUploadObj.UniqueId);
                             // res.end();
 
 
                         }
                         else {
+                            log.error("Error in saving "+err);
                             console.log("..................... Error found in saving.................................... : " + err);
                             //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
                             callback(err, undefined);
@@ -355,14 +370,10 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
             }
 
 
-
-
-
-
         });
     }
     catch (ex) {
-
+        log.fatal("Exception found : "+ex);
         callback(ex, undefined);
     }
 
@@ -378,15 +389,18 @@ function downF()
     source.on('end', function() { /* copied */ });
     source.on('error', function(err) { /* error */ });
 }
-
+//log done...............................................................................................................
 function GetAttachmentMetaDataByID(req,callback)
 {
+    log.info('\n.............................................GetAttachmentMetaDataByID Starts....................................................\n');
     try {
+        log.info("Inputs :- UniqueID : "+req);
         //DbConn.FileUpload.findAll({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
         DbConn.FileUpload.find({where: [{UniqueId: req}]}).complete(function (err, MetaDataObject) {
 
             if(err)
             {
+                log.error("Error in searching "+req+" Error: "+err);
                 callback(err, undefined);
 
             }
@@ -395,12 +409,13 @@ function GetAttachmentMetaDataByID(req,callback)
             {
                 if(MetaDataObject)
                 {
+                    log.info("Record found : "+JSON.stringify(MetaDataObject));
                     console.log("................................... Record Found ................................ ");
                     // var jsonString = messageFormatter.FormatMessage(null, "Record Found", true, ScheduleObject);
-                    callback(undefined, ScheduleObject);
+                    callback(undefined, MetaDataObject);
                 }
                 else
-                {
+                {log.error("No record found ");
                     callback(new Error('No record found for id : '+req), undefined);
                 }
 
@@ -414,19 +429,22 @@ function GetAttachmentMetaDataByID(req,callback)
     catch (ex) {
         //console.log("Exce "+ex);
         //var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
+        log.fatal("Exception found: "+ex);
         callback(ex, undefined);
     }
 }
 
+//log done...............................................................................................................
 function DownloadFileByID(res,req,callback)
 {
     try {
-
+        log.info('\n.............................................GetAttachmentMetaDataByID Starts....................................................\n');
         console.log('Hit');
         DbConn.FileUpload.find({where: [{UniqueId: req}]}).complete(function (err, UploadRecObject) {
 
             if(err)
             {
+                log.error("Error in searching for record : "+req+" Error : "+err);
                 callback(err, undefined);
             }
 
@@ -434,67 +452,85 @@ function DownloadFileByID(res,req,callback)
 
                 if (UploadRecObject) {
 
+                    log.info("Recode found : "+JSON.stringify(UploadRecObject));
                     console.log("................................... Record Found ................................ ");
-                    res.setHeader('Content-Type', UploadRecObject.FileStructure);
-                    var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
+                    try {
+                        res.setHeader('Content-Type', UploadRecObject.FileStructure);
+                        var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
 
-                    var source = fs.createReadStream(SourcePath);
+                        var source = fs.createReadStream(SourcePath);
 
-                    source.pipe(res);
-                    source.on('end', function () {
+                        source.pipe(res);
+                        source.on('end', function (result) {
+                            log.info("Pipe succeeded  : "+result);
+                            res.end();
+                        });
+                        source.on('error', function (err) {
+                            log.error("Error in pipe : "+err);
+                            res.end('Error on pipe');
+                        });
+                    }
+                    catch(ex)
+                    {
+                        log.fatal("Exception found : "+ex);
 
-                        res.end();
+                        callback(ex, undefined);
+                    }
+
+                    try {
+                        var AppObject = DbConn.FileDownload
+                            .build(
+                            {
+                                DownloadId: UploadRecObject.UniqueId,
+                                ObjClass: UploadRecObject.ObjClass,
+                                ObjType: UploadRecObject.ObjType,
+                                ObjCategory: UploadRecObject.ObjCategory,
+                                DownloadTimestamp: Date.now(),
+                                Filename: UploadRecObject.Filename,
+                                CompanyId: UploadRecObject.CompanyId,
+                                TenantId: UploadRecObject.TenantId
+
+
+                            }
+                        )
+                    }
+                    catch(ex)
+                    {
+                        log.fatal("Exception found in creating FileDownload record object : "+ex);
+                        callback(err, undefined);
+                    }
+                    AppObject.save().complete(function (err, result) {
+
+                        if (err) {
+                            console.log("..................... Error found in saving.................................... : " + err);
+                            //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
+                            log.error("Error in saving : "+err);
+                            callback(err, undefined);
+                            //res.end();
+                        }
+                        else if (result) {
+                            var status = 1;
+
+
+                            console.log("..................... Saved Successfully ....................................");
+                            // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
+                            log.info("Successfully saved : "+result);
+                            callback(undefined, UploadRecObject.FileStructure);
+                            // res.end();
+
+
+                        }
+
+
                     });
-                    source.on('error', function (err) {
-
-                        res.end('Error on pipe');
-                    });
-
-
-                     var AppObject = DbConn.FileDownload
-                     .build(
-                     {
-                     DownloadId: UploadRecObject.UniqueId,
-                     ObjClass: UploadRecObject.ObjClass,
-                     ObjType: UploadRecObject.ObjType,
-                     ObjCategory: UploadRecObject.ObjCategory,
-                     DownloadTimestamp: Date.now(),
-                     Filename: UploadRecObject.Filename,
-                     CompanyId: UploadRecObject.CompanyId,
-                     TenantId: UploadRecObject.TenantId
-
-
-                     }
-                     )
-
-                     AppObject.save().complete(function (err, result) {
-
-                     if (err) {
-                     console.log("..................... Error found in saving.................................... : " + err);
-                     //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
-                     callback(err, undefined);
-                     //res.end();
-                     }
-                     else if (result) {
-                     var status = 1;
-
-
-                     console.log("..................... Saved Successfully ....................................");
-                     // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
-                     callback(undefined, UploadRecObject.FileStructure);
-                     // res.end();
-
-
-                     }
-
-
-                     });
 
 
                 }
 
                 else {
+                    log.error("No record found: "+req);
                     callback('No record for id : ' + req, undefined);
+
                 }
             }
 
@@ -503,6 +539,7 @@ function DownloadFileByID(res,req,callback)
     catch (ex) {
         // console.log("Exce "+ex);
         // var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
+        log.fatal("Exception found : "+ex);
         callback("No record Found for the rerquest", undefined);
     }
 }

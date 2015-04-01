@@ -5,6 +5,11 @@
 var redis=require('redis');
 var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var DbConn = require('./DVP-DBModels');
+var log4js=require('log4js');
+
+
+log4js.configure('./config/log4js_config.json', { cwd: './logs' });
+var log = log4js.getLogger("redis");
 
 
 
@@ -14,12 +19,15 @@ client.on("error", function (err) {
 });
 
 
+//log done...............................................................................................................
+
 function RedisPublish(SID,AID,callback)
 {
-
+log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID.id+" AttachmentDetails : "+AID);
 if(client.connected)
 {
-    console.log('Redis Client is availabel');
+    log.info("Redis client is available");
+    console.log('Redis server is available');
 
 
             try{
@@ -27,16 +35,19 @@ if(client.connected)
                 {
                     if(err)
                     {
+                        log.error("Redis publishing error  : "+err+" ServerID :  "+SID+" Attachment Details : "+AID);
                         callback(err,undefined);
                     }
                     else
                     {
+                        log.info("Redis publishing is succeeded Result : "+reply+" ServerID :  "+SID+" Attachment Details : "+AID+" Result : ");
                         callback(undefined,reply);
                     }
                 });
             }
             catch(ex)
             {
+                log.fatal("Exception occurred in publishing on redis "+ex);
                 callback(ex,undefined);
             }
 
@@ -44,24 +55,30 @@ if(client.connected)
 }
     else
 {
+    log.error("Redis server is not available");
     callback('Redis Client is not avalable',undefined);
 }
 
 
 }
 
+//log done...............................................................................................................
 function SharedServerRedisUpdate(SID,AID)
 {
+    log.info("Publish to redis (shared) : Inputs :-  ServerID : "+JSON.stringify(SID)+" AttachmentDetails : "+AID);
     if(client.connected) {
+        log.info("Redis client is available");
         console.log('Redis client is available');
 
 try {
     SID.forEach(function (entry) {
-        client.publish("CSCOMMAND:" + entry + ":downloadfile", AID, function (err, reply) {
+        client.publish("CSCOMMAND:" + entry.id + ":downloadfile", AID, function (err, reply) {
             if (err) {
+                log.error("Redis publishing error : "+err+" Details ServerID : "+entry.id+ " Attachment Data : "+AID);
                 console.log("error in saving " + entry)
             }
             else if (reply) {
+                log.info("Redis publishing is succeeded Result : "+reply+" ServerID "+entry.id+" Attachment Data : "+AID);
                 console.log("Successfully saved " + entry)
             }
         });
@@ -70,12 +87,14 @@ try {
 }
         catch(ex)
         {
-            console.log('Exception Found');
+            log.fatal("Exception occurred "+ex);
+            console.log('Exception  occurred in publishing on redis "+ex');
         }
     }
     else
     {
-        console.log('Redis Client is not connected');
+        log.error("Redis client is not available");
+        console.log('Redis server is not available');
     }
 
 }
