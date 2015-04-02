@@ -1,25 +1,25 @@
 {
   "appenders": [
     {
-      "type": "file",
+      "type": "fileSync",
       "filename": "./app.log",
       "level":"DEBUG",
       "category": "app"
     },
     {
-      "type": "file",
+      "type": "fileSync",
       "filename": "./RedisPublish.log",
       "level":"DEBUG",
       "category": "redis"
     },
     {
-      "type": "file",
+      "type": "fileSync",
       "filename": "./CallServerPicker.log",
       "level":"DEBUG",
       "category": "cspicker"
     },
     {
-      "type": "file",
+      "type": "fileSync",
       "filename": "./FileHandler.log",
       "level":"DEBUG",
       "category": "fhandler"
