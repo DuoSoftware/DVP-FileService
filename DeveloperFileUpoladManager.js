@@ -186,79 +186,116 @@ function UploadAssignToApplication(FObj,callback)
                     if(FileObj)
                     {
                         console.log("Result length "+FileObj.length);
-                        DbConn.Application.find({where:[{AppName: FObj.AppName}]}).complete(function(errz,AppObj)
-                        {
 
-                            if(errz)
-                            {
-                                console.log("Err "+errz);
-                                callback(errz,undefined);
-                            }
-                            else
-                            {
-                                if(FileObj.length==0)
-                                {
-                                    DbConn.FileUpload
-                                        .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
-                                        .complete(function (errFile, ResFile) {
-                                            if (errFile) {
-                                                console.log("Error " + errFile);
-                                                callback(errFile, undefined);
-                                            }
-                                            else {
-                                                ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
-                                                    if (errupdt) {
-                                                        console.log("Error " + errupdt);
-                                                        callback(errupdt, undefined);
-                                                    }
-                                                    else {
-                                                        callback(undefined, "Done");
-                                                    }
-                                                });
-                                            }
-                                        });
+                        try {
+                            DbConn.Application.find({where: [{AppName: FObj.AppName}]}).complete(function (errz, AppObj) {
+
+                                if (errz) {
+                                    console.log("Err " + errz);
+                                    callback(errz, undefined);
                                 }
                                 else {
-                                    for (var index in FileObj) {
-                                        console.log("Result length " + FileObj[index]);
-                                        if (FileObj[index].Version == FObj.Version) {
-                                            callback("Already up to date", undefined);
-                                        }
-                                        else {
-                                            AppObj.setFileUpload(null).complete(function (errRem, resRem) {
-                                                if (errRem) {
-                                                    callback(errRem, undefined);
-                                                }
-                                                else {
-                                                    console.log(JSON.stringify(FileObj[index]) + " null");
-                                                    DbConn.FileUpload
-                                                        .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
-                                                        .complete(function (errFile, ResFile) {
-                                                            if (errFile) {
-                                                                console.log("Error " + errFile);
-                                                                callback(errFile, undefined);
-                                                            }
-                                                            else {
-                                                                ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
-                                                                    if (errupdt) {
-                                                                        console.log("Error " + errupdt);
-                                                                        callback(errupdt, undefined);
-                                                                    }
-                                                                    else {
-                                                                        callback(undefined, "Done");
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                }
+                                    if (FileObj.length == 0) {
 
-                                            });
+                                        try
+                                        {
+                                            DbConn.FileUpload
+                                                .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
+                                                .complete(function (errFile, ResFile) {
+                                                    if (errFile) {
+                                                        console.log("Error " + errFile);
+                                                        callback(errFile, undefined);
+                                                    }
+                                                    else {
+                                                        try{
+                                                            ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+                                                                if (errupdt) {
+                                                                    console.log("Error " + errupdt);
+                                                                    callback(errupdt, undefined);
+                                                                }
+                                                                else {
+                                                                    callback(undefined, "Done");
+                                                                }
+                                                            });
+                                                        }catch(ex)
+                                                        {
+                                                            callback(ex,undefined);
+                                                        }
+                                                    }
+                                                });
+                                        }
+                                        catch(ex)
+                                        {
+                                            callback(ex,undefined);
+                                        }
+                                    }
+                                    else {
+                                        for (var index in FileObj) {
+                                            console.log("Result length " + FileObj[index]);
+                                            if (FileObj[index].Version == FObj.Version) {
+                                                callback("Already up to date", undefined);
+                                            }
+                                            else {
+                                                try
+                                                {
+
+                                                    AppObj.setFileUpload(null).complete(function (errRem, resRem) {
+                                                        if (errRem) {
+                                                            callback(errRem, undefined);
+                                                        }
+                                                        else {
+                                                            console.log(JSON.stringify(FileObj[index]) + " null");
+                                                            try{
+                                                                DbConn.FileUpload
+                                                                    .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
+                                                                    .complete(function (errFile, ResFile) {
+                                                                        if (errFile) {
+                                                                            console.log("Error " + errFile);
+                                                                            callback(errFile, undefined);
+                                                                        }
+                                                                        else {
+                                                                            try{
+                                                                                ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+                                                                                    if (errupdt) {
+                                                                                        console.log("Error " + errupdt);
+                                                                                        callback(errupdt, undefined);
+                                                                                    }
+                                                                                    else {
+                                                                                        callback(undefined, "Done");
+                                                                                    }
+                                                                                });
+                                                                            }
+                                                                            catch(ex)
+                                                                            {
+                                                                                callback(ex,undefined);
+                                                                            }
+                                                                        }
+                                                                    });
+                                                            }
+                                                            catch (ex)
+                                                            {
+                                                                callback(ex,undefined);
+                                                            }
+                                                        }
+
+                                                    });
+                                                }
+                                                catch (ex)
+                                                {
+                                                    callback(ex,undefined);
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                        });
+                            });
+
+                        }
+                        catch(ex)
+                        {
+                            callback(ex,undefined);
+                        }
 
 
 
