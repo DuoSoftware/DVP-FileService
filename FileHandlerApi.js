@@ -332,6 +332,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
                             URL: req.path,
                             UploadTimestamp: Date.now(),
                             Filename: req.name,
+                            Version:req.Version,
                             DisplayName: DisplayName,
                             CompanyId:cmp,
                             TenantId: ten
@@ -544,11 +545,48 @@ function DownloadFileByID(res,req,callback)
     }
 }
 
+function GetVoiceClipIdByName(Flnm,AppNm,Tid,Cid,callback)
+{
+var FileName=Flnm;
+    var AppName=AppNm;
+    var TenantId=Tid;
+    var CompanyId=Cid;
+
+    DbConn.Application.find({where:[{AppName:AppName}]}).complete(function(errApp,resApp)
+    {
+        if(errApp)
+        {
+            callback("No application found");
+        }
+        else
+        {
+            DbConn.FileUpload.find({where:[{Filename: FileName},{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id}]}).complete(function(err,resFile)
+            {
+                if(err)
+                {
+                    callback(err,undefined);
+                }
+                else
+                {
+                    callback(undefined,resFile.UniqueId);
+                }
+            });
+        }
+    });
+
+
+
+
+
+
+}
+
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
 module.exports.GetAttachmentMetaDataByID = GetAttachmentMetaDataByID;
 module.exports.DownloadFileByID = DownloadFileByID;
+module.exports.GetVoiceClipIdbyName = GetVoiceClipIdByName;
 
 
 
