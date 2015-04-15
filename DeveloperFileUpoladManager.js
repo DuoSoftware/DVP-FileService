@@ -37,7 +37,7 @@ function FindCurrentVersion(FObj,callback)
     }
 }
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,callback)
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,callback)
 {
     try
     {
@@ -68,7 +68,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,callback)
                             UniqueId: rand2,
                             FileStructure: Fobj.type,
                             ObjClass: 'body.ObjClass',
-                            ObjType: 'body.ObjType',
+                            ObjType: 'Voice app clip',
                             ObjCategory: 'body.ObjCategory',
                             URL: Fobj.path,
                             UploadTimestamp: Date.now(),
@@ -76,7 +76,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,callback)
                             Version:result,
                             DisplayName: DisplayName,
                             CompanyId:cmp,
-                            TenantId: ten
+                            TenantId: ten,
+                            RefId:ref
 
 
                         }
@@ -173,7 +174,7 @@ function UploadAssignToApplication(FObj,callback)
          */
 
         DbConn.FileUpload
-            .findAll({where: [{Filename: FObj.Filename},{TenantId: FObj.TenantId},{CompanyId: FObj.CompanyId},{ApplicationId: FObj.ApplicationId}]})
+            .findAll({where: [{Filename: FObj.Filename},{TenantId: FObj.TenantId},{CompanyId: FObj.CompanyId},{},{ApplicationId: FObj.ApplicationId}]})
             .complete(function (err, FileObj)
             {
                 if(err)
@@ -200,7 +201,7 @@ function UploadAssignToApplication(FObj,callback)
                                         try
                                         {
                                             DbConn.FileUpload
-                                                .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
+                                                .find({where: [{Filename: FObj.Filename}, {ObjType: 'Voice app clip'},{TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
                                                 .complete(function (errFile, ResFile) {
                                                     if (errFile) {
                                                         console.log("Error " + errFile);
@@ -313,5 +314,190 @@ function UploadAssignToApplication(FObj,callback)
 
 }
 
+function DeveloperVoiceRecordsUploading(Fobj,rand2,cmp,ten,ref,appId,Disname,callback)
+{
+    try
+    {
+        var DisplyArr = Fobj.path.split('\\');
+
+        var DisplayName=DisplyArr[DisplyArr.length-1];
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+    try
+    {
+        FindCurrentVersion(Fobj,function(err,result)
+        {
+            if(err)
+            {
+                callback(err,undefined);
+            }
+            else
+            {
+                try
+                {
+                    var NewUploadObj = DbConn.FileUpload
+                        .build(
+                        {
+                            UniqueId: rand2,
+                            FileStructure: Fobj.type,
+                            ObjClass: 'body.ObjClass',
+                            ObjType: 'Voice Recording',
+                            ObjCategory: 'body.ObjCategory',
+                            URL: Fobj.path,
+                            UploadTimestamp: Date.now(),
+                            Filename: Fobj.name,
+                            Version:result,
+                            DisplayName: Disname,
+                            CompanyId:cmp,
+                            TenantId: ten,
+                            RefId:ref,
+                            ApplicationId:appId
+
+
+
+                        }
+                    )
+                    //log.info('New Uploading record  : '+NewUploadObj);
+                    NewUploadObj.save().complete(function (err, result) {
+                        if (!err) {
+                            var status = 1;
+
+                            // log.info('Successfully saved '+NewUploadObj.UniqueId);
+                            console.log("..................... Saved Successfully ....................................");
+                            // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
+                            callback(undefined, NewUploadObj.UniqueId);
+                            // res.end();
+
+
+                        }
+                        else {
+                            // log.error("Error in saving "+err);
+                            console.log("..................... Error found in saving.................................... : " + err);
+                            //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
+                            callback(err, undefined);
+                            //res.end();
+                        }
+
+
+                    });
+                }
+                catch(ex)
+                {
+                    callback(ex,undefined);
+                }
+            }
+        });
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+}
+
+function PickAllVoiceRecordingsOfApplication(AppId,callback) {
+    try {
+        DbConn.FileUpload.findAll({where: [{ApplicationId: AppId}, {ObjType: 'Voice Recording'}]}).complete(function (err, result) {
+
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                callback(undefined, JSON.stringify(result));
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+function PickAllVoiceAppClipsOfApplication(AppId,callback) {
+    try {
+        DbConn.FileUpload.findAll({where: [{ApplicationId: AppId}, {ObjType: 'Voice app clip'}]}).complete(function (err, result) {
+
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                callback(undefined, JSON.stringify(result));
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+function PickCallRecordById(RecId,callback) {
+    try {
+        DbConn.FileUpload.find({where: [{UniqueId: RecId}, {ObjType: 'Voice Recording'}]}).complete(function (err, result) {
+
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                callback(undefined, JSON.stringify(result));
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+function PickVoiceAppClipById(RecId,callback) {
+    try {
+        DbConn.FileUpload.find({where: [{UniqueId: RecId}, {ObjType: 'Voice app clip'}]}).complete(function (err, result) {
+
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                callback(undefined, JSON.stringify(result));
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+
+
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
 module.exports.UploadAssignToApplication = UploadAssignToApplication;
+module.exports.DeveloperVoiceRecordsUploading = DeveloperVoiceRecordsUploading;
+module.exports.PickAllVoiceRecordingsOfApplication = PickAllVoiceRecordingsOfApplication;
+module.exports.PickAllVoiceAppClipsOfApplication = PickAllVoiceAppClipsOfApplication;
+module.exports.PickCallRecordById = PickCallRecordById;
+module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
