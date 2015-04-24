@@ -5,7 +5,7 @@ var uuid = require('node-uuid');
 var DbConn = require('DVP-DBModels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var mkdirp = require('mkdirp');
-var couchbase = require('couchbase');
+//var couchbase = require('couchbase');
 var sys=require('sys');
 var express    =       require("express");
 var multer     =       require('multer');
@@ -68,67 +68,7 @@ log.info('\n.............................................File handler Starts....
  });*/
 
 
-function AddToCouchBase(req,callback) {
 
-    try {
-        rand = uuid.v4().toString();
-    }
-    catch (ex) {
-        var jsonString = messageFormatter.FormatMessage(ex, "Exception in generating UUID ", false, null);
-        callback(null, jsonString);
-    }
-
-    try {
-        var r = fstream.Reader({
-            path:path.resolve(__dirname, 'input')
-            //type: 'Json'
-        });
-    }
-    catch (ex) {
-        var jsonString = messageFormatter.FormatMessage(ex, "Exception in reading file ", false, null);
-        callback(null, jsonString);
-    }
-
-    try {
-        var w = new attachmate.Writer({
-            path: 'http://192.168.1.20:8092/ScheduledObjects/newtest005',
-            includeHidden: false,
-            preserveExisting: true
-        });
-    }
-    catch (ex) {
-        var jsonString = messageFormatter.FormatMessage(ex, "Exception in writing file to couch", false, null);
-        callback(null, jsonString);
-    }
-
-
-    w.on('error', function (err) {
-
-        console.log(err);
-
-    });
-
-
-    w.on('end', function (err) {
-
-        console.log('Done');
-        /* AddNewUploadDetails(req, function (err, res) {
-         var jsonString = messageFormatter.FormatMessage(err, "PG insertion succeeded", true, res);
-         res.end(jsonString);
-         });*/
-
-    });
-
-    try {
-        r.pipe(w);
-    }
-    catch (ex) {
-        var jsonString = messageFormatter.FormatMessage(ex, "Exception in pipe", false, null);
-        callback(null, jsonString);
-    }
-//}
-
-}
 
 
 
