@@ -17,6 +17,8 @@ var config = require('config');
 
 var port = config.Host.port || 3000;
 
+var version=config.Host.version;
+
 
 log4js.configure('./config/log4js_config.json', { cwd: './logs' });
 var log = log4js.getLogger("app");
@@ -72,7 +74,7 @@ RestServer.use(restify.queryParser());
 
 //callback Done..........................................................................................................
 //Log Done...............................................................................................................
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
 {
 // instance 1,
     // profile 2,
@@ -362,7 +364,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/UploadFile/:cmp/:ten/
  });
  */
 
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
 {
     try {
         // log.info("\n.............................................File Uploding Starts....................................................\n");
@@ -596,7 +598,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/DevUploadFile/:cmp/:t
     }
     return next();
 });
-RestServer.post('/DVP/API/:version/FIleService/FileHandler/FileAssignToApp',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',function(req,res,next)
 {
     try {
         // log.info("\n.............................................File Uploding Starts....................................................\n");
@@ -625,7 +627,7 @@ RestServer.post('/DVP/API/:version/FIleService/FileHandler/FileAssignToApp',func
     }
     return next();
 });
-RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetVoiceAppClipsByName/:Filename/:AppName/:TenantId/:CompanyId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByName/:Filename/:AppName/:TenantId/:CompanyId',function(req,res,next)
 {
     try {
         // log.info("\n.............................................File Uploding Starts....................................................\n");
@@ -657,7 +659,7 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetVoiceAppClipsByName
 
 //callback done.......................................get.............................................................................
 //Log Done...............................................................................................................
-RestServer.get('/DVP/API/:version/FIleService/FileHandler/DownloadFile/:id',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',function(req,res,next)
 {
     log.info("\n.............................................File Downloading Starts....................................................\n");
     try {
@@ -697,7 +699,7 @@ RestServer.get('/DVP/API/:version/FIleService/FileHandler/DownloadFile/:id',func
 
 //callback done.
 //Log Done...............................................................................................................
-RestServer.get('/DVP/API/:version/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
 {
     log.info("\n.............................................Getting Attachment meta data Starts....................................................\n");
     try {
