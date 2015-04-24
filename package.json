@@ -1,0 +1,34 @@
+{
+  "name": "DVP-FileService",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "attachmate": "^0.1.7",
+    "express": "^4.12.3",
+    "fs": "^0.0.2",
+    "fstream": "^1.0.4",
+    "mkdir": "^0.0.2",
+    "multer": "^0.1.8",
+    "node-uuid": "^1.4.3",
+    "path": "^0.11.14",
+    "redis": "^0.12.1",
+    "restify": "^3.0.2",
+    "stringify": "^3.1.0",
+    "log4js": "^0.6.24"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuoSoftware/DVP-FileService.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DuoSoftware/DVP-FileService/issues"
+  },
+  "homepage": "https://github.com/DuoSoftware/DVP-FileService"
+}
