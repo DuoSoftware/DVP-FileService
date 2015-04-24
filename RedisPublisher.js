@@ -7,12 +7,12 @@ var redis=require('redis');
 var DbConn = require('DVP-DBModels');
 var log4js=require('log4js');
 
+var config = require('config');
 
-
-log4js.configure('./config/log4js_config.json', { cwd: './logs' });
+log4js.configure(hpath+'/config/log4js_config.json', { cwd: './logs' });
 var log = log4js.getLogger("redis");
 
-var config = require('config');
+
 
 var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
