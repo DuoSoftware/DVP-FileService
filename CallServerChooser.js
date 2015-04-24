@@ -5,8 +5,10 @@ var DbConn = require('DVP-DBModels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var log4js=require('log4js');
 
+var hpath=config.Host.hostpath;
 
-log4js.configure('./config/log4js_config.json', { cwd: './logs' });
+
+log4js.configure(hpath+'/config/log4js_config.json', { cwd: './logs' });
 var log = log4js.getLogger("cspicker");
 
 log.info("\n.............................................CallServerPicker Starts....................................................\n");
