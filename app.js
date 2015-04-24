@@ -20,7 +20,7 @@ var port = config.Host.port || 3000;
 var version=config.Host.version;
 
 
-log4js.configure('./config/log4js_config.json', { cwd: './logs' });
+log4js.configure('log4js_config.json', { cwd: './logs' });
 var log = log4js.getLogger("app");
 
 
