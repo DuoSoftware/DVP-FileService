@@ -13,6 +13,10 @@ var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 var uuid = require('node-uuid');
 var log4js=require('log4js');
 
+var config = require('config');
+
+var port = config.Host.port || 3000;
+
 
 log4js.configure('./config/log4js_config.json', { cwd: './logs' });
 var log = log4js.getLogger("app");
@@ -26,7 +30,7 @@ var RestServer = restify.createServer({
 
 });
 //Server listen
-RestServer.listen(8081, function () {
+RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
 
 });
