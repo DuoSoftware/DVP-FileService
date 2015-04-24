@@ -3,8 +3,8 @@
  */
 
 var redis=require('redis');
-var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var DbConn = require('./DVP-DBModels');
+//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var DbConn = require('DVP-DBModels');
 var log4js=require('log4js');
 
 

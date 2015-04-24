@@ -1,8 +1,8 @@
 /**
  * Created by pawan on 3/26/2015.
  */
-var DbConn = require('./DVP-DBModels');
-var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var DbConn = require('DVP-DBModels');
+//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var log4js=require('log4js');
 
 
