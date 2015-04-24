@@ -14,6 +14,9 @@ var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
 
+
+var config = require('config');
+
 var hpath=config.Host.hostpath;
 
 
