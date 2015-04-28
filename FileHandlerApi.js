@@ -20,7 +20,7 @@ var config = require('config');
 var hpath=config.Host.hostpath;
 
 
-log4js.configure(hpath+'/config/log4js_config.json', { cwd: './logs' });
+log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("fhandler");
 
 

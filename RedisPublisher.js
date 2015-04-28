@@ -9,7 +9,7 @@ var log4js=require('log4js');
 
 var config = require('config');
 
-log4js.configure(hpath+'/config/log4js_config.json', { cwd: './logs' });
+log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("redis");
 
 
