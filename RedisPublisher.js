@@ -71,20 +71,24 @@ if(client.connected)
 //log done...............................................................................................................
 function SharedServerRedisUpdate(SID,AID)
 {
-    log.info("Publish to redis (shared) : Inputs :-  ServerID : "+JSON.stringify(SID)+" AttachmentDetails : "+AID);
+    //log.info("Publish to redis (shared) : Inputs :-  ServerID : "+JSON.stringify(SID)+" AttachmentDetails : "+AID);
+    logger.debug('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Shared type server selection method hit for Attachment  - '+AID);
     if(client.connected) {
-        log.info("Redis client is available");
-        console.log('Redis client is available');
+        //log.info("Redis client is available");
+        //console.log('Redis client is available');
+        logger.debug('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Redis Server is online  - ');
 
 try {
     SID.forEach(function (entry) {
         client.publish("CSCOMMAND:" + entry.id + ":downloadfile", AID, function (err, reply) {
             if (err) {
-                log.error("Redis publishing error : "+err+" Details ServerID : "+entry.id+ " Attachment Data : "+AID);
-                console.log("error in saving " + entry)
+                //log.error("Redis publishing error : "+err+" Details ServerID : "+entry.id+ " Attachment Data : "+AID);
+                logger.error('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Redis publishing error - Attachment '+AID+' Server : '+SID);
+                //console.log("error in saving " + entry
             }
             else if (reply) {
-                log.info("Redis publishing is succeeded Result : "+reply+" ServerID "+entry.id+" Attachment Data : "+AID);
+                //log.info("Redis publishing is succeeded Result : "+reply+" ServerID "+entry.id+" Attachment Data : "+AID);
+                logger.debug('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Redis publishing is succeeded. - Result  - '+reply);
                 console.log("Successfully saved " + entry)
             }
         });
@@ -93,14 +97,16 @@ try {
 }
         catch(ex)
         {
-            log.fatal("Exception occurred "+ex);
-            console.log('Exception  occurred in publishing on redis "+ex');
+            //log.fatal("Exception occurred "+ex);
+            //console.log('Exception  occurred in publishing on redis "+ex');
+            logger.error('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Exception  occurred in publishing on redis - Error '+ex);
         }
     }
     else
     {
-        log.error("Redis client is not available");
-        console.log('Redis server is not available');
+        //log.error("Redis client is not available");
+        //console.log('Redis server is not available');
+        logger.error('[DVP-FIleService.FileHandler.RedisPublisher.SharedProvisionAttachmentDetailsRedisUpdate] - [REDISPUBLISHER] -[FILEHANDLER] - Redis server is Offline ');
     }
 
 }
