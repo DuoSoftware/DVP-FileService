@@ -174,7 +174,7 @@ function UploadAssignToApplication(FObj,callback)
          */
 
         DbConn.FileUpload
-            .findAll({where: [{Filename: FObj.Filename},{TenantId: FObj.TenantId},{CompanyId: FObj.CompanyId},{},{ApplicationId: FObj.ApplicationId}]})
+            .findAll({where: [{Filename: FObj.Filename},{TenantId: FObj.TenantId},{CompanyId: FObj.CompanyId},{ApplicationId: FObj.ApplicationId}]})
             .complete(function (err, FileObj)
             {
                 if(err)

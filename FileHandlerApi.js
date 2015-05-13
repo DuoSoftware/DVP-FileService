@@ -13,6 +13,7 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
+var logger = require('DVP-Common/LogHandler.js').logger;
 
 
 var config = require('config');
@@ -222,19 +223,19 @@ function UploadFile(req,res)
 }
 
 //log done...............................................................................................................
-function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
+function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
 {
-    log.info('\n.............................................SaveUploadFileDetails Starts....................................................\n');
+    //log.info('\n.............................................SaveUploadFileDetails Starts....................................................\n');
 
     try {
-        log.info('Inputs :- CompanyID :'+cmp+" TenentID : "+ten+" File : "+req+" UUID : "+rand2);
+        //log.info('Inputs :- CompanyID :'+cmp+" TenentID : "+ten+" File : "+req+" UUID : "+rand2);
         var DisplyArr = req.path.split('\\');
 
         var DisplayName=DisplyArr[DisplyArr.length-1];
     }
     catch(ex)
     {
-        log.fatal('Exception in DisplyName splitting : '+ex);
+        //log.fatal('Exception in DisplyName splitting : '+ex);
         callback(ex,undefined);
     }
 
@@ -244,9 +245,11 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
         //DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
         DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, CurFileObject) {
 
+
             if(err)
             {
-                log.error('Error in Searching upload record : '+rand2);
+                //log.error('Error in Searching upload record : '+rand2);
+                logger.error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file record ',reqId,err);
                 callback(err,undefined);
 
             }
@@ -255,9 +258,10 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
             else {
 
                 if (CurFileObject) {
-                    console.log("................................... Given Cloud End User is invalid ................................ ");
+                    //console.log("................................... Given Cloud End User is invalid ................................ ");
                     // var jsonString = messageFormatter.FormatMessage(err, "Record already in DB", false, null);
-                    log.error('Already in DB : '+rand2);
+                    //log.error('Already in DB : '+rand2);
+                    logger.error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - File is already uploaded %s',reqId,JSON.stringify(CurFileObject));
                     callback(undefined, undefined);
                     //res.end();
                 }
@@ -265,7 +269,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
                 else {
                     // console.log(cloudEndObject);
 
-
+                    logger.info('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload file record is inserting %s',reqId);
                     var NewUploadObj = DbConn.FileUpload
                         .build(
                         {
@@ -284,23 +288,24 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
 
 
                         }
-                    )
-                    log.info('New Uploading record  : '+NewUploadObj);
+                    );
+                    //log.info('New Uploading record  : '+NewUploadObj);
                     NewUploadObj.save().complete(function (err, result) {
                         if (!err) {
                             var status = 1;
 
-                            log.info('Successfully saved '+NewUploadObj.UniqueId);
-                            console.log("..................... Saved Successfully ....................................");
+                           // log.info('Successfully saved '+NewUploadObj.UniqueId);
+                            //console.log("..................... Saved Successfully ....................................");
                             // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
+                            logger.info('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
                             callback(undefined, NewUploadObj.UniqueId);
                             // res.end();
 
 
                         }
                         else {
-                            log.error("Error in saving "+err);
-                            console.log("..................... Error found in saving.................................... : " + err);
+                            logger.Error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error in saving Upload file record %s',reqId,JSON.stringify(NewUploadObj));
+                            //console.log("..................... Error found in saving.................................... : " + err);
                             //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
                             callback(err, undefined);
                             //res.end();
@@ -319,7 +324,8 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,callback)
         });
     }
     catch (ex) {
-        log.fatal("Exception found : "+ex);
+        //log.fatal("Exception found : "+ex);
+        logger.Error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Exception occurred while calling File upload search ',reqId,ex);
         callback(ex, undefined);
     }
 
