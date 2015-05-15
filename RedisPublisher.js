@@ -12,7 +12,7 @@ var hpath=config.Host.hostpath;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("redis");
-var logger = require('DVP-Common/LogHandler.js').logger;
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 
 

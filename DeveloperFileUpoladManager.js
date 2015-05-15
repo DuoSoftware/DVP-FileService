@@ -5,7 +5,7 @@ var DbConn = require('DVP-DBModels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var fs=require('fs');
 var stringify = require('stringify');
-var logger = require('DVP-Common/LogHandler.js').logger;
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 function FindCurrentVersion(FObj,reqId,callback)
 {

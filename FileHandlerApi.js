@@ -13,7 +13,7 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
-var logger = require('DVP-Common/LogHandler.js').logger;
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 
 var config = require('config');

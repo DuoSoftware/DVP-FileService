@@ -20,7 +20,7 @@ var port = config.Host.port || 3000;
 
 var version=config.Host.version;
 var hpath=config.Host.hostpath;
-var logger = require('DVP-Common/LogHandler.js').logger;
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("app");
