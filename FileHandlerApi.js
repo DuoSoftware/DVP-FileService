@@ -249,7 +249,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
             if(err)
             {
                 //log.error('Error in Searching upload record : '+rand2);
-                logger.error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file record ',reqId,err);
+                logger.error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file record ',reqId,err);
                 callback(err,undefined);
 
             }
@@ -261,7 +261,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                     //console.log("................................... Given Cloud End User is invalid ................................ ");
                     // var jsonString = messageFormatter.FormatMessage(err, "Record already in DB", false, null);
                     //log.error('Already in DB : '+rand2);
-                    logger.error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - File is already uploaded %s',reqId,JSON.stringify(CurFileObject));
+                    logger.error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - File is already uploaded %s',reqId,JSON.stringify(CurFileObject));
                     callback(undefined, undefined);
                     //res.end();
                 }
@@ -269,7 +269,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                 else {
                     // console.log(cloudEndObject);
 
-                    logger.info('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload file record is inserting %s',reqId);
+                    logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload file record is inserting %s',reqId);
                     var NewUploadObj = DbConn.FileUpload
                         .build(
                         {
@@ -297,14 +297,14 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                            // log.info('Successfully saved '+NewUploadObj.UniqueId);
                             //console.log("..................... Saved Successfully ....................................");
                             // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
-                            logger.info('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
+                            logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
                             callback(undefined, NewUploadObj.UniqueId);
                             // res.end();
 
 
                         }
                         else {
-                            logger.Error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error in saving Upload file record %s',reqId,JSON.stringify(NewUploadObj));
+                            logger.Error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error in saving Upload file record %s',reqId,JSON.stringify(NewUploadObj));
                             //console.log("..................... Error found in saving.................................... : " + err);
                             //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
                             callback(err, undefined);
@@ -325,7 +325,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
     }
     catch (ex) {
         //log.fatal("Exception found : "+ex);
-        logger.Error('[DVP-FIleService.FileHandler.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Exception occurred while calling File upload search ',reqId,ex);
+        logger.Error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Exception occurred while calling File upload search ',reqId,ex);
         callback(ex, undefined);
     }
 
@@ -352,7 +352,7 @@ function GetAttachmentMetaDataByID(req,reqId,callback)
 
             if(err)
             {
-                logger.error('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,req);
+                logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,req);
                 callback(err, undefined);
 
             }
@@ -362,14 +362,14 @@ function GetAttachmentMetaDataByID(req,reqId,callback)
                 if(MetaDataObject)
                 {
                     //log.info("Record found : "+JSON.stringify(MetaDataObject));
-                    logger.debug('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,req);
+                    logger.debug('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,req);
                     //console.log("................................... Record Found ................................ ");
                     // var jsonString = messageFormatter.FormatMessage(null, "Record Found", true, ScheduleObject);
                     callback(undefined, MetaDataObject);
                 }
                 else
                 {
-                    logger.error('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,req);
+                    logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,req);
                     callback(new Error('No record found for id : '+req), undefined);
                 }
 
@@ -383,7 +383,7 @@ function GetAttachmentMetaDataByID(req,reqId,callback)
     catch (ex) {
         //console.log("Exce "+ex);
         //var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
-        logger.error('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - Exception occurred when starting GetAttachmentMetaDataByID %s ',reqId,req);
+        logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - Exception occurred when starting GetAttachmentMetaDataByID %s ',reqId,req);
         callback(ex, undefined);
     }
 }
@@ -392,13 +392,13 @@ function GetAttachmentMetaDataByID(req,reqId,callback)
 function DownloadFileByID(res,req,reqId,callback)
 {
     try {
-        logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,req);
+        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,req);
         DbConn.FileUpload.find({where: [{UniqueId: req}]}).complete(function (err, UploadRecObject) {
 
             if(err)
             {
                 //log.error("Error in searching for record : "+req+" Error : "+err);
-                logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,req,err);
+                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,req,err);
                 callback(err, undefined);
             }
 
@@ -406,32 +406,32 @@ function DownloadFileByID(res,req,reqId,callback)
 
                 if (UploadRecObject) {
 
-                    logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(UploadRecObject));
+                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(UploadRecObject));
                     //console.log("................................... Record Found ................................ ");
                     try {
                         res.setHeader('Content-Type', UploadRecObject.FileStructure);
                         var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
-                        logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
-                        logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
                         var source = fs.createReadStream(SourcePath);
 
                         source.pipe(res);
                         source.on('end', function (result) {
                             //log.info("Pipe succeeded  : "+result);
-                            logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
                             res.end();
                         });
                         source.on('error', function (err) {
                             //log.error("Error in pipe : "+err);
-                            logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
                             res.end('Error on pipe');
                         });
                     }
                     catch(ex)
                     {
                         //log.fatal("Exception found : "+ex);
-                        logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
 
                         callback(ex, undefined);
                     }
@@ -456,7 +456,7 @@ function DownloadFileByID(res,req,reqId,callback)
                     catch(ex)
                     {
                         //log.fatal("Exception found in creating FileDownload record object : "+ex);
-                        logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
+                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
                         callback(err, undefined);
                     }
 
@@ -466,7 +466,7 @@ function DownloadFileByID(res,req,reqId,callback)
                             //console.log("..................... Error found in saving.................................... : " + err);
                             //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
                             //log.error("Error in saving : "+err);
-                            logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),err);
+                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),err);
                             callback(err, undefined);
                             //res.end();
                         }
@@ -477,8 +477,8 @@ function DownloadFileByID(res,req,reqId,callback)
                             //console.log("..................... Saved Successfully ....................................");
                             // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
                             //log.info("Successfully saved : "+result);
-                            logger.info('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
-                            logger.info('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,UploadRecObject.FileStructure);
+                            logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
+                            logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,UploadRecObject.FileStructure);
                             callback(undefined, UploadRecObject.FileStructure);
                             // res.end();
 
@@ -493,7 +493,7 @@ function DownloadFileByID(res,req,reqId,callback)
 
                 else {
                     //log.error("No record found: "+req);
-                    logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,req);
+                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,req);
                     callback('No record for id : ' + req, undefined);
 
                 }
@@ -504,7 +504,7 @@ function DownloadFileByID(res,req,reqId,callback)
     catch (ex) {
         // console.log("Exce "+ex);
         // var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
-        logger.error('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,req);
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,req);
         callback("No record Found for the rerquest", undefined);
     }
 }
@@ -520,7 +520,7 @@ var FileName=Flnm;
     {
         if(errApp)
         {
-            logger.error('[DVP-FIleService.FileHandler.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppName,errApp);
+            logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppName,errApp);
             callback("No application found",undefined);
         }
         else
@@ -529,12 +529,12 @@ var FileName=Flnm;
             {
                 if(err)
                 {
-                    logger.error('[DVP-FIleService.FileHandler.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,FileName,err);
+                    logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,FileName,err);
                     callback(err,undefined);
                 }
                 else
                 {
-                    logger.info('[DVP-FIleService.FileHandler.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,FileName,resFiles);
+                    logger.info('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,FileName,resFiles);
                     callback(undefined,resFile.UniqueId);
                 }
             });

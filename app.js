@@ -96,14 +96,14 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         }
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         // log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
-        logger.debug('[DVP-FIleService.FileHandler.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.cmp,req.params.ten);
+        logger.debug('[DVP-FIleService.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.cmp,req.params.ten);
 
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
         //console.log(file.path);
         //log.info("File path : "+file.path);
-        logger.info('[DVP-FIleService.FileHandler.UploadFile] - [%s] - [FS] - File path - %s',reqId,file.path);
+        logger.info('[DVP-FIleService.UploadFile] - [%s] - [FS] - File path - %s',reqId,file.path);
 
         var DisplyArr = file.path.split('\\');
 
@@ -122,7 +122,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         //console.log(AttchVal);
 
         //log.info("Attachment Values : "+AttchVal);
-        logger.info('[DVP-FIleService.FileHandler.UploadFile] - [%s] - [FS] - Attachment values - %s',reqId,AttchVal);
+        logger.info('[DVP-FIleService.UploadFile] - [%s] - [FS] - Attachment values - %s',reqId,AttchVal);
 
         var ProvTyp=req.params.prov;
 
@@ -133,11 +133,11 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
                 CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten,reqId,function (err, resz) {
 
                     //log.info("Instance type is selected : "+ProvTyp);
-                    logger.debug('[DVP-FIleService.FileHandler.UploadFile] - [%s] - [FS] - Instance type is selected - %s',reqId,ProvTyp);
+                    logger.debug('[DVP-FIleService.UploadFile] - [%s] - [FS] - Instance type is selected - %s',reqId,ProvTyp);
                     if (resz) {
 
 
-                        logger.info('[DVP-FIleService.FileHandler.UploadFile] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
+                        logger.info('[DVP-FIleService.UploadFile] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
                         FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2,reqId,function (errz, respg) {
                             if (respg) {
 
@@ -192,7 +192,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
                     else if (err) {
 
                         //log.error("Error occurred in searching suitable call server   : "+err);
-                        logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Error occurred in searching suitable call server - Inputs - Company : '+req.params.cmp+' Tenant : '+req.params.ten+' Provision : Instance');
+                        logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Error occurred in searching suitable call server - Inputs - Company : '+req.params.cmp+' Tenant : '+req.params.ten+' Provision : Instance');
                         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
                         res.end(jsonString);
 
@@ -205,7 +205,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
             }
             catch (ex) {
                 //log.fatal("Exception occurred when entering to CallServerChooser method   : "+ex);
-                logger.error('[DVP-FIleService.FileHandler.UploadFile] - [%s] - Exception occurred when entering to CallServerChooser method',reqId,ex);
+                logger.error('[DVP-FIleService.UploadFile] - [%s] - Exception occurred when entering to CallServerChooser method',reqId,ex);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(jsonString);
             }
@@ -217,7 +217,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         {
             try {
                 //log.info("Profile type is selected : "+ProvTyp);
-                logger.debug('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Profile type is selected - '+ProvTyp);
+                logger.debug('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Profile type is selected - '+ProvTyp);
                 CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (err, resz) {
                     if (resz) {
 
@@ -285,7 +285,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
             }
             catch (ex) {
                 //log.fatal("Exception occurred when entering to CallServerChooser method   : "+ex);
-                logger.error('[DVP-FIleService.FileHandler.UploadFile] - [%s] - [FS] - Exception occurred when Profiletype actions starts',reqId,ex);
+                logger.error('[DVP-FIleService.UploadFile] - [%s] - [FS] - Exception occurred when Profiletype actions starts',reqId,ex);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(jsonString);
             }
@@ -298,7 +298,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         {
             try {
                 //log.info("Shared type is selected : "+ProvTyp);
-                logger.debug('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Shared type is selected - '+ProvTyp);
+                logger.debug('[DVP-FIleServic.UploadFile] - [FILEHANDLER] - Shared type is selected - '+ProvTyp);
                 CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten,reqId, function (err, resz) {
 
                     if (resz) {
@@ -320,14 +320,14 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
                                 if (errz)
                                 {
                                     //log.error("Error occurred in saving uploaded file details to Database   : "+errz);
-                                    logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Error occurred in saving uploaded file details to Database - Company :  ' + req.params.cmp + ' tenant : ' + req.params.ten + 'File Details : ' + JSON.stringify(file) + ' UUID : ' + rand2 + ' - Error - ' + errz);
+                                    logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Error occurred in saving uploaded file details to Database - Company :  ' + req.params.cmp + ' tenant : ' + req.params.ten + 'File Details : ' + JSON.stringify(file) + ' UUID : ' + rand2 + ' - Error - ' + errz);
                                     var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, respg);
                                     res.end(jsonString);
                                 }
 
                                 else
                                 {
-                                    logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Record is already in DB - Company :  ' + req.params.cmp + ' tenant : ' + req.params.ten + 'File Details : ' + JSON.stringify(file) +' - Error - ' + errz);
+                                    logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Record is already in DB - Company :  ' + req.params.cmp + ' tenant : ' + req.params.ten + 'File Details : ' + JSON.stringify(file) +' - Error - ' + errz);
                                     res.end();
                                 }
 
@@ -338,7 +338,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
                     }
                     else if (err) {
                         //log.error("Error occurred in searching suitable call server   : "+err);
-                        logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Error occurred in searching suitable call server - Inputs - Company : '+req.params.cmp+' Tenant : '+req.params.ten+' Provision : Shared');
+                        logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Error occurred in searching suitable call server - Inputs - Company : '+req.params.cmp+' Tenant : '+req.params.ten+' Provision : Shared');
                         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resz);
                         res.end(jsonString);
 
@@ -351,7 +351,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
             }
             catch (ex) {
                 //log.fatal("Exception occurred when entering to CallServerChooser method   : "+ex);
-                logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Exception occurred when entering to CallServerChooser method ',ex);
+                logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Exception occurred when entering to CallServerChooser method ',ex);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(jsonString);
             }
@@ -363,7 +363,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         //log.fatal("Exception occurred when calling upload function   : "+ex);
         //var jsonString = messageFormatter.FormatMessage(ex, "Upload failed", false, res);
         // res.end(jsonString);
-        logger.error('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] - Exception occurred when calling upload function ',ex);
+        logger.error('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Exception occurred when calling upload function ',ex);
         var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
         res.end(jsonString);
     }
@@ -439,12 +439,12 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         }
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
-        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.cmp,req.params.ten);
+        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.cmp,req.params.ten);
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
         //console.log(file.path);
-        logger.info('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
+        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
 
         var DisplyArr = file.path.split('\\');
 
@@ -463,7 +463,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         //console.log(AttchVal);
 
         //log.info("Attachment Values : "+AttchVal);
-        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
 
         var ProvTyp=req.params.prov;
 
@@ -471,20 +471,20 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
         if(ProvTyp==1) {
             try {
-                logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
+                logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
                 CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
 
 
                     if (resz) {
 
 
-                        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
+                        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
                         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten,reqId,function (errz, respg) {
                             if (respg) {
 
 
                                 //log.info("To redis publish :- ServerID :  "+JSON.stringify(resz)+" Attachment values : "+AttchVal);
-                                logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
+                                logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
                                 RedisPublisher.RedisPublish(resz, AttchVal,reqId, function (errRDS, resRDS) {
                                         if (errRDS) {
                                             // var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, resRDS);
@@ -538,7 +538,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
             }
             catch (ex) {
                 //log.fatal("Exception occurred when entering to CallServerChooser method   : "+ex);
-                logger.error('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Error occurred whe provision type : 1 action starts  ',reqId);
+                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Error occurred whe provision type : 1 action starts  ',reqId);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(ex);
             }
@@ -548,19 +548,19 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
         else if(ProvTyp==2)
         {
-            logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
+            logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
             try {
                 //log.info("Profile type is selected : "+ProvTyp);
                 CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
 
                     if (resz) {
 
-                        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
+                        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
                         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten, function (errz, respg) {
                             if (respg) {
 
                                 //log.info("To redis publish :- ServerID :  "+JSON.stringify(resz)+" Attachment values : "+AttchVal);
-                                logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
+                                logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
                                 RedisPublisher.RedisPublish(resz, AttchVal, function (errRDS, resRDS) {
                                         if (errRDS) {
                                             //log.error("Error occurred in publishing to redis   : "+errRDS);
@@ -605,7 +605,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
             }
             catch (ex) {
-                logger.error('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Error occurred whe provision type : 2 action starts  ',reqId);
+                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Error occurred whe provision type : 2 action starts  ',reqId);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(jsonString);
             }
@@ -617,17 +617,17 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         else
         {
             try {
-                logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Shared type is selected');
+                logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Shared type is selected');
                 CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten, function (err, resz) {
 
                     if (resz) {
 
-                        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
+                        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
                         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten,reqId, function (errz, respg) {
                             if (respg) {
 
                                 //log.info("To redis publish :- ServerID :  "+JSON.stringify(resz)+" Attachment values : "+AttchVal);
-                                logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
+                                logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resz),AttchVal);
                                 RedisPublisher.SharedServerRedisUpdate(resz,AttchVal);
                                 res.end('Done');
 
@@ -658,7 +658,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
             }
             catch (ex) {
-                logger.error('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - Error occurred when Shared type : 2 action starts  ',reqId);
+                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Error occurred when Shared type : 2 action starts  ',reqId);
                 var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
                 res.end(jsonString);
             }
@@ -668,7 +668,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
     catch(ex)
     {
         //log.fatal("Exception occurred when calling upload function   : "+ex);
-        logger.error('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
+        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         //var jsonString = messageFormatter.FormatMessage(ex, "Upload failed", false, res);
         // res.end(jsonString);
         var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
@@ -691,7 +691,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',f
         }
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
-        logger.debug('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - %s',reqId,JSON.stringify(req.body));
+        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - %s',reqId,JSON.stringify(req.body));
 
         DeveloperFileUpoladManager.UploadAssignToApplication(req.body,reqId,function(err,resz)
         {
@@ -711,7 +711,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',f
 
     }
     catch(ex) {
-        logger.error('[DVP-FIleService.FileHandler.DeveloperUploadFiles] - [%s]  - [HTTP] - Exception occurred when request starts  ',reqId,JSON.stringify(req.body));
+        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - [HTTP] - Exception occurred when request starts  ',reqId,JSON.stringify(req.body));
         res.end(ex);
     }
     return next();
@@ -732,7 +732,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByN
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
 
-        logger.debug('[DVP-FIleService.FileHandler.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId);
+        logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId);
         FileHandler.GetVoiceClipIdbyName(req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId,reqId,function (err, resz) {
             if (err) {
                 //console.log(err);
@@ -749,7 +749,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByN
 
 
     catch(ex) {
-        logger.error('[DVP-FIleService.FileHandler.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId,ex);
+        logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId,ex);
         res.end(ex);
     }
     return next();
@@ -776,7 +776,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',f
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
 
-        logger.debug('[DVP-FIleService.FileHandler.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
         //log.info("File ID : "+req.params.id);
         FileHandler.DownloadFileByID(res,req.params.id,reqId,function(err,resz)
@@ -785,14 +785,14 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',f
             {
                 //var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION Download", false, resz);
                 // console.log(err);
-                log.error("Error in downloading : "+err);
+                //log.error("Error in downloading : "+err);
                 res.end("Error Returns");
             }
             else if(resz)
             {
                 // var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 //res.end();
-                log.info("Successfully Downloaded.Result : "+resz);
+                //log.info("Successfully Downloaded.Result : "+resz);
                 console.log("Done");
             }
 
@@ -803,7 +803,8 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',f
     }
     catch(ex)
     {
-        log.fatal("Exception found  in downloading : "+ex);
+        //log.fatal("Exception found  in downloading : "+ex);
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, res);
         res.end(jsonString);
     }
@@ -831,7 +832,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/
         // log.info("\n.............................................File Uploding Starts....................................................\n");
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
 
-        logger.debug('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+        logger.debug('[DVP-FIleService.AttachmentMetaData] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
 
         FileHandler.GetAttachmentMetaDataByID(req.params.id,reqId,function(err,resz)
@@ -859,7 +860,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/
     }
     catch(ex)
     {
-        logger.debug('[DVP-FIleService.FileHandler.AttachmentMetaData] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.id);
+        logger.debug('[DVP-FIleService.AttachmentMetaData] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.id);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, res);
         res.end(jsonString);
     }
