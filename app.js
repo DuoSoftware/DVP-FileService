@@ -77,7 +77,8 @@ RestServer.use(restify.queryParser());
 //callback Done..........................................................................................................
 //Log Done...............................................................................................................
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
-RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProvision/:prov/:cmp/:ten',function(req,res,next)
+
+RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProvision/:prov/ToCompany/:cmp/Of/:ten',function(req,res,next)
 {
 // instance 1,
     // profile 2,
@@ -457,7 +458,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
             "filename":file.name,
             "type":file.type,
             "id":rand2
-        }
+        };
 
         var AttchVal=JSON.stringify(ValObj);
         //console.log(AttchVal);
@@ -676,6 +677,9 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
     }
     return next();
 });
+
+// chk urls in swagger #below
+// look up
 RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',function(req,res,next)
 {
     var reqId='';
@@ -716,7 +720,8 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',f
     }
     return next();
 });
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByName/:Filename/:AppName/:TenantId/:CompanyId',function(req,res,next)
+//check body
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
 {
     var reqId='';
     try {
@@ -733,7 +738,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByN
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
 
         logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId);
-        FileHandler.GetVoiceClipIdbyName(req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId,reqId,function (err, resz) {
+        FileHandler.GetVoiceClipIdbyName(req.params.AppID,req.params.TenantId,req.params.CompanyId,reqId,function (err, resz) {
             if (err) {
                 //console.log(err);
                 //
@@ -749,7 +754,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetVoiceAppClipsByN
 
 
     catch(ex) {
-        logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId,ex);
+        logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.AppID,req.params.TenantId,req.params.CompanyId,ex);
         res.end(ex);
     }
     return next();

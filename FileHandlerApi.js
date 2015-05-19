@@ -509,32 +509,33 @@ function DownloadFileByID(res,req,reqId,callback)
     }
 }
 
-function GetVoiceClipIdByName(Flnm,AppNm,Tid,Cid,reqId,callback)
+function GetVoiceClipIdByName(AppId,Tid,Cid,reqId,callback)
 {
-var FileName=Flnm;
-    var AppName=AppNm;
+
+    var AppID=AppId;
     var TenantId=Tid;
     var CompanyId=Cid;
 
-    DbConn.Application.find({where:[{AppName:AppName}]}).complete(function(errApp,resApp)
+    DbConn.Application.find({where:[{id:AppID}]}).complete(function(errApp,resApp)
     {
         if(errApp)
         {
-            logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppName,errApp);
+            logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errApp);
             callback("No application found",undefined);
         }
         else
         {
-            DbConn.FileUpload.find({where:[{Filename: FileName},{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id}]}).complete(function(err,resFile)
+            //DbConn.FileUpload.find({where:[{Filename: FileName},{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id}]}).complete(function(err,resFile)
+            DbConn.FileUpload.find({where:[{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id}]}).complete(function(err,resFile)
             {
                 if(err)
                 {
-                    logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,FileName,err);
+                    logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
                     callback(err,undefined);
                 }
                 else
                 {
-                    logger.info('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,FileName,resFiles);
+                    logger.info('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,AppID,resFile);
                     callback(undefined,resFile.UniqueId);
                 }
             });
