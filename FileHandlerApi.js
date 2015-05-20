@@ -262,7 +262,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                     // var jsonString = messageFormatter.FormatMessage(err, "Record already in DB", false, null);
                     //log.error('Already in DB : '+rand2);
                     logger.error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - File is already uploaded %s',reqId,JSON.stringify(CurFileObject));
-                    callback(undefined, undefined);
+                    callback("Already in DB", undefined);
                     //res.end();
                 }
 
