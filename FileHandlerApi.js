@@ -4,7 +4,6 @@ var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('DVP-DBModels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var mkdirp = require('mkdirp');
 //var couchbase = require('couchbase');
 var sys=require('sys');
 var express    =       require("express");
@@ -280,9 +279,9 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                             ObjCategory: 'body.ObjCategory',
                             URL: req.path,
                             UploadTimestamp: Date.now(),
-                            Filename: req.name,
+                            Filename: DisplayName,
                             Version:req.Version,
-                            DisplayName: DisplayName,
+                            DisplayName:req.name ,
                             CompanyId:cmp,
                             TenantId: ten
 
