@@ -918,7 +918,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/FileId/:appId/:filename',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/:filename/FileInfoForApplicationId/:appId',function(req,res,next)
 {
     var reqId='';
     try {
