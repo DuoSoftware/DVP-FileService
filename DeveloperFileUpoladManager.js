@@ -563,7 +563,7 @@ function FileAssignWithApplication(fileUID,appID,callback)
                             {
                                 try
                                 {
-                                    DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:resFile.ApplicationId}]}).complete(function(errVFileNm,resVFileNm)
+                                    DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId}]}).complete(function(errVFileNm,resVFileNm)
                                     {
                                         if(errVFileNm)
                                         {
@@ -571,20 +571,8 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                         }
                                         else
                                         {
-                                            if(resVFileNm.length==0)
-                                            {
-                                                resFile.setApplication(resApp).complete(function (errNull, resNull) {
-                                                    console.log('hit');
-                                                    //callback(errNull, resNull);
-                                                    if (errNull) {
-                                                        callback(errNull, undefined);
-                                                    }
-                                                    else {
-                                                        callback(undefined,resNull);
-                                                    }
-                                                });
-                                            }
-                                            else {
+
+
                                                 for (var index in resVFileNm) {
                                                     resVFileNm[index].setApplication(null).complete(function (errNull, resNull) {
                                                         console.log('hit');
@@ -603,7 +591,7 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                                         callback(undefined,resNull);
                                                     }
                                                 });
-                                            }
+
                                         }
                                     });
 
