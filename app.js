@@ -917,6 +917,63 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/
 
 });
 
+
+RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/FileId/:appId/:filename',function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+        // log.info("\n.............................................File Uploding Starts....................................................\n");
+        //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
+
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.appId);
+
+
+        FileHandler.GetFileId(parseInt(req.params.appId),req.params.filename,function(err,resz)
+        {
+            if(err)
+            {
+                // log.error("error found  in searching : "+err);
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                //log.info("Successfully Downloaded.Result : "+resz);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.id);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 RestServer.get('/DVP',function(req,res,next)
 {
 

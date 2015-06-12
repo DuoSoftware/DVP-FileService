@@ -187,19 +187,19 @@ function RecordDownloadFileDetails(req, callback) {
      r.pipe(w);
      });*/
 
-   /* mkdirp(outputPath, function(err) {
-        if (err) return;
+    /* mkdirp(outputPath, function(err) {
+     if (err) return;
 
-        attachmate.download(
-            'http://192.168.1.20:8092/ScheduledObjects/newtest005',
-            outputPath,
-            function(err) {
-                console.log('done, error = ', err);
-            }
-        );
-    });
+     attachmate.download(
+     'http://192.168.1.20:8092/ScheduledObjects/newtest005',
+     outputPath,
+     function(err) {
+     console.log('done, error = ', err);
+     }
+     );
+     });
 
-*/
+     */
 
 
 }
@@ -293,7 +293,7 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                         if (!err) {
                             var status = 1;
 
-                           // log.info('Successfully saved '+NewUploadObj.UniqueId);
+                            // log.info('Successfully saved '+NewUploadObj.UniqueId);
                             //console.log("..................... Saved Successfully ....................................");
                             // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
                             logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
@@ -548,12 +548,41 @@ function GetVoiceClipIdByName(AppId,Tid,Cid,reqId,callback)
 
 }
 
+function GetFileId(appid,filename,callback)
+{
+    try
+    {
+        DbConn.FileUpload.find({where:[{ApplicationId:appid},{Filename:filename}]}).complete(function(errFile,resFile)
+        {
+            if(errFile)
+            {
+                callback(errFile,undefined);
+            }
+            else
+            {
+                if(resFile==null)
+                {
+                    callback(new Error("No file"),undefined);
+                }
+                else
+                {
+                    callback(undefined,resFile);
+                }
+            }
+        })
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
 module.exports.GetAttachmentMetaDataByID = GetAttachmentMetaDataByID;
 module.exports.DownloadFileByID = DownloadFileByID;
 module.exports.GetVoiceClipIdbyName = GetVoiceClipIdByName;
+module.exports.GetFileId = GetFileId;
 
 
 

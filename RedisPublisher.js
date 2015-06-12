@@ -30,7 +30,7 @@ client.on("error", function (err) {
 
 function RedisPublish(SID,AID,reqId,callback)
 {
-log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID.id+" AttachmentDetails : "+AID);
+log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID+" AttachmentDetails : "+AID);
 if(client.connected)
 {
     //log.info("Redis client is available");
