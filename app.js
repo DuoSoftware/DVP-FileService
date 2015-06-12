@@ -1,7 +1,7 @@
 /**
  * Created by pawan on 2/23/2015.
  */
-
+var DbConn = require('DVP-DBModels');
 var restify = require('restify');
 //var sre = require('swagger-restify-express');
 
@@ -707,8 +707,9 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
 // chk urls in swagger #below
 // look up
-RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/File/:uuid/AssignToApp/:AppId',function(req,res,next)
 {
+    /*
     var reqId='';
     try {
 
@@ -724,7 +725,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',f
         //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
         logger.debug('[DVP-FIleService.FileAssignToApp] - [%s] - [HTTP] - Request received - Inputs - %s',reqId,JSON.stringify(req.body));
 
-        DeveloperFileUpoladManager.UploadAssignToApplication(req.body,reqId,function(err,resz)
+        DeveloperFileUpoladManager.UploadAssignToApplication(req.params.uuid,parseInt(req.params.AppId),parseInt(version),reqId,function(err,resz)
         {
             if(err)
             {
@@ -752,6 +753,19 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/FileAssignToApp',f
         res.end(jsonString);
     }
     return next();
+    */
+    DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),function(err,r)
+    {
+        if(err)
+        {
+            console.log(err);
+        }else{
+            console.log(r);
+        }
+
+        res.end();
+    });
+    next();
 });
 //check body
 RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
@@ -974,12 +988,12 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/:filename/FileInfoF
 
 });
 
-RestServer.get('/DVP',function(req,res,next)
+RestServer.post('/DVP',function(req,res,next)
 {
 
 
 
-    RedisPublisher.RedisGet();
+    //RedisPublisher.RedisGet();
 
 });
 

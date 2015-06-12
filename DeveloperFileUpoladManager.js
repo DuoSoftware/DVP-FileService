@@ -138,7 +138,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
 
 }
 
-function UploadAssignToApplication(FObj,reqId,callback)
+function UploadAssignToApplication(Fileuuid,AppId,version,reqId,callback)
 {
 
     try
@@ -187,13 +187,13 @@ function UploadAssignToApplication(FObj,reqId,callback)
          */
 
         DbConn.FileUpload
-            .findAll({where: [{Filename: FObj.Filename},{TenantId: FObj.TenantId},{CompanyId: FObj.CompanyId},{ApplicationId: FObj.ApplicationId}]})
+            .findAll({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}]})
             .complete(function (err, FileObj)
             {
                 if(err)
                 {
                     //console.log("Err "+err);
-                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching uploaded file %s  with company : %s , tenant : %s Application %s',reqId,FObj.Filename,FObj.CompanyId,FObj.TenantId,FObj.ApplicationId,err);
+                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching uploaded file %s  with  Application %s',reqId,Fileuuid,AppId,err);
                     callback(err,undefined);
                 }
                 else
@@ -201,14 +201,14 @@ function UploadAssignToApplication(FObj,reqId,callback)
                     if(FileObj)
                     {
                         //console.log("Result length "+FileObj.length);
-                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  %s Records found for uploaded file %s  with company : %s , tenant : %s Application %s',reqId,FileObj.length,FObj.Filename,FObj.CompanyId,FObj.TenantId,FObj.ApplicationId,err);
-                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Searching for Application %s',reqId,FObj.AppName);
+                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  %s Records found for uploaded file %s  with Application %s',reqId,FileObj.length,Fileuuid,AppId,err);
+                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Searching for Application %s',reqId,AppId);
                         try {
-                            DbConn.Application.find({where: [{AppName: FObj.AppName}]}).complete(function (errz, AppObj) {
+                            DbConn.Application.find({where: [{id: AppId}]}).complete(function (errz, AppObj) {
 
                                 if (errz) {
                                     //console.log("Err " + errz);
-                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,FObj.AppName,err);
+                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,AppId,err);
                                     callback(errz, undefined);
                                 }
                                 else {
@@ -217,11 +217,11 @@ function UploadAssignToApplication(FObj,reqId,callback)
                                         try
                                         {
                                             DbConn.FileUpload
-                                                .find({where: [{Filename: FObj.Filename}, {ObjType: 'Voice app clip'},{TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
+                                                .find({where: [{UniqueId: Fileuuid}, {ObjType: 'Voice app clip'}, {Version: version}]})
                                                 .complete(function (errFile, ResFile) {
                                                     if (errFile) {
                                                         //console.log("Error " + errFile);
-                                                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , tenant : %s company : %s , version : %s   ',reqId,FObj.Filename,FObj.TenantId,FObj.CompanyId,FObj.Version,err);
+                                                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , version : %s   ',reqId,Fileuuid,version,err);
                                                         callback(errFile, undefined);
                                                     }
                                                     else {
@@ -257,7 +257,7 @@ function UploadAssignToApplication(FObj,reqId,callback)
                                         for (var index in FileObj) {
                                             //console.log("Result length " + FileObj[index]);
 
-                                            if (FileObj[index].Version == FObj.Version) {
+                                            if (FileObj[index].Version == version) {
                                                 logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Version %s is already up to date of file % ',reqId,FileObj[index].Version,FileObj[index].Filename);
                                                 callback("Already up to date", undefined);
                                             }
@@ -274,10 +274,10 @@ function UploadAssignToApplication(FObj,reqId,callback)
                                                             //console.log(JSON.stringify(FileObj[index]) + " null");
                                                             try{
                                                                 DbConn.FileUpload
-                                                                    .find({where: [{Filename: FObj.Filename}, {TenantId: FObj.TenantId}, {CompanyId: FObj.CompanyId}, {Version: FObj.Version}]})
+                                                                    .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
                                                                     .complete(function (errFile, ResFile) {
                                                                         if (errFile) {
-                                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,JSON.stringify(FObj),errFile);
+                                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
                                                                             callback(errFile, undefined);
                                                                         }
                                                                         else {
@@ -336,7 +336,7 @@ function UploadAssignToApplication(FObj,reqId,callback)
                     }
                     else
                     {
-                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   No uploaded file record found for file name %s',reqId,FObj.Filename,ex);
+                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   No uploaded file record found for file name %s',reqId,Fileuuid,ex);
                         callback("err",undefined);
                     }
                 }
@@ -529,7 +529,101 @@ function PickVoiceAppClipById(RecId,callback) {
 
 }
 
+function FileAssignWithApplication(fileUID,appID,callback)
+{
+    try
+    {
+        DbConn.FileUpload.find({where:[{UniqueId:fileUID}]}).complete(function(errFile,resFile)
+        {
+            if(errFile)
+            {
+                callback(errFile,undefined);
+            }else
+            {
+                if(resFile==null)
+                {
+                    callback(new Error("No file"),callback);
+                }
+                else
+                {
+                    DbConn.Application.find({where:[{id:appID}]}).complete(function(errApp,resApp)
+                    {
+                        if(errApp)
+                        {
+                            callback(errApp,undefined);
 
+                        }
+                        else
+                        {
+                            if(resApp==null)
+                            {
+                                callback(new Error("No Application"),undefined);
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:resFile.ApplicationId}]}).complete(function(errVFileNm,resVFileNm)
+                                    {
+                                        if(errVFileNm)
+                                        {
+                                            callback(errVFileNm,undefined);
+                                        }
+                                        else
+                                        {
+                                            if(resVFileNm.length==0)
+                                            {
+                                                resFile.setApplication(resApp).complete(function (errNull, resNull) {
+                                                    console.log('hit');
+                                                    //callback(errNull, resNull);
+                                                    if (errNull) {
+                                                        callback(errNull, undefined);
+                                                    }
+                                                    else {
+                                                        callback(undefined,resNull);
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                for (var index in resVFileNm) {
+                                                    resVFileNm[index].setApplication(null).complete(function (errNull, resNull) {
+                                                        console.log('hit');
+                                                        //callback(errNull, resNull);
+
+                                                    });
+
+                                                }
+                                                resFile.setApplication(resApp).complete(function (errNull, resNull) {
+                                                    console.log('hit');
+                                                    //callback(errNull, resNull);
+                                                    if (errNull) {
+                                                        callback(errNull, undefined);
+                                                    }
+                                                    else {
+                                                        callback(undefined,resNull);
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+
+                                }
+                                catch(ex)
+                                {
+                                    callback(ex,undefined);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
 
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
 module.exports.UploadAssignToApplication = UploadAssignToApplication;
@@ -538,3 +632,4 @@ module.exports.PickAllVoiceRecordingsOfApplication = PickAllVoiceRecordingsOfApp
 module.exports.PickAllVoiceAppClipsOfApplication = PickAllVoiceAppClipsOfApplication;
 module.exports.PickCallRecordById = PickCallRecordById;
 module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
+module.exports.FileAssignWithApplication = FileAssignWithApplication;
