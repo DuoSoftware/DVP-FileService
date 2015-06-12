@@ -1,4 +1,4 @@
-var attachmate = require('attachmate');
+//var attachmate = require('attachmate');
 var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
@@ -187,7 +187,7 @@ function RecordDownloadFileDetails(req, callback) {
      r.pipe(w);
      });*/
 
-    mkdirp(outputPath, function(err) {
+   /* mkdirp(outputPath, function(err) {
         if (err) return;
 
         attachmate.download(
@@ -199,7 +199,7 @@ function RecordDownloadFileDetails(req, callback) {
         );
     });
 
-
+*/
 
 
 }
