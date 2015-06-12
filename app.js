@@ -480,7 +480,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         if(ProvTyp==1) {
             try {
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
-                CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+                CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (err, resz) {
 
 
                     if (resz) {
@@ -566,7 +566,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
             logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
             try {
                 //log.info("Profile type is selected : "+ProvTyp);
-                CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+                CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (err, resz) {
 
                     if (resz) {
 
@@ -640,7 +640,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         {
             try {
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Shared type is selected');
-                CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten, function (err, resz) {
+                CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten,reqId, function (err, resz) {
 
                     if (resz) {
 
