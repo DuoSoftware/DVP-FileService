@@ -89,28 +89,20 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
 
                         }
                     );
-                    //log.info('New Uploading record  : '+NewUploadObj);
                     logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
-                    NewUploadObj.save().complete(function (err, result) {
-                        if (!err) {
-                            var status = 1;
+                    NewUploadObj.save().complete(function (errUpFile, resUpFile) {
+                        if (errUpFile) {
 
-                            // log.info('Successfully saved '+NewUploadObj.UniqueId);
-                            //console.log("..................... Saved Successfully ....................................");
-                            // var jsonString = messageFormatter.FormatMessage(err, "Saved to pg", true, result);
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                            callback(undefined, NewUploadObj.UniqueId);
-                            // res.end();
+                            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+                            callback(errUpFile, undefined);
+
+
 
 
                         }
                         else {
-                            // log.error("Error in saving "+err);
-                            //console.log("..................... Error found in saving.................................... : " + err);
-                            //var jsonString = messageFormatter.FormatMessage(err, "ERROR found in saving to PG", false, null);
-                            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),err);
-                            callback(err, undefined);
-                            //res.end();
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                            callback(undefined, NewUploadObj.UniqueId);
                         }
 
 
@@ -575,20 +567,16 @@ function FileAssignWithApplication(fileUID,appID,callback)
 
                                                 for (var index in resVFileNm) {
                                                     resVFileNm[index].setApplication(null).complete(function (errNull, resNull) {
-                                                        console.log('hit');
-                                                        //callback(errNull, resNull);
 
                                                     });
 
                                                 }
-                                                resFile.setApplication(resApp).complete(function (errNull, resNull) {
-                                                    console.log('hit');
-                                                    //callback(errNull, resNull);
-                                                    if (errNull) {
-                                                        callback(errNull, undefined);
+                                                resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                    if (errMap) {
+                                                        callback(errMap, undefined);
                                                     }
                                                     else {
-                                                        callback(undefined,resNull);
+                                                        callback(undefined,resMap);
                                                     }
                                                 });
 

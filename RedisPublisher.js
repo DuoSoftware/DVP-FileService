@@ -26,15 +26,13 @@ client.on("error", function (err) {
 });
 
 
-//log done...............................................................................................................
+
 
 function RedisPublish(SID,AID,reqId,callback)
 {
 log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID+" AttachmentDetails : "+AID);
 if(client.connected)
 {
-    //log.info("Redis client is available");
-    //console.log('Redis server is available');
     logger.info('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is Online',reqId);
 
 
@@ -43,13 +41,11 @@ if(client.connected)
                 {
                     if(err)
                     {
-                        //log.error("Redis publishing error  : "+err+" ServerID :  "+SID+" Attachment Details : "+AID);
                         logger.error('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Error occurred while publishing to redis - CSCOMMAND:%s:downloadfile  - > %s',reqId,SID,AID,err);
                         callback(err,undefined);
                     }
                     else
                     {
-                        //log.info("Redis publishing is succeeded Result : "+reply+" ServerID :  "+SID+" Attachment Details : "+AID+" Result : ");
                         logger.info('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis publishing to Succeeded - CSCOMMAND:%s:downloadfile  - > %s',reqId,SID,AID);
                         callback(undefined,reply);
                     }
@@ -57,7 +53,6 @@ if(client.connected)
             }
             catch(ex)
             {
-                //log.fatal("Exception occurred in publishing on redis "+ex);
                 logger.error('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Exception occurred while publishing to redis ',reqId,ex);
                 callback(ex,undefined);
             }
@@ -66,9 +61,8 @@ if(client.connected)
 }
     else
 {
-    //log.error("Redis server is not available");
     logger.error('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is not available ',reqId);
-    callback('Redis Client is not available',undefined);
+    callback(new Error('Redis Client is not available'),undefined);
 }
 
 
@@ -77,25 +71,19 @@ if(client.connected)
 //log done...............................................................................................................
 function SharedServerRedisUpdate(SID,AID,reqId)
 {
-    //log.info("Publish to redis (shared) : Inputs :-  ServerID : "+JSON.stringify(SID)+" AttachmentDetails : "+AID);
     logger.debug('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] - [REDIS] -[FS] - Shared type server selection method starts  - SERVERS - %s - Application - %s ',reqId,JSON.stringify(SID),AID);
     if(client.connected) {
-        //log.info("Redis client is available");
-        //console.log('Redis client is available');
         logger.info('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] - [REDIS] -[FS] - Redis Server is online  ');
 
 try {
     SID.forEach(function (entry) {
         client.publish("CSCOMMAND:" + entry.id + ":downloadfile", AID, function (err, reply) {
             if (err) {
-                //log.error("Redis publishing error : "+err+" Details ServerID : "+entry.id+ " Attachment Data : "+AID);
                 logger.error('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] - [REDIS] -[FS] - Redis publishing error - CSCOMMAND:%s:downloadfile -> %s',reqId,entry.id,AID,err);
-                //console.log("error in saving " + entry
+
             }
             else if (reply) {
-                //log.info("Redis publishing is succeeded Result : "+reply+" ServerID "+entry.id+" Attachment Data : "+AID);
                 logger.debug('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] -[REDIS] - [FS] - Redis publishing  succeeded - CSCOMMAND:%s:downloadfile -> %s',reqId,entry.id,AID);
-                //console.log("Successfully saved " + entry)
             }
         });
     });
@@ -103,15 +91,11 @@ try {
 }
         catch(ex)
         {
-            //log.fatal("Exception occurred "+ex);
-            //console.log('Exception  occurred in publishing on redis "+ex');
             logger.error('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] -[REDIS] - [FS] - Exception  occurred in sever list publishing ',reqId,ex);
         }
     }
     else
     {
-        //log.error("Redis client is not available");
-        //console.log('Redis server is not available');
         logger.error('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] -[REDIS] - [FS] - Redis server is Offline ');
     }
 

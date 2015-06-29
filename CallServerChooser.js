@@ -14,52 +14,41 @@ var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("cspicker");
 
-log.info("\n.............................................CallServerPicker Starts....................................................\n");
-//log Done...............................................................................................................
 function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
 {
     try {
         logger.info('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [FS] - Values Received - Company %s Tenant %s',reqId,CompId,TenId);
-        //DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
-        DbConn.CloudEndUser.find({where: [{CompanyId:CompId},{TenantId:TenId},{SIPConnectivityProvision:'2'}]}).complete(function (err, CUserObject) {
+        DbConn.CloudEndUser.find({where: [{CompanyId:CompId},{TenantId:TenId},{SIPConnectivityProvision:'2'}]}).complete(function (errCloudUser, resCloudUser) {
 
-            if(err)
+            if(errCloudUser)
             {
-                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching CloudEndUser Company %s Tenant %s Provision 2',reqId,CompId,TenId,err);
-                callback(err,undefined);
+                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching CloudEndUser Company %s Tenant %s Provision 2',reqId,CompId,TenId,errCloudUser);
+                callback(errCloudUser,undefined);
             }
 
 
             else {
-                if (CUserObject) {
-                    //console.log("................................... Given Cloud End User found ................................ ");
-                    //log.info("Record found "+JSON.stringify(CUserObject));
-                    logger.info('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server found %s',reqId,CUserObject.id);
+                if (resCloudUser) {
+                    logger.info('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server found %s',reqId,resCloudUser.id);
                     try {
-                        //DbConn.FileUpload.find({where: [{UniqueId: rand2}]}).complete(function (err, ScheduleObject) {
 
-                        DbConn.SipNetworkProfile.findAll({where: [{id: CUserObject.SipNetworkProfileId}]}).complete(function (err, CSObject) {
+                        DbConn.SipNetworkProfile.findAll({where: [{id: resCloudUser.SipNetworkProfileId}]}).complete(function (errSipNwProf, resSipNwProf) {
 
-                            if (err) {
-                                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching SipNetworkProfile -  SipNetworkProfileId %s',reqId,CUserObject.SipNetworkProfileId,err);
-                                callback(err, undefined);
+                            if (errSipNwProf) {
+                                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching SipNetworkProfile -  SipNetworkProfileId %s',reqId,resCloudUser.SipNetworkProfileId,errSipNwProf);
+                                callback(errSipNwProf, undefined);
                             }
                             else
                             {
-                                if (CSObject) {
-                                //console.log("................................... Given Call server found ................................  : " + CSObject.CallServerId);
-                                //log.info("Record found " + JSON.stringify(CSObject));
-                                    logger.debug('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server %s found by SipNetworkProfile ',reqId,CSObject.CallServerId);
-                                callback(undefined, CSObject.CallServerId);
-                                //res.end();
+                                if (resSipNwProf) {
+                                    logger.debug('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server %s found by SipNetworkProfile ',reqId,resSipNwProf.CallServerId);
+                                callback(undefined, resSipNwProf.CallServerId);
                             }
 
                             else {
-                                // console.log(cloudEndObject);
-                                //console.log("................................... empty in  Call server searching ................................  : " + CSObject.CallServerId);
-                                    logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - No SipNetworkProfile record found -  SipNetworkProfileId %s',reqId,CUserObject.SipNetworkProfileId);
+                                    logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - No SipNetworkProfile record found -  SipNetworkProfileId %s',reqId,resCloudUser.SipNetworkProfileId);
 
-                                callback(new Error('No record found for id : ' + CUserObject.SipNetworkProfileId), undefined);
+                                callback(new Error('No record found for SipNetworkProfile id : ' + resCloudUser.SipNetworkProfileId), undefined);
                             }
                         }
 
@@ -68,32 +57,24 @@ function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
                         });
                     }
                     catch (ex) {
-                        console.log("Exce " + ex);
                         logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Exception on searching SipNetworkProfile records ',reqId,ex);
-                        // var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
-                        //log.fatal("Exception is occurred : "+ex);
                         callback(ex, undefined);
                     }
 
 
-                    //res.end();
                 }
 
 
                 else {
-                    // var jsonString = messageFormatter.FormatMessage(err, "ERROR found", false, null);
                     logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - No CloudEndUser Found - Company %s Tenant %s Provision 2',reqId,CompId,TenId);
-                    callback("No record Found", undefined);
-                    // res.end();
+                    callback(new Error("No Cloud end user record Found"), undefined);
                 }
             }
 
         });
     }
     catch (ex) {
-        console.log("Exce "+ex);
         logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Exception on starting method : ProfileTypeCallserverChooser ',reqId,ex);
-        //var jsonString = messageFormatter.FormatMessage(ex, "Exception", false, null);
         callback(ex, undefined);
     }
 }

@@ -12,12 +12,9 @@ var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 function DeveloperVoiceRecordingDownload(req,callback) {
     try {
-        //log.info('\n.............................................GetAttachmentMetaDataByID Starts....................................................\n');
-        console.log('Hit');
         DbConn.FileUpload.find({where: [{UniqueId: req},{ObjType: 'Voice Recording'}]}).complete(function (err, UploadRecObject) {
 
             if (err) {
-                //log.error("Error in searching for record : "+req+" Error : "+err);
                 callback(err, undefined);
             }
 
