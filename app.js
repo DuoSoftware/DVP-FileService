@@ -50,11 +50,14 @@ RestServer.use(restify.queryParser());
 
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
 
-RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProvision/:prov/ToCompany/:CmpID/Of/:TenID',function(req,res,next)
+//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProvision/:prov/ToCompany/:CmpID/Of/:TenID',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov',function(req,res,next)
 {
 // instance 1,
     // profile 2,
     //shared 3
+var Company=1;
+    var Tenant=1;
 
     var reqId='';
     try {
@@ -67,7 +70,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         {
 
         }
-        logger.debug('[DVP-FIleService.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.CmpID,req.params.TenID);
+        logger.debug('[DVP-FIleService.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,Company,Tenant);
 
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
@@ -95,14 +98,14 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
 
         if(ProvTyp==1) {
             try {
-                CallServerChooser.InstanceTypeCallserverChooser(req.params.CmpID, req.params.ten,reqId,function (errIns, resIns) {
+                CallServerChooser.InstanceTypeCallserverChooser(Company, Tenant,reqId,function (errIns, resIns) {
 
                     logger.debug('[DVP-FIleService.UploadFile] - [%s] - [FS] - Instance type is selected - %s',reqId,ProvTyp);
                     if (resIns) {
 
 
                         logger.info('[DVP-FIleService.UploadFile] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2,reqId,function (errFileSave, resFileSave) {
+                        FileHandler.SaveUploadFileDetails(Company, Tenant, file, rand2,reqId,function (errFileSave, resFileSave) {
                             if (resFileSave) {
 
 
@@ -170,11 +173,11 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         {
             try {
                 logger.debug('[DVP-FIleService.UploadFile] - [FILEHANDLER] - Profile type is selected - '+ProvTyp);
-                CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (errProf, resProf) {
+                CallServerChooser.ProfileTypeCallserverChooser(Company, Tenant,reqId, function (errProf, resProf) {
                     if (resProf) {
 
 
-                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2,reqId, function (errFileSave, resFileSave) {
+                        FileHandler.SaveUploadFileDetails(Company, Tenant, file, rand2,reqId, function (errFileSave, resFileSave) {
                             if (resFileSave) {
 
                                 RedisPublisher.RedisPublish(resProf, AttchVal,reqId, function (errRDS, resRDS) {
@@ -236,12 +239,12 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
         {
             try {
                 logger.debug('[DVP-FIleServic.UploadFile] - [FILEHANDLER] - Shared type is selected - '+ProvTyp);
-                CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten,reqId, function (errShared, resShared) {
+                CallServerChooser.SharedTypeCallsereverChooser(Company, Tenant,reqId, function (errShared, resShared) {
 
                     if (resShared) {
 
 
-                        FileHandler.SaveUploadFileDetails(req.params.cmp, req.params.ten, file, rand2,reqId, function (errFileSave, respg) {
+                        FileHandler.SaveUploadFileDetails(Company, Tenant, file, rand2,reqId, function (errFileSave, respg) {
                             if (respg) {
 
                                 logger.debug('[DVP-FIleService.FileHandler.UploadFile] - [FILEHANDLER] -[REDIS] - Redis publishing details  - ServerID :  ' + JSON.stringify(resShared) + ' Attachment values : ' + AttchVal);
@@ -351,9 +354,13 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProv
  */
 
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
-RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUpload/:cmp/:ten/:prov',function(req,res,next)
+//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUpload/:cmp/:ten/:prov',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,next)
 {
     var reqId='';
+    var Company=1;
+    var Tenant=1;
+    var prov=1;
     try {
 
         try
@@ -364,8 +371,9 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         {
 
         }
-        
-        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,req.params.cmp,req.params.ten);
+
+
+        logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
         
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
@@ -389,19 +397,19 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
 
         logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
 
-        var ProvTyp=req.params.prov;
+        var ProvTyp=prov;
 
         if(ProvTyp==1) {
             try {
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
-                CallServerChooser.InstanceTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (errIns, resIns) {
+                CallServerChooser.InstanceTypeCallserverChooser(Company, Tenant,reqId, function (errIns, resIns) {
 
 
                     if (resIns) {
 
 
                         logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten,1,reqId,function (errz, respg) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,1,reqId,function (errz, respg) {
                             if (respg) {
 
 
@@ -468,12 +476,12 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
         {
             logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
             try {
-                CallServerChooser.ProfileTypeCallserverChooser(req.params.cmp, req.params.ten,reqId, function (errProf, resProf) {
+                CallServerChooser.ProfileTypeCallserverChooser(Company,Tenant,reqId, function (errProf, resProf) {
 
                     if (resProf) {
 
                         logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten,1,reqId,function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,reqId,function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
@@ -538,7 +546,7 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
                     if (resShared) {
 
                         logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,req.params.cmp, req.params.ten,1,reqId, function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,reqId, function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resShared),AttchVal);
@@ -590,7 +598,8 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUploa
     return next();
 });
 
-RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/File/:uuid/AssignToApp/:AppId',function(req,res,next)
+
+RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',function(req,res,next)
 {
 
     DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),function(errMap,resMap)
@@ -607,8 +616,11 @@ RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/File/:uuid/AssignT
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
+//RestServer.get('/DVP/API/'+version+'/FIleService/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:AppID',function(req,res,next)
 {
+    var Company=1;
+    var Tenant=1;
     var reqId='';
     try {
 
@@ -620,11 +632,11 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/
         {
 
         }
-        // log.info("\n.............................................File Uploding Starts....................................................\n");
-        //log.info("Upload params  :- ComapnyId : "+req.params.cmp+" TenentId : "+req.params.ten+" Provision : "+req.params.prov);
 
-        logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,req.params.TenantId,req.params.CompanyId);
-        FileHandler.GetVoiceClipIdbyName(req.params.AppID,req.params.TenantId,req.params.CompanyId,reqId,function (err, resz) {
+
+
+        logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,Tenant,Company);
+        FileHandler.GetVoiceClipIdbyName(req.params.AppID,Tenant,Company,reqId,function (err, resz) {
             if (err) {
                 //console.log(err);
                 //
@@ -644,7 +656,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/
 
 
     catch(ex) {
-        logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.AppID,req.params.TenantId,req.params.CompanyId,ex);
+        logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Exception found starting activity GetVoiceAppClipsByName  - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.AppID,Tenant,Company,ex);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - Request response : %s ', reqId, jsonString);
         res.end(jsonString);
@@ -655,7 +667,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/ClipsOfApplication/
 
 
 
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req,res,next)
 {
     var reqId='';
     try {
@@ -704,7 +716,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/DownloadFile/:id',f
 
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/:UUID',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',function(req,res,next)
 {
     var reqId='';
     try {
@@ -757,7 +769,7 @@ RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/AttachmentMetaData/
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/FileInfoForApplicationId/:appId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req,res,next)
 {
     var reqId='';
     try {
