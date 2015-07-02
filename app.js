@@ -617,7 +617,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
 });
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:AppID',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',function(req,res,next)
 {
     var Company=1;
     var Tenant=1;
@@ -636,7 +636,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:AppID',function(req,res,
 
 
         logger.debug('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,Tenant,Company);
-        FileHandler.GetVoiceClipIdbyName(req.params.AppID,Tenant,Company,reqId,function (err, resz) {
+        FileHandler.GetVoiceClipIdbyName(req.params.name,req.params.AppID,Tenant,Company,reqId,function (err, resz) {
             if (err) {
                 //console.log(err);
                 //
@@ -820,6 +820,60 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req
     return next();
 
 });
+
+RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.appId);
+
+
+        FileHandler.PickFileWithAppID(req.params.UUID,parseInt(req.params.appId),reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.appId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.GetFileId] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
 
 RestServer.post('/DVP',function(req,res,next)
 {
