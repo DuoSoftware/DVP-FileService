@@ -323,14 +323,14 @@ function downF()
     source.on('error', function(err) { /* error */ });
 }
 //log done...............................................................................................................
-function GetAttachmentMetaDataByID(UUID,reqId,callback)
+function PickAttachmentMetaData(UUID,reqId,callback)
 {
     try {
         DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).complete(function (errFile, resFile) {
 
             if(errFile)
             {
-                logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,UUID);
+                logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,UUID);
                 callback(errFile, undefined);
 
             }
@@ -339,12 +339,12 @@ function GetAttachmentMetaDataByID(UUID,reqId,callback)
             {
                 if(resFile)
                 {
-                    logger.debug('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,UUID);
+                    logger.debug('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,UUID);
                     callback(undefined, resFile);
                 }
                 else
                 {
-                    logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,UUID);
+                    logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,UUID);
                     callback(new Error('No record found for id : '+UUID), undefined);
                 }
 
@@ -356,7 +356,7 @@ function GetAttachmentMetaDataByID(UUID,reqId,callback)
         });
     }
     catch (ex) {
-        logger.error('[DVP-FIleService.AttachmentMetaData] - [%s] - Exception occurred when starting GetAttachmentMetaDataByID %s ',reqId,UUID);
+        logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - Exception occurred when starting PickAttachmentMetaData %s ',reqId,UUID);
         callback(ex, undefined);
     }
 }
@@ -464,7 +464,7 @@ function DownloadFileByID(res,UUID,reqId,callback)
     }
 }
 
-function GetVoiceClipIdByName(FileName,AppId,Tid,Cid,reqId,callback)
+function PickVoiceClipByName(FileName,AppId,Tid,Cid,reqId,callback)
 {
 
     var AppID=AppId;
@@ -475,7 +475,7 @@ function GetVoiceClipIdByName(FileName,AppId,Tid,Cid,reqId,callback)
     {
         if(errApp)
         {
-            logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errApp);
+            logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errApp);
             callback(new Error("No application found"),undefined);
         }
         else
@@ -495,12 +495,12 @@ function GetVoiceClipIdByName(FileName,AppId,Tid,Cid,reqId,callback)
                             {
                                 if(err)
                                 {
-                                    logger.error('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
+                                    logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
                                     callback(err,undefined);
                                 }
                                 else
                                 {
-                                    logger.info('[DVP-FIleService.GetVoiceAppClipsByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,AppID,resFile);
+                                    logger.info('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,AppID,resFile);
                                     callback(undefined,resFile.UniqueId);
                                 }
                             });
@@ -566,7 +566,7 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
 
 
 
-function GetFileId(appid,reqId,callback)
+function PickFileInfo(appid,reqId,callback)
 {
     try
     {
@@ -628,10 +628,10 @@ function PickFileWithAppID(UUID,appid,reqId,callback)
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
-module.exports.GetAttachmentMetaDataByID = GetAttachmentMetaDataByID;
+module.exports.PickAttachmentMetaData = PickAttachmentMetaData;
 module.exports.DownloadFileByID = DownloadFileByID;
-module.exports.GetVoiceClipIdbyName = GetVoiceClipIdByName;
-module.exports.GetFileId = GetFileId;
+module.exports.PickVoiceClipByName = PickVoiceClipByName;
+module.exports.PickFileInfo = PickFileInfo;
 module.exports.PickFileWithAppID = PickFileWithAppID;
 
 
