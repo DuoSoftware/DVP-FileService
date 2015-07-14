@@ -786,7 +786,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req
         logger.debug('[DVP-FIleService.PickFileInfo] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.appId);
 
 
-        FileHandler.PickFileInfo(parseInt(req.params.appId),reqId,function(err,resz)
+        FileHandler.PickFileInfo(req.params.appId,reqId,function(err,resz)
         {
             if(err)
             {

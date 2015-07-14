@@ -523,46 +523,48 @@ function PickVoiceAppClipById(RecId,callback) {
 
 function FileAssignWithApplication(fileUID,appID,callback)
 {
-    try
+    if(fileUID&&appID&&!isNaN(appID))
     {
-        DbConn.FileUpload.find({where:[{UniqueId:fileUID}]}).complete(function(errFile,resFile)
+        try
         {
-            if(errFile)
+            DbConn.FileUpload.find({where:[{UniqueId:fileUID}]}).complete(function(errFile,resFile)
             {
-                callback(errFile,undefined);
-            }else
-            {
-                if(resFile==null)
+                if(errFile)
                 {
-                    callback(new Error("No file"),callback);
-                }
-                else
+                    callback(errFile,undefined);
+                }else
                 {
-                    DbConn.Application.find({where:[{id:appID}]}).complete(function(errApp,resApp)
+                    if(resFile==null)
                     {
-                        if(errApp)
+                        callback(new Error("No file"),callback);
+                    }
+                    else
+                    {
+                        DbConn.Application.find({where:[{id:appID}]}).complete(function(errApp,resApp)
                         {
-                            callback(errApp,undefined);
-
-                        }
-                        else
-                        {
-                            if(resApp==null)
+                            if(errApp)
                             {
-                                callback(new Error("No Application"),undefined);
+                                callback(errApp,undefined);
+
                             }
                             else
                             {
-                                try
+                                if(resApp==null)
                                 {
-                                    DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId}]}).complete(function(errVFileNm,resVFileNm)
+                                    callback(new Error("No Application"),undefined);
+                                }
+                                else
+                                {
+                                    try
                                     {
-                                        if(errVFileNm)
+                                        DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId}]}).complete(function(errVFileNm,resVFileNm)
                                         {
-                                            callback(errVFileNm,undefined);
-                                        }
-                                        else
-                                        {
+                                            if(errVFileNm)
+                                            {
+                                                callback(errVFileNm,undefined);
+                                            }
+                                            else
+                                            {
 
 
                                                 for (var index in resVFileNm) {
@@ -580,25 +582,31 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                                     }
                                                 });
 
-                                        }
-                                    });
+                                            }
+                                        });
 
-                                }
-                                catch(ex)
-                                {
-                                    callback(ex,undefined);
+                                    }
+                                    catch(ex)
+                                    {
+                                        callback(ex,undefined);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
+        catch(ex)
+        {
+            callback(ex,undefined);
+        }
     }
-    catch(ex)
+    else
     {
-        callback(ex,undefined);
+        callback(new Error("Invalid Inputs"),undefined);
     }
+
 }
 
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
