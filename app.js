@@ -384,16 +384,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
         var DisplayName=DisplyArr[DisplyArr.length-1];
 
-        var ValObj={
 
-            "tenent":req.params.ten,
-            "company":req.params.cmp,
-            "filename":file.name,
-            "type":file.type,
-            "id":rand2
-        };
-
-        var AttchVal=JSON.stringify(ValObj);
 
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
 
@@ -601,17 +592,36 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
 RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',function(req,res,next)
 {
+    var reqId='';
+
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
 
     DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),function(errMap,resMap)
     {
         if(errMap)
         {
-            console.log(errMap);
-        }else{
-            console.log(resMap);
+            //console.log(errMap);
+            var jsonString = messageFormatter.FormatMessage(errMap, "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-FIleService.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resMap);
+            logger.debug('[DVP-FIleService.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
         }
 
-        res.end();
+        //res.end();
     });
     next();
 });
@@ -635,7 +645,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-        logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.Filename,req.params.AppName,Tenant,Company);
+        logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.name,req.params.AppID,Tenant,Company);
         FileHandler.PickVoiceClipByName(req.params.name,req.params.AppID,Tenant,Company,reqId,function (err, resz) {
             if (err) {
                 //console.log(err);

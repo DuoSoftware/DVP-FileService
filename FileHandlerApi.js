@@ -482,12 +482,16 @@ function DownloadFileByID(res,UUID,reqId,callback)
 
 }
 
-function PickVoiceClipByName(FileName,AppId,Tid,Cid,reqId,callback)
+function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
 {
+    console.log(FileName);
+    console.log(AppID);
+
+
 
     if(FileName&&AppID&&!isNaN(AppID))
     {
-        var AppID=AppId;
+
         var TenantId=Tid;
         var CompanyId=Cid;
 
@@ -506,10 +510,11 @@ function PickVoiceClipByName(FileName,AppId,Tid,Cid,reqId,callback)
                     {
                         if(errVersion)
                         {
-
-                        }else
+callback(errVersion,undefined);
+                        }
+                        else
                         {
-                            if(resVersion!=0)
+                            if(resVersion)
                             {
                                 DbConn.FileUpload.find({where:[{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id},{Version:resVersion},{Filename:FileName}]}).complete(function(err,resFile)
                                 {
@@ -520,8 +525,17 @@ function PickVoiceClipByName(FileName,AppId,Tid,Cid,reqId,callback)
                                     }
                                     else
                                     {
-                                        logger.info('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result - %s',reqId,AppID,resFile);
-                                        callback(undefined,resFile.UniqueId);
+                                        if(resFile)
+                                        {
+                                            logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
+                                            callback(undefined,resFile.UniqueId);
+                                        }
+                                        else
+                                        {
+                                            logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - No record found for Application %s  ',reqId,AppID);
+                                            callback(new Error("No record found for Application"),undefined);
+                                        }
+
                                     }
                                 });
                             }
@@ -559,24 +573,26 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
 {
     try
     {
-        logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
+        logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version  File of %s',reqId,FileName);
         //DbConn.FileUpload.find({where: [{Filename: FObj.name}]}).complete(function (err, CurFileObject)
         DbConn.FileUpload.max('Version',{where: [{Filename: FileName},{CompanyId:Company},{TenantId:Tenant},{ApplicationId:AppID}]}).complete(function (err, CurFileObject)
         {
             if(err)
             {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,err);
+                logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FileName,err);
                 callback(err,undefined);
             }
             else
             {
                 if(CurFileObject)
                 {
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((CurFileObject)+1));
+
+
+                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of %s is found and New version updated',reqId,FileName);
                     callback(undefined,parseInt(CurFileObject));
                 }
                 else{
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
+                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FileName,1);
                     callback(undefined,0);
                 }
 
@@ -585,7 +601,7 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
     }
     catch (ex)
     {
-        logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,FObj.name,ex);
+        logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,ex);
         callback(ex,undefined);
     }
 }

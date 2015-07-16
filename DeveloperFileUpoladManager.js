@@ -102,7 +102,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
                         }
                         else {
                             logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                            callback(undefined, NewUploadObj.UniqueId);
+                            callback(undefined, resUpFile.UniqueId);
                         }
 
 
@@ -557,7 +557,7 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                 {
                                     try
                                     {
-                                        DbConn.FileUpload.findAll({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId}]}).complete(function(errVFileNm,resVFileNm)
+                                        DbConn.FileUpload.find({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:appID}]}).complete(function(errVFileNm,resVFileNm)
                                         {
                                             if(errVFileNm)
                                             {
@@ -567,20 +567,38 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                             {
 
 
-                                                for (var index in resVFileNm) {
-                                                    resVFileNm[index].setApplication(null).complete(function (errNull, resNull) {
+                                                //for (var index in resVFileNm) {
+
+                                                if(fileUID==resVFileNm.UniqueId)
+                                                {
+                                                    callback(undefined,new Object("Already assigned"));
+                                                }
+                                                else
+                                                {
+                                                    resVFileNm.setApplication(null).complete(function (errNull, resNull) {
+
+                                                        if(errNull)
+                                                        {
+                                                            callback(errNull,undefined);
+                                                        }
+                                                        else
+                                                        {
+                                                            resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                                if (errMap) {
+                                                                    callback(errMap, undefined);
+                                                                }
+                                                                else {
+                                                                    callback(undefined,resMap);
+                                                                }
+                                                            });
+                                                        }
 
                                                     });
-
                                                 }
-                                                resFile.setApplication(resApp).complete(function (errMap, resMap) {
-                                                    if (errMap) {
-                                                        callback(errMap, undefined);
-                                                    }
-                                                    else {
-                                                        callback(undefined,resMap);
-                                                    }
-                                                });
+
+
+                                               // }
+
 
                                             }
                                         });
