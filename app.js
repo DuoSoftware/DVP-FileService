@@ -385,6 +385,17 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
         var DisplayName=DisplyArr[DisplyArr.length-1];
 
 
+        var ValObj={
+
+            "tenent":Tenant,
+            "company":Company,
+            "filename":file.name,
+            "type":file.type,
+            "id":rand2
+        };
+
+        var AttchVal=JSON.stringify(ValObj);
+
 
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
 
