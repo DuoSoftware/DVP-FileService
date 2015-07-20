@@ -510,7 +510,7 @@ function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
                     {
                         if(errVersion)
                         {
-callback(errVersion,undefined);
+                                callback(errVersion,undefined);
                         }
                         else
                         {
@@ -528,7 +528,7 @@ callback(errVersion,undefined);
                                         if(resFile)
                                         {
                                             logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
-                                            callback(undefined,resFile.UniqueId);
+                                            callback(undefined,resFile);
                                         }
                                         else
                                         {
