@@ -13,27 +13,50 @@ function FindCurrentVersion(FObj,reqId,callback)
     {
         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
         //DbConn.FileUpload.find({where: [{Filename: FObj.name}]}).complete(function (err, CurFileObject)
-        DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name}]}).complete(function (err, CurFileObject)
-        {
-            if(err)
-            {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,err);
-                callback(err,undefined);
-            }
-            else
-            {
-                if(CurFileObject)
-                {
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((CurFileObject)+1));
-                    callback(undefined,parseInt((CurFileObject)+1));
-                }
-                else{
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
-                    callback(undefined,1);
-                }
+        DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name}]}).then(function (resFile) {
 
+            if(resFile)
+            {
+                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((resFile)+1));
+                callback(undefined,parseInt((resFile)+1));
             }
+            else{
+                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
+                callback(undefined,1);
+            }
+
+        }).catch(function (errFile) {
+
+            logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,errFile);
+            callback(errFile,undefined);
+
         });
+
+
+
+
+
+        /*complete(function (err, CurFileObject)
+         {
+         if(err)
+         {
+         logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,err);
+         callback(err,undefined);
+         }
+         else
+         {
+         if(CurFileObject)
+         {
+         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((CurFileObject)+1));
+         callback(undefined,parseInt((CurFileObject)+1));
+         }
+         else{
+         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
+         callback(undefined,1);
+         }
+
+         }
+         });*/
     }
     catch (ex)
     {
@@ -90,23 +113,38 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
                         }
                     );
                     logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
-                    NewUploadObj.save().complete(function (errUpFile, resUpFile) {
-                        if (errUpFile) {
+                    NewUploadObj.save().then(function (resUpFile) {
 
-                            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
-                            callback(errUpFile, undefined);
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                        callback(undefined, resUpFile.UniqueId);
 
+                    }).catch(function (errUpFile) {
 
+                        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+                        callback(errUpFile, undefined);
 
-
-                        }
-                        else {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                            callback(undefined, resUpFile.UniqueId);
-                        }
 
 
                     });
+
+
+                    /*complete(function (errUpFile, resUpFile) {
+                     if (errUpFile) {
+
+                     logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+                     callback(errUpFile, undefined);
+
+
+
+
+                     }
+                     else {
+                     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                     callback(undefined, resUpFile.UniqueId);
+                     }
+
+
+                     });*/
                 }
                 catch(ex)
                 {
@@ -129,6 +167,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
 
 
 }
+
 
 function UploadAssignToApplication(Fileuuid,AppId,version,reqId,callback)
 {
@@ -180,160 +219,519 @@ function UploadAssignToApplication(Fileuuid,AppId,version,reqId,callback)
 
         DbConn.FileUpload
             .findAll({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}]})
-            .complete(function (err, FileObj)
-            {
-                if(err)
-                {
-                    //console.log("Err "+err);
-                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching uploaded file %s  with  Application %s',reqId,Fileuuid,AppId,err);
-                    callback(err,undefined);
-                }
-                else
-                {
-                    if(FileObj)
-                    {
-                        //console.log("Result length "+FileObj.length);
-                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  %s Records found for uploaded file %s  with Application %s',reqId,FileObj.length,Fileuuid,AppId,err);
-                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Searching for Application %s',reqId,AppId);
-                        try {
-                            DbConn.Application.find({where: [{id: AppId}]}).complete(function (errz, AppObj) {
+            .then(function (resFile) {
 
-                                if (errz) {
-                                    //console.log("Err " + errz);
-                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,AppId,err);
-                                    callback(errz, undefined);
-                                }
-                                else {
-                                    if (FileObj.length == 0) {
-                                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Only one file found %s',reqId,JSON.stringify(FileObj));
-                                        try
-                                        {
-                                            DbConn.FileUpload
-                                                .find({where: [{UniqueId: Fileuuid}, {ObjType: 'Voice app clip'}, {Version: version}]})
-                                                .complete(function (errFile, ResFile) {
-                                                    if (errFile) {
-                                                        //console.log("Error " + errFile);
-                                                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , version : %s   ',reqId,Fileuuid,version,err);
-                                                        callback(errFile, undefined);
-                                                    }
-                                                    else {
-                                                        try{
-                                                            ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
-                                                                if (errupdt) {
-                                                                    //console.log("Error " + errupdt);
-                                                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while attaching uploaded file %s to application &s',reqId,ResFile,AppObj,errupdt);
-                                                                    callback(errupdt, undefined);
-                                                                }
-                                                                else
-                                                                {
-                                                                    logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Attaching uploaded file %s to application &s is succeeded',reqId,ResFile,AppObj);
-                                                                    callback(undefined, "Done");
-                                                                }
-                                                            });
-                                                        }catch(ex)
-                                                        {
-                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when attaching uploaded file to application method starts',reqId);
-                                                            callback(ex,undefined);
-                                                        }
-                                                    }
-                                                });
-                                        }
-                                        catch(ex)
-                                        {
-                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when Uploaded file searching starts',reqId);
-                                            callback(ex,undefined);
-                                        }
-                                    }
-                                    else {
-                                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   %s of Uploaded files found :  %s',reqId,(FileObj.length+1),JSON.stringify(FileObj));
-                                        for (var index in FileObj) {
-                                            //console.log("Result length " + FileObj[index]);
+                if(resFile)
+                {
+                    //console.log("Result length "+FileObj.length);
+                    logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  %s Records found for uploaded file %s  with Application %s',reqId,resFile.length,Fileuuid,AppId,err);
+                    logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Searching for Application %s',reqId,AppId);
+                    try {
+                        DbConn.Application.find({where: [{id: AppId}]}).then(function (resApp) {
 
-                                            if (FileObj[index].Version == version) {
-                                                logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Version %s is already up to date of file % ',reqId,FileObj[index].Version,FileObj[index].Filename);
-                                                callback("Already up to date", undefined);
+                            if (resFile.length == 0) {
+                                logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Only one file found %s',reqId,JSON.stringify(resFile));
+                                try
+                                {
+                                    DbConn.FileUpload
+                                        .find({where: [{UniqueId: Fileuuid}, {ObjType: 'Voice app clip'}, {Version: version}]})
+                                        .complete(function (errFile, ResFile) {
+                                            if (errFile) {
+                                                //console.log("Error " + errFile);
+                                                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , version : %s   ',reqId,Fileuuid,version,err);
+                                                callback(errFile, undefined);
                                             }
                                             else {
-                                                try
-                                                {
-                                                    logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Make Files uploads to null of Application %s ',reqId,JSON.stringify(AppObj));
-                                                    AppObj.setFileUpload(null).complete(function (errRem, resRem) {
-                                                        if (errRem) {
-                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when Make Files uploads to null of Application %s',reqId,JSON.stringify(AppObj),errRem);
-                                                            callback(errRem, undefined);
+                                                try{
+                                                    ResFile.setApplication(resApp).complete(function (errupdt, resupdt) {
+                                                        if (errupdt) {
+                                                            //console.log("Error " + errupdt);
+                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while attaching uploaded file %s to application &s',reqId,ResFile,resApp,errupdt);
+                                                            callback(errupdt, undefined);
                                                         }
-                                                        else {
-                                                            //console.log(JSON.stringify(FileObj[index]) + " null");
-                                                            try{
-                                                                DbConn.FileUpload
-                                                                    .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
-                                                                    .complete(function (errFile, ResFile) {
-                                                                        if (errFile) {
-                                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
-                                                                            callback(errFile, undefined);
-                                                                        }
-                                                                        else {
-                                                                            try{
-                                                                                logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj));
-                                                                                ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
-                                                                                    if (errupdt) {
-                                                                                        //console.log("Error " + errupdt);
-                                                                                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
-                                                                                        callback(errupdt, undefined);
-                                                                                    }
-                                                                                    else {
-                                                                                        logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
-                                                                                        callback(undefined, "Done");
-                                                                                    }
-                                                                                });
-                                                                            }
-                                                                            catch(ex)
-                                                                            {
-                                                                                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
-                                                                                callback(ex,undefined);
-                                                                            }
-                                                                        }
-                                                                    });
-                                                            }
-                                                            catch (ex)
-                                                            {
-                                                                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching uploaded file records',reqId,ex);
-                                                                callback(ex,undefined);
-                                                            }
+                                                        else
+                                                        {
+                                                            logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Attaching uploaded file %s to application &s is succeeded',reqId,ResFile,resApp);
+                                                            callback(undefined, "Done");
                                                         }
-
                                                     });
-                                                }
-                                                catch (ex)
+                                                }catch(ex)
                                                 {
-                                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when detach Uploaded files from Application',reqId,ex);
+                                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when attaching uploaded file to application method starts',reqId);
                                                     callback(ex,undefined);
                                                 }
                                             }
+                                        });
+                                }
+                                catch(ex)
+                                {
+                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when Uploaded file searching starts',reqId);
+                                    callback(ex,undefined);
+                                }
+                            }
+                            else {
+                                logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   %s of Uploaded files found :  %s',reqId,(resFile.length+1),JSON.stringify(resFile));
+                                for (var index in resFile) {
+                                    //console.log("Result length " + FileObj[index]);
+
+                                    if (resFile[index].Version == version) {
+                                        logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Version %s is already up to date of file % ',reqId,resFile[index].Version,resFile[index].Filename);
+                                        callback(new Error("Already up to date"), undefined);
+                                    }
+                                    else {
+                                        try
+                                        {
+                                            logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Make Files uploads to null of Application %s ',reqId,JSON.stringify(resApp));
+                                            resApp.setFileUpload(null).then(function (resRem) {
+
+
+                                                try{
+                                                    DbConn.FileUpload
+                                                        .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
+                                                        .then(function (ResFile) {
+
+                                                            try{
+                                                                logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp));
+                                                                ResFile.setApplication(resApp).then(function (resupdt) {
+
+                                                                    logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(resApp));
+                                                                    callback(undefined, resupdt);
+                                                                }).catch(function (errupdt) {
+                                                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                                                    callback(errupdt, undefined);
+                                                                });
+
+
+
+                                                                /* complete(function (errupdt, resupdt) {
+                                                                 if (errupdt) {
+                                                                 //console.log("Error " + errupdt);
+                                                                 logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                                                 callback(errupdt, undefined);
+                                                                 }
+                                                                 else {
+                                                                 logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                                                 callback(undefined, "Done");
+                                                                 }
+                                                                 });*/
+                                                            }
+                                                            catch(ex)
+                                                            {
+                                                                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
+                                                                callback(ex,undefined);
+                                                            }
+
+                                                        }).catch(function (errFile) {
+                                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
+                                                            callback(errFile, undefined);
+                                                        });
+                                                    /*.complete(function (errFile, ResFile) {
+                                                     if (errFile) {
+                                                     logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
+                                                     callback(errFile, undefined);
+                                                     }
+                                                     else {
+                                                     try{
+                                                     logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp));
+                                                     ResFile.setApplication(resApp).complete(function (errupdt, resupdt) {
+                                                     if (errupdt) {
+                                                     //console.log("Error " + errupdt);
+                                                     logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                                     callback(errupdt, undefined);
+                                                     }
+                                                     else {
+                                                     logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                                     callback(undefined, "Done");
+                                                     }
+                                                     });
+                                                     }
+                                                     catch(ex)
+                                                     {
+                                                     logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
+                                                     callback(ex,undefined);
+                                                     }
+                                                     }
+                                                     });*/
+                                                }
+                                                catch (ex)
+                                                {
+                                                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching uploaded file records',reqId,ex);
+                                                    callback(ex,undefined);
+                                                }
+
+
+
+                                            }).catch(function (errRem) {
+
+                                                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when Make Files uploads to null of Application %s',reqId,JSON.stringify(resApp),errRem);
+                                                callback(errRem, undefined);
+
+                                            });
+
+
+                                            /*complete(function (errRem, resRem) {
+                                             if (errRem) {
+                                             logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when Make Files uploads to null of Application %s',reqId,JSON.stringify(resApp),errRem);
+                                             callback(errRem, undefined);
+                                             }
+                                             else {
+                                             //console.log(JSON.stringify(FileObj[index]) + " null");
+                                             try{
+                                             DbConn.FileUpload
+                                             .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
+                                             .complete(function (errFile, ResFile) {
+                                             if (errFile) {
+                                             logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
+                                             callback(errFile, undefined);
+                                             }
+                                             else {
+                                             try{
+                                             logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp));
+                                             ResFile.setApplication(resApp).complete(function (errupdt, resupdt) {
+                                             if (errupdt) {
+                                             //console.log("Error " + errupdt);
+                                             logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                             callback(errupdt, undefined);
+                                             }
+                                             else {
+                                             logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(resApp),errupdt);
+                                             callback(undefined, "Done");
+                                             }
+                                             });
+                                             }
+                                             catch(ex)
+                                             {
+                                             logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
+                                             callback(ex,undefined);
+                                             }
+                                             }
+                                             });
+                                             }
+                                             catch (ex)
+                                             {
+                                             logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching uploaded file records',reqId,ex);
+                                             callback(ex,undefined);
+                                             }
+                                             }
+
+                                             });*/
+                                        }
+                                        catch (ex)
+                                        {
+                                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when detach Uploaded files from Application',reqId,ex);
+                                            callback(ex,undefined);
                                         }
                                     }
                                 }
+                            }
 
-                            });
+                        }).catch(function (errApp) {
 
-                        }
-                        catch(ex)
-                        {
-                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching for Application',reqId,ex);
-                            callback(ex,undefined);
-                        }
+                            logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,AppId,err);
+                            callback(errApp, undefined);
+
+                        });
 
 
+
+                        /*complete(function (errz, AppObj) {
+
+                         if (errz) {
+                         //console.log("Err " + errz);
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,AppId,err);
+                         callback(errz, undefined);
+                         }
+                         else {
+                         if (resFile.length == 0) {
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Only one file found %s',reqId,JSON.stringify(resFile));
+                         try
+                         {
+                         DbConn.FileUpload
+                         .find({where: [{UniqueId: Fileuuid}, {ObjType: 'Voice app clip'}, {Version: version}]})
+                         .complete(function (errFile, ResFile) {
+                         if (errFile) {
+                         //console.log("Error " + errFile);
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , version : %s   ',reqId,Fileuuid,version,err);
+                         callback(errFile, undefined);
+                         }
+                         else {
+                         try{
+                         ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+                         if (errupdt) {
+                         //console.log("Error " + errupdt);
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while attaching uploaded file %s to application &s',reqId,ResFile,AppObj,errupdt);
+                         callback(errupdt, undefined);
+                         }
+                         else
+                         {
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Attaching uploaded file %s to application &s is succeeded',reqId,ResFile,AppObj);
+                         callback(undefined, "Done");
+                         }
+                         });
+                         }catch(ex)
+                         {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when attaching uploaded file to application method starts',reqId);
+                         callback(ex,undefined);
+                         }
+                         }
+                         });
+                         }
+                         catch(ex)
+                         {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when Uploaded file searching starts',reqId);
+                         callback(ex,undefined);
+                         }
+                         }
+                         else {
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   %s of Uploaded files found :  %s',reqId,(resFile.length+1),JSON.stringify(resFile));
+                         for (var index in resFile) {
+                         //console.log("Result length " + FileObj[index]);
+
+                         if (resFile[index].Version == version) {
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Version %s is already up to date of file % ',reqId,resFile[index].Version,resFile[index].Filename);
+                         callback("Already up to date", undefined);
+                         }
+                         else {
+                         try
+                         {
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Make Files uploads to null of Application %s ',reqId,JSON.stringify(AppObj));
+                         AppObj.setFileUpload(null).complete(function (errRem, resRem) {
+                         if (errRem) {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when Make Files uploads to null of Application %s',reqId,JSON.stringify(AppObj),errRem);
+                         callback(errRem, undefined);
+                         }
+                         else {
+                         //console.log(JSON.stringify(FileObj[index]) + " null");
+                         try{
+                         DbConn.FileUpload
+                         .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
+                         .complete(function (errFile, ResFile) {
+                         if (errFile) {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
+                         callback(errFile, undefined);
+                         }
+                         else {
+                         try{
+                         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj));
+                         ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+                         if (errupdt) {
+                         //console.log("Error " + errupdt);
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
+                         callback(errupdt, undefined);
+                         }
+                         else {
+                         logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
+                         callback(undefined, "Done");
+                         }
+                         });
+                         }
+                         catch(ex)
+                         {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
+                         callback(ex,undefined);
+                         }
+                         }
+                         });
+                         }
+                         catch (ex)
+                         {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching uploaded file records',reqId,ex);
+                         callback(ex,undefined);
+                         }
+                         }
+
+                         });
+                         }
+                         catch (ex)
+                         {
+                         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when detach Uploaded files from Application',reqId,ex);
+                         callback(ex,undefined);
+                         }
+                         }
+                         }
+                         }
+                         }
+
+                         });*/
 
                     }
-                    else
+                    catch(ex)
                     {
-                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   No uploaded file record found for file name %s',reqId,Fileuuid,ex);
-                        callback("err",undefined);
+                        logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching for Application',reqId,ex);
+                        callback(ex,undefined);
                     }
+
+
+
+                }
+                else
+                {
+                    logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   No uploaded file record found for file name %s',reqId,Fileuuid,ex);
+                    callback(new Error("No file found"),undefined);
                 }
 
+            }).catch(function (errFile) {
+
+                logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching uploaded file %s  with  Application %s',reqId,Fileuuid,AppId,errFile);
+                callback(errFile,undefined);
+
             });
+
+
+        /*complete(function (err, FileObj)
+         {
+         if(err)
+         {
+         //console.log("Err "+err);
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching uploaded file %s  with  Application %s',reqId,Fileuuid,AppId,err);
+         callback(err,undefined);
+         }
+         else
+         {
+         if(FileObj)
+         {
+         //console.log("Result length "+FileObj.length);
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  %s Records found for uploaded file %s  with Application %s',reqId,FileObj.length,Fileuuid,AppId,err);
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Searching for Application %s',reqId,AppId);
+         try {
+         DbConn.Application.find({where: [{id: AppId}]}).complete(function (errz, AppObj) {
+
+         if (errz) {
+         //console.log("Err " + errz);
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for application %s  ',reqId,AppId,err);
+         callback(errz, undefined);
+         }
+         else {
+         if (FileObj.length == 0) {
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Only one file found %s',reqId,JSON.stringify(FileObj));
+         try
+         {
+         DbConn.FileUpload
+         .find({where: [{UniqueId: Fileuuid}, {ObjType: 'Voice app clip'}, {Version: version}]})
+         .complete(function (errFile, ResFile) {
+         if (errFile) {
+         //console.log("Error " + errFile);
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while searching for Uploaded file %s with object type : Voice app clip , version : %s   ',reqId,Fileuuid,version,err);
+         callback(errFile, undefined);
+         }
+         else {
+         try{
+         ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+         if (errupdt) {
+         //console.log("Error " + errupdt);
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -  Error occurred while attaching uploaded file %s to application &s',reqId,ResFile,AppObj,errupdt);
+         callback(errupdt, undefined);
+         }
+         else
+         {
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Attaching uploaded file %s to application &s is succeeded',reqId,ResFile,AppObj);
+         callback(undefined, "Done");
+         }
+         });
+         }catch(ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when attaching uploaded file to application method starts',reqId);
+         callback(ex,undefined);
+         }
+         }
+         });
+         }
+         catch(ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Exception occurred when Uploaded file searching starts',reqId);
+         callback(ex,undefined);
+         }
+         }
+         else {
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   %s of Uploaded files found :  %s',reqId,(FileObj.length+1),JSON.stringify(FileObj));
+         for (var index in FileObj) {
+         //console.log("Result length " + FileObj[index]);
+
+         if (FileObj[index].Version == version) {
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Version %s is already up to date of file % ',reqId,FileObj[index].Version,FileObj[index].Filename);
+         callback("Already up to date", undefined);
+         }
+         else {
+         try
+         {
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] -   Make Files uploads to null of Application %s ',reqId,JSON.stringify(AppObj));
+         AppObj.setFileUpload(null).complete(function (errRem, resRem) {
+         if (errRem) {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when Make Files uploads to null of Application %s',reqId,JSON.stringify(AppObj),errRem);
+         callback(errRem, undefined);
+         }
+         else {
+         //console.log(JSON.stringify(FileObj[index]) + " null");
+         try{
+         DbConn.FileUpload
+         .find({where: [{UniqueId: Fileuuid},{ApplicationId: AppId}, {Version: version}]})
+         .complete(function (errFile, ResFile) {
+         if (errFile) {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred while searching for Uploaded file %s',reqId,Fileuuid,errFile);
+         callback(errFile, undefined);
+         }
+         else {
+         try{
+         logger.debug('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj));
+         ResFile.setApplication(AppObj).complete(function (errupdt, resupdt) {
+         if (errupdt) {
+         //console.log("Error " + errupdt);
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Error occurred when mapping Uploaded file %s with Application %s',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
+         callback(errupdt, undefined);
+         }
+         else {
+         logger.info('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Mapping Uploaded file %s with Application %s is succeeded ',reqId,JSON.stringify(ResFile),JSON.stringify(AppObj),errupdt);
+         callback(undefined, "Done");
+         }
+         });
+         }
+         catch(ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when mapping Uploaded file with Application process starts',reqId,ex);
+         callback(ex,undefined);
+         }
+         }
+         });
+         }
+         catch (ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching uploaded file records',reqId,ex);
+         callback(ex,undefined);
+         }
+         }
+
+         });
+         }
+         catch (ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when detach Uploaded files from Application',reqId,ex);
+         callback(ex,undefined);
+         }
+         }
+         }
+         }
+         }
+
+         });
+
+         }
+         catch(ex)
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   Exception occurred when searching for Application',reqId,ex);
+         callback(ex,undefined);
+         }
+
+
+
+         }
+         else
+         {
+         logger.error('[DVP-FIleService.UploadAssignToApplication] - [%s] - [PGSQL] -   No uploaded file record found for file name %s',reqId,Fileuuid,ex);
+         callback("err",undefined);
+         }
+         }
+
+         });*/
     }
     catch(ex)
     {
@@ -534,9 +932,9 @@ function FileAssignWithApplication(fileUID,appID,callback)
                     callback(errFile,undefined);
                 }else
                 {
-                    if(resFile==null)
+                    if(!resFile)
                     {
-                        callback(new Error("No file"),callback);
+                        callback(new Error("No file"),undefined);
                     }
                     else
                     {
@@ -549,7 +947,7 @@ function FileAssignWithApplication(fileUID,appID,callback)
                             }
                             else
                             {
-                                if(resApp==null)
+                                if(!resApp)
                                 {
                                     callback(new Error("No Application"),undefined);
                                 }
@@ -566,38 +964,76 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                             else
                                             {
 
-
-                                                //for (var index in resVFileNm) {
-
-                                                if(fileUID==resVFileNm.UniqueId)
+                                                if(!resVFileNm)
                                                 {
-                                                    callback(undefined,new Object("Already assigned"));
+                                                    //callback(new Error("No suchFile"),undefined) ;
+                                                    resFile.setApplication(resApp).then(function (resAdd) {
+
+                                                        callback(undefined,resAdd);
+                                                    }).catch(function (errAdd) {
+
+                                                        callback(errAdd,undefined);
+                                                    });
+
+
                                                 }
                                                 else
                                                 {
-                                                    resVFileNm.setApplication(null).complete(function (errNull, resNull) {
+                                                    if(fileUID==resVFileNm.UniqueId)
+                                                    {
+                                                        callback(undefined,new Object("Already assigned"));
+                                                    }
+                                                    else
+                                                    {
+                                                        resVFileNm.setApplication(null).then(function (resNull) {
 
-                                                        if(errNull)
-                                                        {
-                                                            callback(errNull,undefined);
-                                                        }
-                                                        else
-                                                        {
-                                                            resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                            resFile.setApplication(resApp).then(function (resMap) {
+                                                                callback(undefined,resMap);
+                                                            }).catch(function (errMap) {
+                                                                callback(errMap, undefined);
+                                                            });
+
+                                                               /* complete(function (errMap, resMap) {
                                                                 if (errMap) {
                                                                     callback(errMap, undefined);
                                                                 }
                                                                 else {
                                                                     callback(undefined,resMap);
                                                                 }
-                                                            });
-                                                        }
+                                                            });*/
 
-                                                    });
+                                                        }).catch(function (errNull) {
+                                                            callback(errNull,undefined);
+                                                        });
+
+
+                                                            /*complete(function (errNull, resNull) {
+
+                                                            if(errNull)
+                                                            {
+                                                                callback(errNull,undefined);
+                                                            }
+                                                            else
+                                                            {
+                                                                resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                                    if (errMap) {
+                                                                        callback(errMap, undefined);
+                                                                    }
+                                                                    else {
+                                                                        callback(undefined,resMap);
+                                                                    }
+                                                                });
+                                                            }
+
+                                                        });*/
+                                                    }
                                                 }
+                                                //for (var index in resVFileNm) {
 
 
-                                               // }
+
+
+                                                // }
 
 
                                             }
