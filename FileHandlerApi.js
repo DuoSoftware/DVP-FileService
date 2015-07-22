@@ -679,7 +679,7 @@ function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
                         }
                         else
                         {
-                            callback(new Error("No such version"),undefined);
+                            callback(new Error("No such File found"),undefined);
                         }
                     }
                 })
