@@ -6,6 +6,27 @@ var DbConn = require('DVP-DBModels');
 var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var config = require('config');
+
+var Db = require('mongodb').Db,
+    MongoClient = require('mongodb').MongoClient,
+    Server = require('mongodb').Server,
+    ReplSetServers = require('mongodb').ReplSetServers,
+    ObjectID = require('mongodb').ObjectID,
+    Binary = require('mongodb').Binary,
+    GridStore = require('mongodb').GridStore,
+    Grid = require('mongodb').Grid,
+    Code = require('mongodb').Code,
+    assert = require('assert');
+var fs = require('fs');
+
+
+
+var MIP=config.Mongo.ip;
+var MPORT=config.Mongo.port;
+var MDB=config.Mongo.dbname;
+
+
 
 function FindCurrentVersion(FObj,reqId,callback)
 {
@@ -65,7 +86,7 @@ function FindCurrentVersion(FObj,reqId,callback)
     }
 }
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,reqId,callback)
 {
 
     try
@@ -82,6 +103,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
 
     try
     {
+console.log("OPTION IS "+option);
+
         FindCurrentVersion(Fobj,reqId,function(err,result)
         {
             if(err)
@@ -116,7 +139,29 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
                     NewUploadObj.save().then(function (resUpFile) {
 
                         logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                        callback(undefined, resUpFile.UniqueId);
+
+                        if(option=="LOCAL")
+                        {
+                            callback(undefined, resUpFile.UniqueId);
+                        }
+                        else if(option=="MONGO")
+                        {
+                            console.log("TO MONGO >>>>>>>>> "+rand2);
+                            MongoUploader(rand2,Fobj.path,function(errMongo,resMongo)
+                            {
+                                if(errMongo)
+                                {
+                                    callback(errMongo,undefined);
+                                }else
+                                {
+                                    callback(undefined,resUpFile.UniqueId);
+                                }
+
+                            });
+                        }
+
+
+
 
                     }).catch(function (errUpFile) {
 
@@ -167,6 +212,34 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,reqId,callback)
 
 
 }
+
+
+function MongoUploader(uuid,path,callback)
+{
+
+    var db = new Db(MDB, new Server(MIP, MPORT));
+    db.open(function(err, db) {
+        // Open a file for writing
+        var gridStoreWrite = new GridStore(db, uuid, "w", {chunkSize:1024});
+        gridStoreWrite.writeFile(path, function(err, result) {
+            // Ensure we correctly returning a Gridstore object
+            assert.ok(typeof result.close == 'function');
+
+            if(err)
+            {
+                callback(err,undefined);
+            }
+            else
+            {
+                callback(undefined,result);
+            }
+            // Open the gridStore for reading and pipe to a file
+
+        })
+    });
+
+}
+
 
 
 function UploadAssignToApplication(Fileuuid,AppId,version,reqId,callback)

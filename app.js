@@ -22,6 +22,12 @@ var version=config.Host.version;
 var hpath=config.Host.hostpath;
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
+
+var option = config.Option;
+
+
+
+
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("app");
 
@@ -36,6 +42,7 @@ var RestServer = restify.createServer({
 //Server listen
 RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
+
 
 });
 //Enable request body parsing(access)
@@ -392,6 +399,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
             "filename":file.name,
             "type":file.type,
             "id":rand2
+
         };
 
         var AttchVal=JSON.stringify(ValObj);
@@ -411,7 +419,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,1,reqId,function (errz, respg) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,1,option,reqId,function (errz, respg) {
                             if (respg) {
 
 
@@ -483,7 +491,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
                     if (resProf) {
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,reqId,function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,option,reqId,function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
@@ -704,7 +712,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-        FileHandler.DownloadFileByID(res,req.params.id,reqId,function(errDownFile,resDownFile)
+        FileHandler.DownloadFileByID(res,req.params.id,option,reqId,function(errDownFile,resDownFile)
         {
             if(errDownFile)
             {
@@ -714,7 +722,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
             }
             else if(resDownFile)
             {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", false, resDownFile);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
             }

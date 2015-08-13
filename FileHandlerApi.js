@@ -13,6 +13,25 @@ var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var config = require('config');
+
+var Db = require('mongodb').Db,
+    MongoClient = require('mongodb').MongoClient,
+    Server = require('mongodb').Server,
+    ReplSetServers = require('mongodb').ReplSetServers,
+    ObjectID = require('mongodb').ObjectID,
+    Binary = require('mongodb').Binary,
+    GridStore = require('mongodb').GridStore,
+    Grid = require('mongodb').Grid,
+    Code = require('mongodb').Code,
+    assert = require('assert');
+
+
+
+
+var MIP = config.Mongo.ip;
+var MPORT=config.Mongo.port;
+var MDB=config.Mongo.dbname;
 
 
 var config = require('config');
@@ -402,111 +421,144 @@ function PickAttachmentMetaData(UUID,reqId,callback)
 }
 
 //log done...............................................................................................................
-function DownloadFileByID(res,UUID,reqId,callback)
+function DownloadFileByID(res,UUID,option,reqId,callback)
 {
     if(UUID)
     {
         try {
-            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
 
-                if (resUpFile) {
+                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
+                DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
 
-                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
-                    try {
-                        res.setHeader('Content-Type', resUpFile.FileStructure);
-                        var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
-                        logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+                    if (resUpFile) {
 
-                        logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                        var source = fs.createReadStream(SourcePath);
+                        if(option=="MONGO")
+                        {
 
-                        source.pipe(res);
-                        source.on('end', function (result) {
-                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                            res.end();
-                        });
-                        source.on('error', function (err) {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                            res.end('Error on pipe');
-                        });
-                    }
-                    catch(ex)
-                    {
-                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
-
-                        callback(ex, undefined);
-                    }
-
-                    try {
-                        var AppObject = DbConn.FileDownload
-                            .build(
-                            {
-                                DownloadId: resUpFile.UniqueId,
-                                ObjClass: resUpFile.ObjClass,
-                                ObjType: resUpFile.ObjType,
-                                ObjCategory: resUpFile.ObjCategory,
-                                DownloadTimestamp: Date.now(),
-                                Filename: resUpFile.Filename,
-                                CompanyId: resUpFile.CompanyId,
-                                TenantId: resUpFile.TenantId
+                            var extArr=resUpFile.FileStructure.split('/');
+                            var extension=extArr[1];
 
 
-                            }
-                        )
-                    }
-                    catch(ex)
-                    {
-                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
-                        callback(errUpFile, undefined);
-                    }
 
-                    AppObject.save().then(function (resSave) {
 
-                        logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
-                        logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,resUpFile.FileStructure);
-                        callback(undefined, resUpFile.FileStructure);
+                            console.log("MONGO");
+                            var db = new Db(MDB, new Server(MIP, MPORT));
+                            db.open(function(err, db) {
 
-                    }).catch(function (errSave) {
-                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),errSave);
-                        callback(errSave, undefined);
-                    });
-                        
-                        
-                        /*complete(function (err, result) {
+                                var gridStore = new GridStore(db, UUID, "r");
+                                gridStore.open(function(err, gridStore) {
+                                    // Create a file write stream
+                                    var fileStream = fs.createWriteStream("C:/Users/Pawan/Desktop/"+UUID.toString()+"."+extension);
+                                    // Grab the read stream
+                                    var stream = gridStore.stream(true);
+                                    // When the stream is finished close the database
+                                    fileStream.on("close", function(err) {
+                                     // Read the original content
 
-                        if (err) {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),err);
-                            callback(err, undefined);
+                                     if(err)
+                                     {
+                                         db.close();
+                                         callback(err,undefined);
+                                     }
+                                        else
+                                     {
+                                         console.log("Closing");
+                                         db.close();
+                                         callback(undefined,true);
+                                     }
+
+
+
+
+                                     });
+
+                                    // Pipe out the data
+                                    stream.pipe(fileStream);
+                                });
+
+                                //});
+                            });
                         }
-                        else if (result) {
+                        else
+                        {
+                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
+                            try {
+                                res.setHeader('Content-Type', resUpFile.FileStructure);
+                                var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
+                                logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+                                var source = fs.createReadStream(SourcePath);
+
+                                source.pipe(res);
+                                source.on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.end();
+                                });
+                                source.on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.end('Error on pipe');
+                                });
+                            }
+                            catch(ex)
+                            {
+                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+
+                                callback(ex, undefined);
+                            }
+                        }
+
+
+                        try {
+                            var AppObject = DbConn.FileDownload
+                                .build(
+                                {
+                                    DownloadId: resUpFile.UniqueId,
+                                    ObjClass: resUpFile.ObjClass,
+                                    ObjType: resUpFile.ObjType,
+                                    ObjCategory: resUpFile.ObjCategory,
+                                    DownloadTimestamp: Date.now(),
+                                    Filename: resUpFile.Filename,
+                                    CompanyId: resUpFile.CompanyId,
+                                    TenantId: resUpFile.TenantId
+
+
+                                }
+                            )
+                        }
+                        catch(ex)
+                        {
+                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
+                            callback(errUpFile, undefined);
+                        }
+
+                        AppObject.save().then(function (resSave) {
 
                             logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
                             logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,resUpFile.FileStructure);
                             callback(undefined, resUpFile.FileStructure);
 
+                        }).catch(function (errSave) {
+                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),errSave);
+                            callback(errSave, undefined);
+                        });
 
-                        }
+                    }
+
+                    else {
+                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
+                        callback(new Error('No record for id : ' + UUID), undefined);
+
+                    }
+
+                }).catch(function (errUpFile) {
+
+                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
+                    callback(errUpFile, undefined);
+
+                });
 
 
-                    });*/
-
-
-                }
-
-                else {
-                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
-                    callback(new Error('No record for id : ' + UUID), undefined);
-
-                }
-
-            }).catch(function (errUpFile) {
-
-                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
-                callback(errUpFile, undefined);
-
-            });
                 /*complete(function (errUpFile, resUpFile) {
 
                 if(errUpFile)
@@ -910,24 +962,7 @@ function PickFileWithAppID(UUID,appid,reqId,callback)
 
 
 
-                /*complete(function(errFile,resFile)
-            {
-                if(errFile)
-                {
-                    callback(errFile,undefined);
-                }
-                else
-                {
-                    if(resFile==null)
-                    {
-                        callback(new Error("No file"),undefined);
-                    }
-                    else
-                    {
-                        callback(undefined,resFile);
-                    }
-                }
-            })*/
+
         }
         catch(ex)
         {
@@ -943,6 +978,8 @@ function PickFileWithAppID(UUID,appid,reqId,callback)
 
 
 
+
+
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
 module.exports.PickAttachmentMetaData = PickAttachmentMetaData;
@@ -950,6 +987,7 @@ module.exports.DownloadFileByID = DownloadFileByID;
 module.exports.PickVoiceClipByName = PickVoiceClipByName;
 module.exports.PickFileInfo = PickFileInfo;
 module.exports.PickFileWithAppID = PickFileWithAppID;
+
 
 
 

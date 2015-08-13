@@ -23,6 +23,15 @@ module.exports = {
         "version": "HOST_VERSION",
         "hostpath":"HOST_PATH",
         "logfilepath": "LOG4JS_CONFIG"
+    },
+
+    "Option":"MONGO",
+
+    "Mongo":
+    {
+        "ip":"MONGO_IP",
+            "port":"MONGO_PORT",
+        "dbname":"MONGO_DBNAME"
     }
 };
 

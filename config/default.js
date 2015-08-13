@@ -21,5 +21,14 @@ module.exports = {
     "version":"6.0",
     "hostpath":"./config",
     "logfilepath": ""
+  },
+
+  "Option":"MONGO",
+
+  "Mongo":
+  {
+    "ip":"127.0.0.1",
+    "port":"27017",
+    "dbname":"test"
   }
 };
