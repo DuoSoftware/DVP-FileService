@@ -435,13 +435,10 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                         if(option=="MONGO")
                         {
 
+                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Saving to MongoDB',reqId,JSON.stringify(resUpFile));
+
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
-
-
-
-
-                            console.log("MONGO");
                             var db = new Db(MDB, new Server(MIP, MPORT));
                             db.open(function(err, db) {
 
@@ -457,13 +454,16 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
 
                                      if(err)
                                      {
+                                         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Error in file stream closing',reqId,err);
                                          db.close();
                                          callback(err,undefined);
                                      }
                                         else
                                      {
-                                         console.log("Closing");
                                          db.close();
+                                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - File stream closed succesfully',reqId);
+                                         console.log("Closing");
+
                                          callback(undefined,true);
                                      }
 

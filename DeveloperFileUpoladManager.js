@@ -142,12 +142,14 @@ console.log("OPTION IS "+option);
 
                         if(option=="LOCAL")
                         {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Loacal',reqId,JSON.stringify(NewUploadObj));
                             callback(undefined, resUpFile.UniqueId);
                         }
                         else if(option=="MONGO")
                         {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to MongoDB',reqId,JSON.stringify(NewUploadObj));
                             console.log("TO MONGO >>>>>>>>> "+rand2);
-                            MongoUploader(rand2,Fobj.path,function(errMongo,resMongo)
+                            MongoUploader(rand2,Fobj.path,reqId,function(errMongo,resMongo)
                             {
                                 if(errMongo)
                                 {
@@ -214,7 +216,7 @@ console.log("OPTION IS "+option);
 }
 
 
-function MongoUploader(uuid,path,callback)
+function MongoUploader(uuid,path,reqId,callback)
 {
 
     var db = new Db(MDB, new Server(MIP, MPORT));
@@ -227,10 +229,14 @@ function MongoUploader(uuid,path,callback)
 
             if(err)
             {
+                db.close();
+                logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
                 callback(err,undefined);
             }
             else
             {
+                db.close();
+                logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
                 callback(undefined,result);
             }
             // Open the gridStore for reading and pipe to a file
