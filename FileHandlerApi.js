@@ -308,23 +308,23 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                     });
 
 
-                       /*complete(function (errFileSave, resFileSave) {
-                        if (errFileSave) {
+                    /*complete(function (errFileSave, resFileSave) {
+                     if (errFileSave) {
 
-                            logger.Error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error in saving Upload file record %s',reqId,JSON.stringify(NewUploadObj));
-                            callback(errFileSave, undefined);
-
-
+                     logger.Error('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - Error in saving Upload file record %s',reqId,JSON.stringify(NewUploadObj));
+                     callback(errFileSave, undefined);
 
 
-                        }
-                        else {
-                            logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
-                            callback(undefined, NewUploadObj.UniqueId);
-                        }
 
 
-                    });*/
+                     }
+                     else {
+                     logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
+                     callback(undefined, NewUploadObj.UniqueId);
+                     }
+
+
+                     });*/
 
 
                 }
@@ -378,34 +378,34 @@ function PickAttachmentMetaData(UUID,reqId,callback)
 
 
 
-                /*complete(function (errFile, resFile) {
+            /*complete(function (errFile, resFile) {
 
-                if(errFile)
-                {
-                    logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,UUID);
-                    callback(errFile, undefined);
+             if(errFile)
+             {
+             logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Error occurred while searching for Uploaded file Metadata %s  ',reqId,UUID);
+             callback(errFile, undefined);
 
-                }
+             }
 
-                else
-                {
-                    if(resFile)
-                    {
-                        logger.debug('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,UUID);
-                        callback(undefined, resFile);
-                    }
-                    else
-                    {
-                        logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,UUID);
-                        callback(new Error('No record found for id : '+UUID), undefined);
-                    }
-
-
-                }
+             else
+             {
+             if(resFile)
+             {
+             logger.debug('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s  metadata found ',reqId,UUID);
+             callback(undefined, resFile);
+             }
+             else
+             {
+             logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [PGSQL] - Uploaded file %s metadata not found ',reqId,UUID);
+             callback(new Error('No record found for id : '+UUID), undefined);
+             }
 
 
+             }
 
-            });*/
+
+
+             });*/
         }
         catch (ex) {
             logger.error('[DVP-FIleService.PickAttachmentMetaData] - [%s] - Exception occurred when starting PickAttachmentMetaData %s ',reqId,UUID);
@@ -427,150 +427,82 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
     {
         try {
 
-                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-                DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
+            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
+            DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
 
-                    if (resUpFile) {
+                if (resUpFile) {
 
-                        if(option=="MONGO")
-                        {
+                    if(option=="MONGO")
+                    {
 
-                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Saving to MongoDB',reqId,JSON.stringify(resUpFile));
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
 
-                            var extArr=resUpFile.FileStructure.split('/');
-                            var extension=extArr[1];
-                            var db = new Db(MDB, new Server(MIP, MPORT));
-                            db.open(function(err, db) {
+                        var extArr=resUpFile.FileStructure.split('/');
+                        var extension=extArr[1];
+                        var db = new Db(MDB, new Server(MIP, MPORT));
+                        db.open(function(err, db) {
 
-                                var gridStore = new GridStore(db, UUID, "r");
-                                gridStore.open(function(err, gridStore) {
-                                    // Create a file write stream
-                                    var fileStream = fs.createWriteStream("C:/Users/Pawan/Desktop/"+UUID.toString()+"."+extension);
-                                    // Grab the read stream
-                                    var stream = gridStore.stream(true);
-                                    // When the stream is finished close the database
-                                    fileStream.on("close", function(err) {
-                                     // Read the original content
+                            res.setHeader('Content-Type', resUpFile.FileStructure);
+                            var gridStore = new GridStore(db, UUID, "r");
+                            gridStore.open(function(errOpen, gridStore) {
 
-                                     if(err)
-                                     {
-                                         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Error in file stream closing',reqId,err);
-                                         db.close();
-                                         callback(err,undefined);
-                                     }
-                                        else
-                                     {
-                                         db.close();
-                                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - File stream closed succesfully',reqId);
-                                         console.log("Closing");
-
-                                         callback(undefined,true);
-                                     }
-
-
-
-
-                                     });
-
-                                    // Pipe out the data
-                                    stream.pipe(fileStream);
-                                });
-
-                                //});
-                            });
-                        }
-                        else
-                        {
-                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
-                            try {
-                                res.setHeader('Content-Type', resUpFile.FileStructure);
-                                var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
-                                logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
-
-                                logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                                var source = fs.createReadStream(SourcePath);
-
-                                source.pipe(res);
-                                source.on('end', function (result) {
-                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                    res.end();
-                                });
-                                source.on('error', function (err) {
-                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                    res.end('Error on pipe');
-                                });
-                            }
-                            catch(ex)
-                            {
-                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
-
-                                callback(ex, undefined);
-                            }
-                        }
-
-
-                        try {
-                            var AppObject = DbConn.FileDownload
-                                .build(
+                                if(errOpen)
                                 {
-                                    DownloadId: resUpFile.UniqueId,
-                                    ObjClass: resUpFile.ObjClass,
-                                    ObjType: resUpFile.ObjType,
-                                    ObjCategory: resUpFile.ObjCategory,
-                                    DownloadTimestamp: Date.now(),
-                                    Filename: resUpFile.Filename,
-                                    CompanyId: resUpFile.CompanyId,
-                                    TenantId: resUpFile.TenantId
+                                    callback(errOpen,undefined);
+                                    res.end();
+                                }
+                                else
+                                {
+                                    var stream = gridStore.stream(true);
 
+                                    stream.on('end',function(err) {
+
+                                        if(err){
+
+                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            callback(err,undefined);
+
+
+                                        }else {
+
+                                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+
+                                            SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                            {
+                                                if(errSv)
+                                                {
+                                                    callback(errSv,undefined);
+                                                }
+                                                else
+                                                {
+                                                    callback(undefined,resSv);
+                                                }
+                                            });
+
+
+
+
+                                        }
+
+                                        res.end();
+
+                                        db.close();
+
+
+                                    });
+
+
+                                    stream.pipe(res);
 
                                 }
-                            )
-                        }
-                        catch(ex)
-                        {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
-                            callback(errUpFile, undefined);
-                        }
 
-                        AppObject.save().then(function (resSave) {
+                            });
 
-                            logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
-                            logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,resUpFile.FileStructure);
-                            callback(undefined, resUpFile.FileStructure);
-
-                        }).catch(function (errSave) {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),errSave);
-                            callback(errSave, undefined);
+                            //});
                         });
-
                     }
-
-                    else {
-                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
-                        callback(new Error('No record for id : ' + UUID), undefined);
-
-                    }
-
-                }).catch(function (errUpFile) {
-
-                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
-                    callback(errUpFile, undefined);
-
-                });
-
-
-                /*complete(function (errUpFile, resUpFile) {
-
-                if(errUpFile)
-                {
-                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
-                    callback(errUpFile, undefined);
-                }
-
-                else {
-
-                    if (resUpFile) {
-
+                    else
+                    {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
@@ -596,70 +528,129 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
 
                             callback(ex, undefined);
                         }
-
-                        try {
-                            var AppObject = DbConn.FileDownload
-                                .build(
-                                {
-                                    DownloadId: resUpFile.UniqueId,
-                                    ObjClass: resUpFile.ObjClass,
-                                    ObjType: resUpFile.ObjType,
-                                    ObjCategory: resUpFile.ObjCategory,
-                                    DownloadTimestamp: Date.now(),
-                                    Filename: resUpFile.Filename,
-                                    CompanyId: resUpFile.CompanyId,
-                                    TenantId: resUpFile.TenantId
-
-
-                                }
-                            )
-                        }
-                        catch(ex)
-                        {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
-                            callback(errUpFile, undefined);
-                        }
-
-                        AppObject.save().complete(function (err, result) {
-
-                            if (err) {
-                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),err);
-                                callback(err, undefined);
-                            }
-                            else if (result) {
-
-
-                                logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
-                                logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,resUpFile.FileStructure);
-                                callback(undefined, resUpFile.FileStructure);
-
-
-                            }
-
-
-                        });
-
-
                     }
 
-                    else {
-                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
-                        callback('No record for id : ' + UUID, undefined);
-
-                    }
                 }
 
-            });*/
+                else {
+                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
+                    callback(new Error('No record for id : ' + UUID), undefined);
+                    res.end();
+
+                }
+
+            }).catch(function (errUpFile) {
+
+                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
+                callback(errUpFile, undefined);
+                res.end();
+
+            });
+
+
+            /*complete(function (errUpFile, resUpFile) {
+
+             if(errUpFile)
+             {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
+             callback(errUpFile, undefined);
+             }
+
+             else {
+
+             if (resUpFile) {
+
+             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
+             try {
+             res.setHeader('Content-Type', resUpFile.FileStructure);
+             var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+
+             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+             var source = fs.createReadStream(SourcePath);
+
+             source.pipe(res);
+             source.on('end', function (result) {
+             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+             res.end();
+             });
+             source.on('error', function (err) {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+             res.end('Error on pipe');
+             });
+             }
+             catch(ex)
+             {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+
+             callback(ex, undefined);
+             }
+
+             try {
+             var AppObject = DbConn.FileDownload
+             .build(
+             {
+             DownloadId: resUpFile.UniqueId,
+             ObjClass: resUpFile.ObjClass,
+             ObjType: resUpFile.ObjType,
+             ObjCategory: resUpFile.ObjCategory,
+             DownloadTimestamp: Date.now(),
+             Filename: resUpFile.Filename,
+             CompanyId: resUpFile.CompanyId,
+             TenantId: resUpFile.TenantId
+
+
+             }
+             )
+             }
+             catch(ex)
+             {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
+             callback(errUpFile, undefined);
+             }
+
+             AppObject.save().complete(function (err, result) {
+
+             if (err) {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),err);
+             callback(err, undefined);
+             }
+             else if (result) {
+
+
+             logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
+             logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,resUpFile.FileStructure);
+             callback(undefined, resUpFile.FileStructure);
+
+
+             }
+
+
+             });
+
+
+             }
+
+             else {
+             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
+             callback('No record for id : ' + UUID, undefined);
+
+             }
+             }
+
+             });*/
         }
         catch (ex) {
             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,UUID);
             callback(new Error("No record Found for the request"), undefined);
+            res.end();
         }
     }
     else
     {
         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Invalid input for UUID %s',reqId,UUID);
         callback(new Error("Invalid input for UUID"), undefined);
+        res.end();
     }
 
 }
@@ -706,28 +697,28 @@ function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
                                 });
 
 
-                                /*complete(function(err,resFile)
-                            {
-                                if(err)
-                                {
-                                    logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
-                                    callback(err,undefined);
-                                }
-                                else
-                                {
-                                    if(resFile)
-                                    {
-                                        logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
-                                        callback(undefined,resFile);
-                                    }
-                                    else
-                                    {
-                                        logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - No record found for Application %s  ',reqId,AppID);
-                                        callback(new Error("No record found for Application"),undefined);
-                                    }
+                            /*complete(function(err,resFile)
+                             {
+                             if(err)
+                             {
+                             logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
+                             callback(err,undefined);
+                             }
+                             else
+                             {
+                             if(resFile)
+                             {
+                             logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
+                             callback(undefined,resFile);
+                             }
+                             else
+                             {
+                             logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - No record found for Application %s  ',reqId,AppID);
+                             callback(new Error("No record found for Application"),undefined);
+                             }
 
-                                }
-                            });*/
+                             }
+                             });*/
                         }
                         else
                         {
@@ -748,66 +739,66 @@ function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
 
         });
 
-            /*complete(function(errApp,resApp)
-        {
-            if(errApp)
-            {
-                logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errApp);
-                callback(new Error("No application found"),undefined);
-            }
-            else
-            {
-                if(resApp)
-                {
-                    CurrentFileVersion(Cid,Tid,AppID,FileName,reqId,function(errVersion,resVersion)
-                    {
-                        if(errVersion)
-                        {
-                                callback(errVersion,undefined);
-                        }
-                        else
-                        {
-                            if(resVersion)
-                            {
-                                DbConn.FileUpload.find({where:[{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id},{Version:resVersion},{Filename:FileName}]}).complete(function(err,resFile)
-                                {
-                                    if(err)
-                                    {
-                                        logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
-                                        callback(err,undefined);
-                                    }
-                                    else
-                                    {
-                                        if(resFile)
-                                        {
-                                            logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
-                                            callback(undefined,resFile);
-                                        }
-                                        else
-                                        {
-                                            logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - No record found for Application %s  ',reqId,AppID);
-                                            callback(new Error("No record found for Application"),undefined);
-                                        }
+        /*complete(function(errApp,resApp)
+         {
+         if(errApp)
+         {
+         logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errApp);
+         callback(new Error("No application found"),undefined);
+         }
+         else
+         {
+         if(resApp)
+         {
+         CurrentFileVersion(Cid,Tid,AppID,FileName,reqId,function(errVersion,resVersion)
+         {
+         if(errVersion)
+         {
+         callback(errVersion,undefined);
+         }
+         else
+         {
+         if(resVersion)
+         {
+         DbConn.FileUpload.find({where:[{TenantId: TenantId},{CompanyId: CompanyId},{ApplicationId:resApp.id},{Version:resVersion},{Filename:FileName}]}).complete(function(err,resFile)
+         {
+         if(err)
+         {
+         logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,err);
+         callback(err,undefined);
+         }
+         else
+         {
+         if(resFile)
+         {
+         logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Record found for Application %s  result ',reqId,AppID);
+         callback(undefined,resFile);
+         }
+         else
+         {
+         logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - No record found for Application %s  ',reqId,AppID);
+         callback(new Error("No record found for Application"),undefined);
+         }
 
-                                    }
-                                });
-                            }
-                            else
-                            {
-                                callback(new Error("No such version"),undefined);
-                            }
-                        }
-                    })
-                }
-                else
-                {
-                    callback(new Error("No Such Application"),undefined);
-                }
+         }
+         });
+         }
+         else
+         {
+         callback(new Error("No such version"),undefined);
+         }
+         }
+         })
+         }
+         else
+         {
+         callback(new Error("No Such Application"),undefined);
+         }
 
 
 
-            }
-        });*/
+         }
+         });*/
     }
     else
     {
@@ -850,30 +841,30 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
 
 
 
-            /*complete(function (err, CurFileObject)
-        {
-            if(err)
-            {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FileName,err);
-                callback(err,undefined);
-            }
-            else
-            {
-                if(CurFileObject)
-                {
+        /*complete(function (err, CurFileObject)
+         {
+         if(err)
+         {
+         logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FileName,err);
+         callback(err,undefined);
+         }
+         else
+         {
+         if(CurFileObject)
+         {
 
 
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of %s is found and New version updated',reqId,FileName);
-                    callback(undefined,parseInt(CurFileObject));
-                }
-                else{
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FileName,1);
-                    callback(undefined,0);
-                }
+         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of %s is found and New version updated',reqId,FileName);
+         callback(undefined,parseInt(CurFileObject));
+         }
+         else{
+         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FileName,1);
+         callback(undefined,0);
+         }
 
-            }
-        });
-        */
+         }
+         });
+         */
     }
     catch (ex)
     {
@@ -882,58 +873,96 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
     }
 }
 
+function SaveDownloadDetails(req,reqId,callback)
+{
 
+
+    try {
+        var AppObject = DbConn.FileDownload
+            .build(
+            {
+                DownloadId: req.UniqueId,
+                ObjClass: req.ObjClass,
+                ObjType: req.ObjType,
+                ObjCategory: req.ObjCategory,
+                DownloadTimestamp: Date.now(),
+                Filename: req.Filename,
+                CompanyId: req.CompanyId,
+                TenantId: req.TenantId
+
+
+            }
+        )
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while creating download details',reqId,ex);
+        callback(ex, undefined);
+    }
+
+    AppObject.save().then(function (resSave) {
+
+        logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded ',reqId);
+        logger.info('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Downloaded file details succeeded %s',reqId,req.FileStructure);
+        callback(undefined, req.FileStructure);
+
+    }).catch(function (errSave) {
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while saving download details %s',reqId,JSON.stringify(AppObject),errSave);
+        callback(errSave, undefined);
+    });
+
+}
 
 function PickFileInfo(appid,reqId,callback)
 {
-   if(appid&&!isNaN(appid))
-   {
-       try
-       {
-           DbConn.FileUpload.find({where:[{ApplicationId:appid}]}).then(function (resFile) {
+    if(appid&&!isNaN(appid))
+    {
+        try
+        {
+            DbConn.FileUpload.find({where:[{ApplicationId:appid}]}).then(function (resFile) {
 
-               if(!resFile)
-               {
-                   callback(new Error("No file"),undefined);
-               }
-               else
-               {
-                   callback(undefined,resFile);
-               }
+                if(!resFile)
+                {
+                    callback(new Error("No file"),undefined);
+                }
+                else
+                {
+                    callback(undefined,resFile);
+                }
 
-           }).catch(function (errFile) {
-               callback(errFile,undefined);
-           });
+            }).catch(function (errFile) {
+                callback(errFile,undefined);
+            });
 
 
-               /*complete(function(errFile,resFile)
-           {
-               if(errFile)
-               {
-                   callback(errFile,undefined);
-               }
-               else
-               {
-                   if(resFile==null)
-                   {
-                       callback(new Error("No file"),undefined);
-                   }
-                   else
-                   {
-                       callback(undefined,resFile);
-                   }
-               }
-           })*/
-       }
-       catch(ex)
-       {
-           callback(ex,undefined);
-       }
-   }
+            /*complete(function(errFile,resFile)
+             {
+             if(errFile)
+             {
+             callback(errFile,undefined);
+             }
+             else
+             {
+             if(resFile==null)
+             {
+             callback(new Error("No file"),undefined);
+             }
+             else
+             {
+             callback(undefined,resFile);
+             }
+             }
+             })*/
+        }
+        catch(ex)
+        {
+            callback(ex,undefined);
+        }
+    }
     else
-   {
-       callback(new Error("Undefined Application ID"),undefined);
-   }
+    {
+        callback(new Error("Undefined Application ID"),undefined);
+    }
 
 
 }

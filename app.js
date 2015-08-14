@@ -434,7 +434,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
                                         }
                                         else {
-                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRDS);
+                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, AttchVal.id);
                                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                             res.end(jsonString);
 
@@ -718,13 +718,15 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
             {
                 var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
+                console.log("Done err");
+
             }
             else if(resDownFile)
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
+                console.log("Done");
+
             }
 
         });
@@ -912,6 +914,8 @@ RestServer.post('/DVP',function(req,res,next)
     //RedisPublisher.RedisGet();
 
 });
+
+
 
 
 /*
