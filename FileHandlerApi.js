@@ -1005,7 +1005,77 @@ function PickFileWithAppID(UUID,appid,reqId,callback)
 
 }
 
+function PickAllVoiceRecordingsOfSession(SessID,reqId,callback) {
+    try {
+        DbConn.FileUpload.findAll({where: [{RefId: SessID}]}).complete(function (err, result) {
 
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                if(result.length==0)
+                {
+                    callback(new Error("No records found"),undefined);
+                }
+                else
+                {
+                    callback(undefined, result);
+                }
+
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId,callback) {
+    try {
+        DbConn.FileUpload.findAll({where: [{RefId: SessID},{ObjClass: Class},{ObjType: Type},{ObjCategory: Category}]}).complete(function (err, result) {
+
+            if (err) {
+                callback(err, undefined);
+            }
+            else {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    if(st==1)
+                    {
+                        callback(undefined, result);
+                    }
+                    else
+                    {
+                        callback(undefined,result[0]);
+                    }
+
+                }
+
+
+
+            }
+        });
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
 
 
 
@@ -1016,6 +1086,8 @@ module.exports.DownloadFileByID = DownloadFileByID;
 module.exports.PickVoiceClipByName = PickVoiceClipByName;
 module.exports.PickFileInfo = PickFileInfo;
 module.exports.PickFileWithAppID = PickFileWithAppID;
+module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession;
+module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
 
 
 

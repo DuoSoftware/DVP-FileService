@@ -362,12 +362,13 @@ var Company=1;
 
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUpload/:cmp/:ten/:prov',function(req,res,next)
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',function(req,res,next)
 {
     var reqId='';
     var Company=1;
     var Tenant=1;
     var prov=1;
+    var ref=req.params.SessionID;
     try {
 
         try
@@ -419,7 +420,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,1,option,reqId,function (errz, respg) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,reqId,function (errz, respg) {
                             if (respg) {
 
 
@@ -491,7 +492,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
                     if (resProf) {
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,option,reqId,function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,reqId,function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
@@ -556,7 +557,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
                     if (resShared) {
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,1,reqId, function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,reqId, function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resShared),AttchVal);
@@ -897,6 +898,188 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',functio
         logger.debug('[DVP-FIleService.PickFileWithAppID] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.appId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.PickFileWithAppID] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
+
+//Sprint 4
+
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.SessionID);
+
+
+        FileHandler.PickAllVoiceRecordingsOfSession(req.params.SessionID,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - [HTTP] - Exception occurred when starting PickFilesWithRefID service - Inputs - File RefID : %s ',reqId,req.params.SessionID);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:Category',function(req,res,next)
+{
+    var reqId='';
+    var st=1;
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+
+
+        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,st,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Exception occurred when starting PickFilesWithRefID service - Inputs - File RefID : %s ',reqId,req.params.SessionID);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',function(req,res,next)
+{
+    var reqId='';
+    var st=2;
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+
+
+        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,st,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+                //res.end(jsonString);
+                FileHandler.DownloadFileByID(res,resz.UniqueId,option,reqId,function(errDownFile,resDownFile)
+                {
+                    if(errDownFile)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+                        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+                        console.log("Done err");
+
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+                        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+                        console.log("Done");
+
+                    }
+
+                });
+
+
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Exception occurred when starting PickFilesWithRefID service - Inputs - File RefID : %s ',reqId,req.params.SessionID);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
         res.end(jsonString);
     }
 
