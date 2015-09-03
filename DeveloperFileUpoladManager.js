@@ -87,7 +87,7 @@ function FindCurrentVersion(FObj,reqId,callback)
     }
 }
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,reqId,callback)
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,reqId,callback)
 {
 
     try
@@ -121,9 +121,9 @@ console.log("OPTION IS "+option);
                         {
                             UniqueId: rand2,
                             FileStructure: Fobj.type,
-                            ObjClass: 'body.ObjClass',
-                            ObjType: 'Voice app clip',
-                            ObjCategory: 'body.ObjCategory',
+                            ObjClass: Clz,
+                            ObjType: Type,
+                            ObjCategory: Category,
                             URL: Fobj.path,
                             UploadTimestamp: Date.now(),
                             Filename: Fobj.name,
@@ -143,7 +143,7 @@ console.log("OPTION IS "+option);
 
                         if(option=="LOCAL")
                         {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Loacal',reqId,JSON.stringify(NewUploadObj));
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Local',reqId,JSON.stringify(NewUploadObj));
                             callback(undefined, resUpFile.UniqueId);
                         }
                         else if(option=="MONGO")
@@ -154,9 +154,11 @@ console.log("OPTION IS "+option);
                             {
                                 if(errMongo)
                                 {
+                                    console.log(errMongo);
                                     callback(errMongo,undefined);
                                 }else
                                 {
+                                    console.log(resMongo);
                                     callback(undefined,resUpFile.UniqueId);
                                 }
 

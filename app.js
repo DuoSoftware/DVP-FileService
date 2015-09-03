@@ -362,13 +362,35 @@ var Company=1;
 
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
 //RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUpload/:cmp/:ten/:prov',function(req,res,next)
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',function(req,res,next)
+//RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:REFERENCEID',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,next)
 {
+
+    console.log(option);
     var reqId='';
     var Company=1;
     var Tenant=1;
     var prov=1;
-    var ref=req.params.SessionID;
+
+    var Clz='';
+    var Type='';
+    var Category='';
+
+    if(req.params.class)
+    {
+        Clz=req.params.class;
+    }
+    if(req.params.category)
+    {
+        Type=req.params.category;
+    }
+    if(req.params.type)
+    {
+        Category=req.params.type;
+    }
+
+
+    var ref=req.params.referenceid;
     try {
 
         try
@@ -417,16 +439,18 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',functi
 
 
                     if (resIns) {
-
+                        console.log("server choose");
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,reqId,function (errz, respg) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
                             if (respg) {
 
-
+console.log("up save");
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resIns),AttchVal);
                                 RedisPublisher.RedisPublish(resIns, AttchVal,reqId, function (errRDS, resRDS) {
                                         if (errRDS) {
+
+                                            console.log("red err");
                                             var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
                                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                             res.end(jsonString);
@@ -435,6 +459,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',functi
 
                                         }
                                         else {
+                                            console.log("red done");
                                             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, AttchVal.id);
                                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                             res.end(jsonString);
@@ -453,6 +478,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',functi
 
                             else if (errz) {
 
+                                console.log("up failed");
                                 var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                 res.end(jsonString);
@@ -492,7 +518,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',functi
                     if (resProf) {
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,reqId,function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId,function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
@@ -557,7 +583,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:SessionID',functi
                     if (resShared) {
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,reqId, function (errUpload, resUpload) {
+                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId, function (errUpload, resUpload) {
                             if (resUpload) {
 
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resShared),AttchVal);
