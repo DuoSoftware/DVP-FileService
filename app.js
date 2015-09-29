@@ -463,7 +463,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
                                 RedisPublisher.RedisPublish(resIns, AttchVal,reqId, function (errRDS, resRDS) {
                                         if (errRDS) {
 
-                                            console.log("red err");
+                                            console.log("read error");
                                             var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
                                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                             res.end(jsonString);
@@ -472,8 +472,8 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
                                         }
                                         else {
-                                            console.log("red done");
-                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, AttchVal.id);
+                                            console.log(AttchVal.id);
+                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
                                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
                                             res.end(jsonString);
 

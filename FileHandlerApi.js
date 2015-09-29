@@ -3,10 +3,14 @@ var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('DVP-DBModels');
+var config = require('config');
 
 //Sprint 5
 var couchbase = require('couchbase');
 var streamifier = require('streamifier');
+var Cbucket=config.Couch.bucket;
+var CHip=config.Couch.ip;
+var cluster = new couchbase.Cluster("couchbase://"+CHip);
 //
 
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
@@ -19,7 +23,7 @@ var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
-var config = require('config');
+
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
@@ -503,8 +507,8 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                     else if(option=="COUCH")
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
-                        var cluster = new couchbase.Cluster();
-                        var bucket = cluster.openBucket('default');
+
+                        var bucket = cluster.openBucket(Cbucket);
 
                         bucket.get(UUID, function(err, result) {
                             if (err)

@@ -2,23 +2,21 @@
  * Created by pawan on 4/9/2015.
  */
 var DbConn = require('DVP-DBModels');
-
+var config = require('config');
 // sprint 5
-var cradle = require('cradle');
-var couchbase = require('couchbase');
-var streamifier = require('streamifier');
-var stream = require('stream');
 
-var db = new(cradle.Connection)('http://localhost', 8091, {
-    cache: true,
-    raw: false,
-    forceSave: true
-}).database('duo');
-//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var couchbase = require('couchbase');
+var Cbucket=config.Couch.bucket;
+var CHip=config.Couch.ip;
+var cluster = new couchbase.Cluster("couchbase://"+CHip);
+
+//
+
+
 var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
-var config = require('config');
+
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
@@ -286,8 +284,8 @@ function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
 {
 
     var content;
-    var cluster = new couchbase.Cluster();
-    var bucket = cluster.openBucket('default');
+
+    var bucket = cluster.openBucket(Cbucket);
 
     fs.readFile(fobj.path, function read(errRead, data) {
         if (errRead) {
@@ -311,8 +309,8 @@ function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
                     callback(errSave,undefined);
                     //callback(err,undefined);
                 } else {
-console.log("Done");
-                    callback(undefined,"Success");
+//console.log("Done");
+                    callback(undefined,uuid);
                     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd.mp3');
                     //var s = streamifier.createReadStream(data);
 

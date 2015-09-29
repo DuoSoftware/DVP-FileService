@@ -25,10 +25,18 @@ module.exports = {
 
   "Option":"COUCH",
 
+
   "Mongo":
   {
     "ip":"127.0.0.1",
     "port":"27017",
     "dbname":"test"
+  },
+
+  "Couch":
+  {
+    "ip":"127.0.0.1",
+    "port":"",
+    "bucket":"default"
   }
 };
