@@ -3,6 +3,12 @@ var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('DVP-DBModels');
+
+//Sprint 5
+var couchbase = require('couchbase');
+var streamifier = require('streamifier');
+//
+
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 //var couchbase = require('couchbase');
 var sys=require('sys');
@@ -345,8 +351,8 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
 
 function downF()
 {
-    var source = fs.createReadStream('C:/Users/pawan/AppData/Local/Temp/upload_2ac9da85f25059f246bc075205f9bd58');
-    var dest = fs.createWriteStream('C:/Users/pawan/Desktop/jsons/apss');
+    var source = fs.createReadStream('C:/Users/pawan/Desktop/bc9783386be9de59d68bc576c9726de9');
+    var dest = fs.createWriteStream('C:/Users/pawan/Desktop/apssd');
 
     source.pipe(dest);
     source.on('end', function() { /* copied */ });
@@ -455,15 +461,13 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                                 {
                                     var stream = gridStore.stream(true);
 
-                                    stream.on('end',function(err) {
+                                    stream.on('error',function(err)
+                                    {
+                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                        callback(err,undefined);
+                                    });
+                                    stream.on('end',function(result) {
 
-                                        if(err){
-
-                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                            callback(err,undefined);
-
-
-                                        }else {
 
                                             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
 
@@ -478,11 +482,6 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                                                     callback(undefined,resSv);
                                                 }
                                             });
-
-
-
-
-                                        }
 
                                         res.end();
 
@@ -499,6 +498,65 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                             });
 
                             //});
+                        });
+                    }
+                    else if(option=="COUCH")
+                    {
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
+                        var cluster = new couchbase.Cluster();
+                        var bucket = cluster.openBucket('default');
+
+                        bucket.get(UUID, function(err, result) {
+                            if (err)
+                            {
+                                console.log(err);
+
+                                callback(err,undefined);
+                                res.end();
+                            }else
+                            {
+                               console.log(resUpFile.FileStructure);
+                                res.setHeader('Content-Type', resUpFile.FileStructure);
+                                //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                //var source = fs.createReadStream(SourcePath);
+                                //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
+                                var s = streamifier.createReadStream(result.value);
+                                //console.log(s);
+                                s.pipe(res);
+
+
+                                s.on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                    SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                    {
+                                        if(errSv)
+                                        {
+                                            callback(errSv,undefined);
+                                        }
+                                        else
+                                        {
+                                            callback(undefined,resSv);
+                                        }
+                                    });
+
+
+                                    console.log("ENDED");
+                                    res.end();
+                                });
+                                s.on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                    console.log("ERROR");
+                                    res.end(new Error('Error on pipe'));
+                                });
+
+                            }
+
+                            //console.log("W is "+JSON.stringify(result.value));
+                            // strm.pipe(dest);
+                            // {name: Frank}
+
+
+
                         });
                     }
                     else

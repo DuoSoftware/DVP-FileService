@@ -23,7 +23,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"MONGO",
+  "Option":"COUCH",
 
   "Mongo":
   {

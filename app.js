@@ -42,6 +42,9 @@ var RestServer = restify.createServer({
 //Server listen
 RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
+    //DeveloperFileUpoladManager.CouchUploader('123456','C:/Users/Pawan/Downloads/Raja_Perahera_Meda.mp3');
+    //DeveloperFileUpoladManager.Reader();
+   // FileHandler.downF()
 
 
 });
@@ -443,9 +446,19 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
                         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
                         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
-                            if (respg) {
 
-console.log("up save");
+
+                            if(errz)
+                            {
+                                console.log("up failed");
+                                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                                res.end(jsonString);
+                            }
+                          //  if (respg)
+                          else{
+
+                                    console.log("up save");
                                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resIns),AttchVal);
                                 RedisPublisher.RedisPublish(resIns, AttchVal,reqId, function (errRDS, resRDS) {
                                         if (errRDS) {
@@ -476,13 +489,7 @@ console.log("up save");
 
                             }
 
-                            else if (errz) {
 
-                                console.log("up failed");
-                                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
-                            }
 
                         });
 
@@ -748,7 +755,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
                 console.log("Done err");
 
             }
-            else if(resDownFile)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
