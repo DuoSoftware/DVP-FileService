@@ -2,7 +2,7 @@
 var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 //var couchbase = require('couchbase');
 var sys=require('sys');
@@ -12,7 +12,7 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 
 var Db = require('mongodb').Db,
