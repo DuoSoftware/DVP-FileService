@@ -25,7 +25,7 @@
     "mongoose": "^4.1.2",
     "stringify": "^3.1.0",
     "mongodb": "^2.0.40",
-    "dvp-common": "0.0.2",
+    "dvp-common": "^0.0.2",
     "dvp-dbmodels": "^0.0.19"
 
   },
