@@ -4,7 +4,7 @@
 
 var redis=require('redis');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 var log4js=require('log4js');
 
 var config = require('config');
@@ -12,7 +12,7 @@ var hpath=config.Host.hostpath;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("redis");
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 

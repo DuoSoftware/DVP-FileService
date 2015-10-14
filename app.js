@@ -1,12 +1,12 @@
 /**
  * Created by pawan on 2/23/2015.
  */
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 var restify = require('restify');
 //var sre = require('swagger-restify-express');
 
 var FileHandler=require('./FileHandlerApi.js');
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
@@ -20,7 +20,7 @@ var port = config.Host.port || 3000;
 
 var version=config.Host.version;
 var hpath=config.Host.hostpath;
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 var option = config.Option;
