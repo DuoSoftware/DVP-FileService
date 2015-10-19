@@ -312,60 +312,8 @@ var Company=1;
 
 //.......................................................................................................................
 
-/*
- RestServer.post('/DVP/API/:version/FIleService/FileHandler/Download_file_remote',function(req,res,next)
- {
 
 
- try {
-
- FileHandler.downF();
- res.end();
-
- }
- catch(ex)
- {
-
- var jsonString = messageFormatter.FormatMessage(ex, "Upload not succeeded:exception found", false, null);
- res.end(jsonString);
- }
- return next();
- });
-
-
- */
-/*
- RestServer.post('/DVP/API/:version/FIleService/FileHandler/ProfileTypeCallserverChooser',function(req,res,next)
- {
- try {
- CallServerChooser.ProfileTypeCallserverChooser(req,function(err,resz)
- {
- if(err==null)
- {
-
- res.end(resz);
- }
-
-
- });
-
-
-
- }
- catch(ex)
- {
- var jsonString = messageFormatter.FormatMessage(ex, "GetMaxLimit failed", false, res);
- res.end(jsonString);
- }
-
- return next();
-
- });
- */
-
-//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DevUploadFile/:cmp/:ten/:prov',function(req,res,next)
-//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/DeveloperFileUpload/:cmp/:ten/:prov',function(req,res,next)
-//RestServer.post('/DVP/API/'+version+'/FileService/File/Upload/:REFERENCEID',function(req,res,next)
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,next)
 {
 
@@ -679,7 +627,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
     next();
 });
 
-//RestServer.get('/DVP/API/'+version+'/FIleService/ClipsOfApplication/:AppID/OfCompany/:CompanyId/AndTenant/:TenantId',function(req,res,next)
+
 RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',function(req,res,next)
 {
     var Company=1;
