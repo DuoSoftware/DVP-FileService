@@ -704,7 +704,7 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId
                     }
                     else
                     {
-                        callback(undefined,result[0]);
+                        callback(undefined,result);
                     }
 
                 }
