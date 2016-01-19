@@ -726,6 +726,33 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId
 }
 
 
+function PickAllFiles(reqId,callback)
+{
+
+        try
+        {
+            DbConn.FileUpload.findAll().then(function (resFile) {
+
+
+                callback(undefined,resFile);
+
+
+            }).catch(function (errFile) {
+                callback(errFile,undefined);
+            });
+
+
+
+        }
+        catch(ex)
+        {
+            callback(ex,undefined);
+        }
+
+
+
+}
+
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
@@ -736,6 +763,7 @@ module.exports.PickFileInfo = PickFileInfo;
 module.exports.PickFileWithAppID = PickFileWithAppID;
 module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession;
 module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
+module.exports.PickAllFiles = PickAllFiles;
 
 
 
