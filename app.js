@@ -387,21 +387,21 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
     var Type='';
     var Category='';
 
-    if(req.params.class)
+    if(req.body.class)
     {
-        Clz=req.params.class;
+        Clz=req.body.class;
     }
-    if(req.params.category)
+    if(req.body.category)
     {
-        Type=req.params.category;
+        Type=req.body.category;
     }
-    if(req.params.type)
+    if(req.body.type)
     {
-        Category=req.params.type;
+        Category=req.body.type;
     }
 
 
-    var ref=req.params.referenceid;
+    var ref=req.body.referenceid;
     try {
 
         try
