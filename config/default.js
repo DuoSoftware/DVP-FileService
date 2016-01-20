@@ -9,7 +9,7 @@ module.exports = {
   },
   "Redis":
   {
-    "ip": "127.0.0.1",
+    "ip": "45.55.142.207",
     "port": "6379"
 
   },
@@ -23,7 +23,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"COUCH",
+  "Option":"LOCAL",
 
 
   "Mongo":
