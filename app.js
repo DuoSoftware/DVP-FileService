@@ -775,7 +775,60 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
 
     return next();
 
+})
+
+// appilication development phase
+
+/*
+RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        FileHandler.DeleteFile(res,req.params.id,option,reqId,function(errDownFile,resDownFile)
+        {
+            if(errDownFile)
+            {
+                var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+                console.log("Done err");
+
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+                console.log("Done");
+
+            }
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
 });
+*/
 
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
@@ -1175,16 +1228,69 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
 });
 
-
-
-RestServer.post('/DVP',function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next)
 {
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
 
 
 
-    //RedisPublisher.RedisGet();
+        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - ',reqId);
+
+
+        FileHandler.DeleteFile(req.params.id,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Exception occurred when starting DeleteFile service',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+
+   // FileHandler.DeleteFile(res);
 
 });
+
+RestServer.del('/DVP',function(req,res,next)
+{
+    FileHandler.delIt(res);
+})
+
+
 
 function Crossdomain(req,res,next){
 

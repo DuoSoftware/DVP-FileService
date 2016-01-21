@@ -473,19 +473,19 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                                     stream.on('end',function(result) {
 
 
-                                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
 
-                                            SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        {
+                                            if(errSv)
                                             {
-                                                if(errSv)
-                                                {
-                                                    callback(errSv,undefined);
-                                                }
-                                                else
-                                                {
-                                                    callback(undefined,resSv);
-                                                }
-                                            });
+                                                callback(errSv,undefined);
+                                            }
+                                            else
+                                            {
+                                                callback(undefined,resSv);
+                                            }
+                                        });
 
                                         res.end();
 
@@ -519,7 +519,7 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                                 res.end();
                             }else
                             {
-                               console.log(resUpFile.FileStructure);
+                                console.log(resUpFile.FileStructure);
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
                                 //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
                                 //var source = fs.createReadStream(SourcePath);
@@ -1167,6 +1167,68 @@ function PickAllFiles(reqId,callback)
 
 }
 
+
+function DeleteFile(fileID,reqId,callback)
+
+{
+    console.log("Hit func del");
+    try
+    {
+        PickAttachmentMetaData(fileID,reqId, function (errFile,resFile) {
+
+            if(errFile)
+            {
+                callback(errFile,undefined);
+            }
+            else
+            {
+
+                var URL= resFile.URL.replace(/\\/g, "/");
+                console.log(URL);
+                fs.unlink(URL,function(err){
+                    if(err)
+                    {
+                        console.log(err);
+                        callback(err,undefined);
+                    }
+                    else
+                    {
+                        //console.log("Done");
+                        //(undefined,undefined);
+                        resFile.destroy().then(function (resDel) {
+                            callback(undefined,resDel);
+                        }).catch(function (errDel) {
+                            callback(errDel,undefined);
+                        });
+                    }
+
+
+                });
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+
+    }
+
+
+
+
+
+}
+
+function delIt(res)
+{
+    fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
+        console.log(err);
+        res.end();
+    })
+}
+
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
 module.exports.PickAttachmentMetaData = PickAttachmentMetaData;
@@ -1177,6 +1239,9 @@ module.exports.PickFileWithAppID = PickFileWithAppID;
 module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession;
 module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
 module.exports.PickAllFiles = PickAllFiles;
+module.exports.DeleteFile = DeleteFile;
+module.exports.delIt = delIt;
+
 
 
 
