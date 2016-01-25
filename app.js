@@ -728,7 +728,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',function(req,res,next)
 {
     var reqId='';
     try {
@@ -744,7 +744,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id',function(req
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-        FileHandler.DownloadFileByID(res,req.params.id,option,reqId,function(errDownFile,resDownFile)
+        FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,reqId,function(errDownFile,resDownFile)
         {
             if(errDownFile)
             {
@@ -1244,7 +1244,7 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
 
 
 
-        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - ',reqId);
+        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - ID: %s',reqId,req.params.id);
 
 
         FileHandler.DeleteFile(req.params.id,reqId,function(err,resz)
@@ -1282,6 +1282,43 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
 
 
    // FileHandler.DeleteFile(res);
+
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/Files/Catagories',function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+
+
+
+        var Catobj = [{"OWNER":"USER","CATAGORY":"VOICE"},{"OWNER":"USER","CATAGORY":"FAX"},{"OWNER":"USER","CATAGORY":"VCAT1"},{"OWNER":"USER","CATAGORY":"VCAT2"},{"OWNER":"SERVER","CATAGORY":"SCAT1"},{"OWNER":"SERVER","CATAGORY":"SCAT2"},{"OWNER":"SERVER","CATAGORY":"SCAT3"}];
+        res.end(Catobj);
+
+
+
+
+
+    }
+    catch(ex)
+    {
+
+    }
+
+    return next();
+
+
+    // FileHandler.DeleteFile(res);
 
 });
 

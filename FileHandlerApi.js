@@ -431,14 +431,14 @@ function PickAttachmentMetaData(UUID,reqId,callback)
 }
 
 //log done...............................................................................................................
-function DownloadFileByID(res,UUID,option,reqId,callback)
+function DownloadFileByID(res,UUID,display,option,reqId,callback)
 {
     if(UUID)
     {
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID}, {Filename: display}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
 
