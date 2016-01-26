@@ -330,7 +330,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
     var Clz='';
     var Type='';
-    var Category='';
+    var Category=req.body.fileCategory;
 
     if(req.params.class)
     {
@@ -338,7 +338,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
     }
     if(req.params.category)
     {
-        Type="tempType";
+        Category="tempType";
     }
     if(req.params.type)
     {
@@ -1285,10 +1285,8 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Catagories',function(req,res,next)
-{
-    console.log("hitt");
-    var reqId='';
+RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',function(req,res,next)
+{ var reqId='';
     try {
 
         try
@@ -1302,25 +1300,41 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Catagories',function(req,r
 
 
 
+        logger.debug('[DVP-FIleService.LoadCategories] - [%s] - [HTTP] - Request received - ',reqId);
 
-        var Catobj = [{"OWNER":"USER","CATEGORY":"VOICE"},{"OWNER":"USER","CATEGORY":"FAX"},{"OWNER":"USER","CATEGORY":"VCAT1"},{"OWNER":"USER","CATEGORY":"VCAT2"},{"OWNER":"SERVER","CATEGORY":"SCAT1"},{"OWNER":"SERVER","CATEGORY":"SCAT2"},{"OWNER":"SERVER","CATEGORY":"SCAT3"}];
-        console.log(Catobj);
-        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, Catobj);
-        res.end(jsonString);
 
+        FileHandler.LoadCategories(reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.LoadCategories] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.LoadCategories] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
 
 
 
     }
     catch(ex)
     {
-
+        logger.debug('[DVP-FIleService.LoadCategories] - [%s] - [HTTP] - Exception occurred when starting LoadCategories service',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.LoadCategories] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
     }
 
     return next();
-
-
-    // FileHandler.DeleteFile(res);
 
 });
 

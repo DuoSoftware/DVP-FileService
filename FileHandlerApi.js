@@ -1221,6 +1221,29 @@ function DeleteFile(fileID,reqId,callback)
 
 }
 
+function  LoadCategories(reqId,callback)
+{
+    try
+    {
+        DbConn.FileCategory.findAll().then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
 function delIt(res)
 {
     fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
@@ -1240,6 +1263,7 @@ module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession
 module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
 module.exports.PickAllFiles = PickAllFiles;
 module.exports.DeleteFile = DeleteFile;
+module.exports.LoadCategories = LoadCategories;
 module.exports.delIt = delIt;
 
 
