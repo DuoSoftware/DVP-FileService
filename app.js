@@ -1285,7 +1285,7 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Catagories',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Catagories',function(req,res,next)
 {
     var reqId='';
     try {
