@@ -49,7 +49,7 @@ RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
     //DeveloperFileUpoladManager.CouchUploader('123456','C:/Users/Pawan/Downloads/Raja_Perahera_Meda.mp3');
     //DeveloperFileUpoladManager.Reader();
-   // FileHandler.downF()
+    // FileHandler.downF()
 
 
 });
@@ -71,7 +71,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 // instance 1,
     // profile 2,
     //shared 3
-var Company=1;
+    var Company=1;
     var Tenant=1;
 
     var reqId='';
@@ -360,7 +360,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
 
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
-        
+
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
@@ -437,197 +437,197 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
         });
 
         /*if(ProvTyp==1) {
-            try {
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
-                CallServerChooser.InstanceTypeCallserverChooser(Company, Tenant,reqId, function (errIns, resIns) {
+         try {
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Instance type is selected');
+         CallServerChooser.InstanceTypeCallserverChooser(Company, Tenant,reqId, function (errIns, resIns) {
 
 
-                    if (resIns) {
-                        console.log("server choose");
+         if (resIns) {
+         console.log("server choose");
 
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
-
-
-                            if(errz)
-                            {
-                                console.log("up failed");
-                                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
-                            }
-                          //  if (respg)
-                          else{
-
-                                    console.log("up save");
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resIns),AttchVal);
-                                RedisPublisher.RedisPublish(resIns, AttchVal,reqId, function (errRDS, resRDS) {
-                                        if (errRDS) {
-
-                                            console.log("read error");
-                                            var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
-                                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                            res.end(jsonString);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details Saving starts - File - %s',reqId,JSON.stringify(file));
+         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
 
 
+         if(errz)
+         {
+         console.log("up failed");
+         var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+         //  if (respg)
+         else{
 
-                                        }
-                                        else {
-                                            console.log(AttchVal.id);
-                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
-                                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                            res.end(jsonString);
+         console.log("up save");
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resIns),AttchVal);
+         RedisPublisher.RedisPublish(resIns, AttchVal,reqId, function (errRDS, resRDS) {
+         if (errRDS) {
+
+         console.log("read error");
+         var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
 
 
 
-
-                                        }
-
-
-                                    }
-                                );
-
-
-                            }
+         }
+         else {
+         console.log(AttchVal.id);
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
 
 
 
-                        });
 
-                    }
-                    else if (errIns) {
-
-                        var jsonString = messageFormatter.FormatMessage(errIns, "ERROR/EXCEPTION", false, undefined);
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                        res.end(jsonString);
-
-                    }
-
-                });
+         }
 
 
-            }
-            catch (ex) {
-                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred whe provision type : 1 action starts  ',reqId);
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
+         }
+         );
 
 
-        }
-
-        else if(ProvTyp==2)
-        {
-            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
-            try {
-                CallServerChooser.ProfileTypeCallserverChooser(Company,Tenant,reqId, function (errProf, resProf) {
-
-                    if (resProf) {
-
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId,function (errUpload, resUpload) {
-                            if (resUpload) {
-
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
-                                RedisPublisher.RedisPublish(resProf, AttchVal, function (errRDS, resRDS) {
-                                        if (errRDS) {
-                                            var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
-                                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                            res.end(jsonString);
-
-                                        }
-                                        else {
-                                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRDS);
-                                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                            res.end(jsonString);
-
-                                        }
-
-                                    }
-                                );
-
-
-                            }
-
-                            else if (errUpload) {
-                                var jsonString = messageFormatter.FormatMessage(errUpload, "ERROR/EXCEPTION", false, undefined);
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
-
-                            }
-
-                        });
-
-                    }
-                    else if (errProf) {
-                        var jsonString = messageFormatter.FormatMessage(errProf, "ERROR/EXCEPTION", false, undefined);
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                        res.end(jsonString);
-
-                    }
-
-                });
-
-
-            }
-            catch (ex) {
-                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred whe provision type : 2 action starts  ',reqId);
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
-        }
-
-        else
-        {
-            try {
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Shared type is selected');
-                CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten,reqId, function (errShared, resShared) {
-
-                    if (resShared) {
-
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
-                        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId, function (errUpload, resUpload) {
-                            if (resUpload) {
-
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resShared),AttchVal);
-                                RedisPublisher.SharedServerRedisUpdate(resShared,AttchVal);
-                                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resUpload);
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
+         }
 
 
 
-                            }
+         });
 
-                            else if (errUpload) {
-                                var jsonString = messageFormatter.FormatMessage(errUpload, "ERROR/EXCEPTION", false, undefined);
-                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
-                            }
+         }
+         else if (errIns) {
 
-                        });
+         var jsonString = messageFormatter.FormatMessage(errIns, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
 
-                    }
-                    else if (errShared) {
-                        var jsonString = messageFormatter.FormatMessage(errShared, "ERROR/EXCEPTION", false, undefined);
-                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                        res.end(jsonString);
+         }
 
-                    }
-
-                });
+         });
 
 
-            }
-            catch (ex) {
-                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred when Shared type : 2 action starts  ',reqId);
-                var jsonString = messageFormatter.FormatMessage(ex, "ERROR/EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
-        }*/
+         }
+         catch (ex) {
+         logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred whe provision type : 1 action starts  ',reqId);
+         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+
+
+         }
+
+         else if(ProvTyp==2)
+         {
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Profile type is selected');
+         try {
+         CallServerChooser.ProfileTypeCallserverChooser(Company,Tenant,reqId, function (errProf, resProf) {
+
+         if (resProf) {
+
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
+         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId,function (errUpload, resUpload) {
+         if (resUpload) {
+
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resProf),AttchVal);
+         RedisPublisher.RedisPublish(resProf, AttchVal, function (errRDS, resRDS) {
+         if (errRDS) {
+         var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+         }
+         else {
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resRDS);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+         }
+
+         }
+         );
+
+
+         }
+
+         else if (errUpload) {
+         var jsonString = messageFormatter.FormatMessage(errUpload, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+         }
+
+         });
+
+         }
+         else if (errProf) {
+         var jsonString = messageFormatter.FormatMessage(errProf, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+         }
+
+         });
+
+
+         }
+         catch (ex) {
+         logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred whe provision type : 2 action starts  ',reqId);
+         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+         }
+
+         else
+         {
+         try {
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Shared type is selected');
+         CallServerChooser.SharedTypeCallsereverChooser(req.params.cmp, req.params.ten,reqId, function (errShared, resShared) {
+
+         if (resShared) {
+
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Uploaded File details saving starts - File - %s',reqId,JSON.stringify(file));
+         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company,Tenant,ref,option,Clz,Type,Category,reqId, function (errUpload, resUpload) {
+         if (resUpload) {
+
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(resShared),AttchVal);
+         RedisPublisher.SharedServerRedisUpdate(resShared,AttchVal);
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resUpload);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+
+
+         }
+
+         else if (errUpload) {
+         var jsonString = messageFormatter.FormatMessage(errUpload, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+
+         });
+
+         }
+         else if (errShared) {
+         var jsonString = messageFormatter.FormatMessage(errShared, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+
+         }
+
+         });
+
+
+         }
+         catch (ex) {
+         logger.error('[DVP-FIleService.UploadFiles] - [%s] - Error occurred when Shared type : 2 action starts  ',reqId);
+         var jsonString = messageFormatter.FormatMessage(ex, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+         }*/
 
     }
     catch(ex)
@@ -646,14 +646,14 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
     var reqId='';
 
 
-        try
-        {
-            reqId = uuid.v1();
-        }
-        catch(ex)
-        {
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
 
-        }
+    }
 
 
     DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),function(errMap,resMap)
@@ -706,7 +706,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
                 res.end(jsonString);
             }
             else {
-               // console.log(resz);
+                // console.log(resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
@@ -780,55 +780,55 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 // appilication development phase
 
 /*
-RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next)
-{
-    var reqId='';
-    try {
+ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next)
+ {
+ var reqId='';
+ try {
 
-        try
-        {
-            reqId = uuid.v1();
-        }
-        catch(ex)
-        {
+ try
+ {
+ reqId = uuid.v1();
+ }
+ catch(ex)
+ {
 
-        }
+ }
 
-        logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+ logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-        FileHandler.DeleteFile(res,req.params.id,option,reqId,function(errDownFile,resDownFile)
-        {
-            if(errDownFile)
-            {
-                var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
-                console.log("Done err");
+ FileHandler.DeleteFile(res,req.params.id,option,reqId,function(errDownFile,resDownFile)
+ {
+ if(errDownFile)
+ {
+ var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+ logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+ console.log("Done err");
 
-            }
-            else
-            {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
-                logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
-                console.log("Done");
+ }
+ else
+ {
+ var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+ logger.debug('[DVP-FIleService.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+ console.log("Done");
 
-            }
+ }
 
-        });
+ });
 
 
 
-    }
-    catch(ex)
-    {
-        logger.error('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        res.end(jsonString);
-    }
+ }
+ catch(ex)
+ {
+ logger.error('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+ var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+ res.end(jsonString);
+ }
 
-    return next();
+ return next();
 
-});
-*/
+ });
+ */
 
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
@@ -1281,12 +1281,13 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
     return next();
 
 
-   // FileHandler.DeleteFile(res);
+    // FileHandler.DeleteFile(res);
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Catagories',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Catagories',function(req,res,next)
 {
+    console.log("hitt");
     var reqId='';
     try {
 
@@ -1302,9 +1303,10 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Catagories',function(req,
 
 
 
-        var Catobj = [{"OWNER":"USER","CATAGORY":"VOICE"},{"OWNER":"USER","CATAGORY":"FAX"},{"OWNER":"USER","CATAGORY":"VCAT1"},{"OWNER":"USER","CATAGORY":"VCAT2"},{"OWNER":"SERVER","CATAGORY":"SCAT1"},{"OWNER":"SERVER","CATAGORY":"SCAT2"},{"OWNER":"SERVER","CATAGORY":"SCAT3"}];
-        res.end(Catobj);
-
+        var Catobj = [{"OWNER":"USER","CATEGORY":"VOICE"},{"OWNER":"USER","CATEGORY":"FAX"},{"OWNER":"USER","CATEGORY":"VCAT1"},{"OWNER":"USER","CATEGORY":"VCAT2"},{"OWNER":"SERVER","CATEGORY":"SCAT1"},{"OWNER":"SERVER","CATEGORY":"SCAT2"},{"OWNER":"SERVER","CATEGORY":"SCAT3"}];
+        console.log(Catobj);
+        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, Catobj);
+        res.end(jsonString);
 
 
 
