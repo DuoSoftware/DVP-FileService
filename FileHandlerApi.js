@@ -1145,7 +1145,7 @@ function PickAllFiles(reqId,callback)
 
     try
     {
-        DbConn.FileUpload.findAll({include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'] ,include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
