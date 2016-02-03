@@ -31,6 +31,7 @@ client.on("error", function (err) {
 function RedisPublish(SID,AID,reqId,callback)
 {
 log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID+" AttachmentDetails : "+AID);
+
 if(client.connected)
 {
     logger.info('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is Online',reqId);

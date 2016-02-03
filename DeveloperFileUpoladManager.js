@@ -1,12 +1,31 @@
 /**
  * Created by pawan on 4/9/2015.
  */
+<<<<<<< HEAD
 var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
+=======
+var DbConn = require('DVP-DBModels');
+var config = require('config');
+// sprint 5
+
+var couchbase = require('couchbase');
+var Cbucket=config.Couch.bucket;
+var CHip=config.Couch.ip;
+var cluster = new couchbase.Cluster("couchbase://"+CHip);
+
+//
+
+
+var fs=require('fs');
+var stringify = require('stringify');
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+
+>>>>>>> remotes/origin/Development
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
@@ -164,6 +183,27 @@ console.log("OPTION IS "+option);
 
                             });
                         }
+                        // sprint 5
+                        else if(option=="COUCH")
+                        {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId,JSON.stringify(NewUploadObj));
+                            console.log("TOCOUCH >>>>>>>>> "+rand2);
+                            CouchUploader(rand2,Fobj,resUpFile,reqId,function(errCouch,resCouch)
+                            {
+                                if(errCouch)
+                                {
+                                    console.log(errCouch);
+                                    callback(errCouch,undefined);
+                                }
+                                else
+                                {
+                                    console.log(resCouch);
+                                    callback(undefined,resUpFile.UniqueId);
+                                }
+
+                            });
+
+                        }
 
 
 
@@ -248,6 +288,119 @@ function MongoUploader(uuid,path,reqId,callback)
     });
 
 }
+
+function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
+{
+
+    var content;
+
+    var bucket = cluster.openBucket(Cbucket);
+
+    fs.readFile(fobj.path, function read(errRead, data) {
+        if (errRead) {
+            callback(errRead,undefined);
+        }
+        else
+        {
+            var options={
+                FileStructure:fobj.FileStructure,
+                Filename:fobj.Filename,
+                Version:resUpFile.Version,
+                DisplayName:resUpFile.DisplayName
+
+
+
+            };
+            content = data;
+            bucket.upsert(uuid, content,options, function (errSave, resSave) {
+                if (errSave) {
+
+                    callback(errSave,undefined);
+                    //callback(err,undefined);
+                } else {
+//console.log("Done");
+                    callback(undefined,uuid);
+                    //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd.mp3');
+                    //var s = streamifier.createReadStream(data);
+
+
+                    //console.log(s);
+                    //s.pipe(dest);
+
+
+
+                    //callback(undefined,"Succesfully uploaded");
+                }
+
+
+                // Invoke the next step here however you like
+                //console.log(content);   // Put all of the code here (not the best solution)
+                // Or put the next step in a function and invoke it
+            });
+        }
+
+
+
+
+
+
+
+    });
+
+
+
+
+
+
+    //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
+    //var cluster = new couchbase.Cluster();
+    //var bucket = cluster.openBucket('default');
+   // var fl=strm.read();
+    //console.log(strm);
+
+
+
+
+    /*bucket.upsert('testdoc5', fl, function(err, result) {
+        if (err) {console.log(err);}
+
+        bucket.get('testdoc5', function(err, result) {
+            if (err) {console.log(err);}
+
+            console.log("W is "+JSON.stringify(result.value));
+           // strm.pipe(dest);
+            // {name: Frank}
+        });
+    });
+
+
+*/
+
+
+
+   /* bucket.get('testdoc3', function(err, result) {
+        if (err) {
+            console.log(err);
+        }
+
+
+
+        var source=result.value._readableState.buffer;
+        console.log("S is "+JSON.stringify(source));
+
+
+
+       var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
+        //source.pipe(dest);
+      var s=  streamifier.createReadStream(source.toString());
+        console.log("stmfris "+JSON.stringify(s));
+        s.pipe(dest);
+
+    });*/
+
+
+}
+
 
 
 
@@ -1158,4 +1311,6 @@ module.exports.PickAllVoiceAppClipsOfApplication = PickAllVoiceAppClipsOfApplica
 module.exports.PickCallRecordById = PickCallRecordById;
 module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
 module.exports.FileAssignWithApplication = FileAssignWithApplication;
+module.exports.CouchUploader = CouchUploader;
+
 

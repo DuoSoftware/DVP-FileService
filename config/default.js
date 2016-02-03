@@ -4,8 +4,8 @@ module.exports = {
     "User":"duo",
     "Password":"DuoS123",
     "Port":5432,
-    "Host":"localhost",
-    "Database":"dvpdb"
+    "Host":"104.131.105.222",
+    "Database":"duo"
   },
   "Redis":
   {
@@ -23,12 +23,20 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"MONGO",
+  "Option":"LOCAL",
+
 
   "Mongo":
   {
     "ip":"127.0.0.1",
     "port":"27017",
     "dbname":"test"
+  },
+
+  "Couch":
+  {
+    "ip":"127.0.0.1",
+    "port":"",
+    "bucket":"default"
   }
 };

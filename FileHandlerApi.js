@@ -2,7 +2,21 @@
 var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
+<<<<<<< HEAD
 var DbConn = require('dvp-dbmodels');
+=======
+var DbConn = require('DVP-DBModels');
+var config = require('config');
+
+//Sprint 5
+var couchbase = require('couchbase');
+var streamifier = require('streamifier');
+var Cbucket=config.Couch.bucket;
+var CHip=config.Couch.ip;
+var cluster = new couchbase.Cluster("couchbase://"+CHip);
+//
+
+>>>>>>> remotes/origin/Development
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 //var couchbase = require('couchbase');
 var sys=require('sys');
@@ -12,8 +26,13 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
+<<<<<<< HEAD
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
+=======
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+
+>>>>>>> remotes/origin/Development
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
@@ -236,8 +255,8 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
 
 function downF()
 {
-    var source = fs.createReadStream('C:/Users/pawan/AppData/Local/Temp/upload_2ac9da85f25059f246bc075205f9bd58');
-    var dest = fs.createWriteStream('C:/Users/pawan/Desktop/jsons/apss');
+    var source = fs.createReadStream('C:/Users/pawan/Desktop/bc9783386be9de59d68bc576c9726de9');
+    var dest = fs.createWriteStream('C:/Users/pawan/Desktop/apssd');
 
     source.pipe(dest);
     source.on('end', function() { /* copied */ });
@@ -285,14 +304,14 @@ function PickAttachmentMetaData(UUID,reqId,callback)
 }
 
 //log done...............................................................................................................
-function DownloadFileByID(res,UUID,option,reqId,callback)
+function DownloadFileByID(res,UUID,display,option,reqId,callback)
 {
     if(UUID)
     {
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID}, {Filename: display}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
 
@@ -319,34 +338,27 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                                 {
                                     var stream = gridStore.stream(true);
 
-                                    stream.on('end',function(err) {
+                                    stream.on('error',function(err)
+                                    {
+                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                        callback(err,undefined);
+                                    });
+                                    stream.on('end',function(result) {
 
-                                        if(err){
 
-                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                            callback(err,undefined);
+                                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
 
-
-                                        }else {
-
-                                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-
-                                            SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        {
+                                            if(errSv)
                                             {
-                                                if(errSv)
-                                                {
-                                                    callback(errSv,undefined);
-                                                }
-                                                else
-                                                {
-                                                    callback(undefined,resSv);
-                                                }
-                                            });
-
-
-
-
-                                        }
+                                                callback(errSv,undefined);
+                                            }
+                                            else
+                                            {
+                                                callback(undefined,resSv);
+                                            }
+                                        });
 
                                         res.end();
 
@@ -363,6 +375,65 @@ function DownloadFileByID(res,UUID,option,reqId,callback)
                             });
 
                             //});
+                        });
+                    }
+                    else if(option=="COUCH")
+                    {
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
+
+                        var bucket = cluster.openBucket(Cbucket);
+
+                        bucket.get(UUID, function(err, result) {
+                            if (err)
+                            {
+                                console.log(err);
+
+                                callback(err,undefined);
+                                res.end();
+                            }else
+                            {
+                                console.log(resUpFile.FileStructure);
+                                res.setHeader('Content-Type', resUpFile.FileStructure);
+                                //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                //var source = fs.createReadStream(SourcePath);
+                                //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
+                                var s = streamifier.createReadStream(result.value);
+                                //console.log(s);
+                                s.pipe(res);
+
+
+                                s.on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                    SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                    {
+                                        if(errSv)
+                                        {
+                                            callback(errSv,undefined);
+                                        }
+                                        else
+                                        {
+                                            callback(undefined,resSv);
+                                        }
+                                    });
+
+
+                                    console.log("ENDED");
+                                    res.end();
+                                });
+                                s.on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                    console.log("ERROR");
+                                    res.end(new Error('Error on pipe'));
+                                });
+
+                            }
+
+                            //console.log("W is "+JSON.stringify(result.value));
+                            // strm.pipe(dest);
+                            // {name: Frank}
+
+
+
                         });
                     }
                     else
@@ -725,7 +796,36 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId
 
 }
 
+// app dev
+function PickAllFiles(reqId,callback)
+{
 
+    try
+    {
+        DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'] ,include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+}
+
+
+<<<<<<< HEAD
 function PickAllFiles(reqId,callback)
 {
 
@@ -753,6 +853,91 @@ function PickAllFiles(reqId,callback)
 
 }
 
+=======
+function DeleteFile(fileID,reqId,callback)
+
+{
+    console.log("Hit func del");
+    try
+    {
+        PickAttachmentMetaData(fileID,reqId, function (errFile,resFile) {
+
+            if(errFile)
+            {
+                callback(errFile,undefined);
+            }
+            else
+            {
+
+                var URL= resFile.URL.replace(/\\/g, "/");
+                console.log(URL);
+                fs.unlink(URL,function(err){
+                    if(err)
+                    {
+                        console.log(err);
+                        callback(err,undefined);
+                    }
+                    else
+                    {
+                        //console.log("Done");
+                        //(undefined,undefined);
+                        resFile.destroy().then(function (resDel) {
+                            callback(undefined,resDel);
+                        }).catch(function (errDel) {
+                            callback(errDel,undefined);
+                        });
+                    }
+
+
+                });
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+
+    }
+
+
+
+
+
+}
+
+function  LoadCategories(reqId,callback)
+{
+    try
+    {
+        DbConn.FileCategory.findAll().then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function delIt(res)
+{
+    fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
+        console.log(err);
+        res.end();
+    })
+}
+>>>>>>> remotes/origin/Development
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
@@ -764,6 +949,14 @@ module.exports.PickFileWithAppID = PickFileWithAppID;
 module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession;
 module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
 module.exports.PickAllFiles = PickAllFiles;
+<<<<<<< HEAD
+=======
+module.exports.DeleteFile = DeleteFile;
+module.exports.LoadCategories = LoadCategories;
+module.exports.delIt = delIt;
+
+
+>>>>>>> remotes/origin/Development
 
 
 

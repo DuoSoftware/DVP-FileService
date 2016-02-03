@@ -25,13 +25,20 @@ module.exports = {
         "logfilepath": "LOG4JS_CONFIG"
     },
 
-    "Option":"MONGO",
+    "Option":"COUCH",
 
     "Mongo":
     {
         "ip":"MONGO_IP",
             "port":"MONGO_PORT",
         "dbname":"MONGO_DBNAME"
+    },
+
+    "Couch":
+    {
+        "ip":"COUCH_IP",
+        "port":"COUCH_PORT",
+        "bucket":"COUCH_BUCKET"
     }
 };
 
