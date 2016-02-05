@@ -346,35 +346,35 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
     if(req.body.class)
     {
-<<<<<<< HEAD
+
         Clz=req.body.class;
-=======
-        Clz="tempClz";
->>>>>>> remotes/origin/Development
+
+      //  Clz="tempClz";
+
     }
     if(req.body.category)
     {
-<<<<<<< HEAD
+
         Type=req.body.category;
-=======
-        Category="tempType";
->>>>>>> remotes/origin/Development
+
+        //Category="tempType";
+
     }
     if(req.body.type)
     {
-<<<<<<< HEAD
+
         Category=req.body.type;
     }
 
 
     var ref=req.body.referenceid;
-=======
-        Category="tempCat";
-    }
+
+       // Category="tempCat";
+   // }
 
 
     var ref="tempRef";
->>>>>>> remotes/origin/Development
+
     try {
 
         try
@@ -1200,7 +1200,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
 });
 
 
-<<<<<<< HEAD
+
 // application development phase
 
 RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
@@ -1257,9 +1257,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
 });
 
-=======
+
 // app development phase
->>>>>>> remotes/origin/Development
 
 RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 {
