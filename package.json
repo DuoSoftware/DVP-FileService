@@ -8,7 +8,6 @@
     "couchbase": "^2.1.3",
     "fs": "^0.0.2",
     "multer": "^0.1.8",
-    "mongodb": "^2.1.4",
     "mongoose": "^4.3.6",
     "request": "^2.67.0",
     "mkdir": "^0.0.2",
@@ -17,20 +16,11 @@
     "dvp-common": "^0.0.4",
     "config": "^1.19.0",
     "fstream": "^1.0.8",
-    "nano": "^6.1.5",
     "redis": "^0.12.1",
     "express": "^4.13.3",
     "path": "^0.11.14",
-<<<<<<< HEAD
     "nano": "^6.1.5",
-    "couchbase": "^2.0.12",
-    "mongoose": "^4.1.2",
-    "stringify": "^3.1.0",
     "mongodb": "^2.0.40",
-    "dvp-common": "^0.0.2",
-    "dvp-dbmodels": "^0.0.19"
-
-=======
     "gridfs-stream": "^1.1.1",
     "restify": "^3.0.3",
     "log4js": "^0.6.29",
@@ -38,7 +28,6 @@
     "stringify": "^3.2.0",
     "streamifier": "^0.1.1",
     "GridFS": "^0.3.0"
->>>>>>> remotes/origin/Development
   },
   "devDependencies": {},
   "scripts": {

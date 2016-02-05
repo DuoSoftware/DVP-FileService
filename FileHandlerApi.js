@@ -2,9 +2,7 @@
 var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
-<<<<<<< HEAD
 var DbConn = require('dvp-dbmodels');
-=======
 var DbConn = require('DVP-DBModels');
 var config = require('config');
 
@@ -16,7 +14,7 @@ var CHip=config.Couch.ip;
 var cluster = new couchbase.Cluster("couchbase://"+CHip);
 //
 
->>>>>>> remotes/origin/Development
+
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 //var couchbase = require('couchbase');
 var sys=require('sys');
@@ -26,13 +24,12 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
-<<<<<<< HEAD
+
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
-=======
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
->>>>>>> remotes/origin/Development
+
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
@@ -824,8 +821,6 @@ function PickAllFiles(reqId,callback)
 
 }
 
-
-<<<<<<< HEAD
 function PickAllFiles(reqId,callback)
 {
 
@@ -853,7 +848,6 @@ function PickAllFiles(reqId,callback)
 
 }
 
-=======
 function DeleteFile(fileID,reqId,callback)
 
 {
@@ -937,7 +931,7 @@ function delIt(res)
         res.end();
     })
 }
->>>>>>> remotes/origin/Development
+
 
 module.exports.SaveUploadFileDetails = SaveUploadFileDetails;
 module.exports.downF = downF;
@@ -949,14 +943,10 @@ module.exports.PickFileWithAppID = PickFileWithAppID;
 module.exports.PickAllVoiceRecordingsOfSession = PickAllVoiceRecordingsOfSession;
 module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSessionAndTypes;
 module.exports.PickAllFiles = PickAllFiles;
-<<<<<<< HEAD
-=======
 module.exports.DeleteFile = DeleteFile;
 module.exports.LoadCategories = LoadCategories;
 module.exports.delIt = delIt;
 
-
->>>>>>> remotes/origin/Development
 
 
 

@@ -1,14 +1,13 @@
 /**
  * Created by pawan on 4/9/2015.
  */
-<<<<<<< HEAD
+
 var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
-=======
 var DbConn = require('DVP-DBModels');
 var config = require('config');
 // sprint 5
@@ -25,7 +24,6 @@ var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
->>>>>>> remotes/origin/Development
 
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
