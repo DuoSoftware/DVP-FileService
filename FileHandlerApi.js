@@ -3,7 +3,6 @@ var fstream = require('fstream');
 var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
-var DbConn = require('DVP-DBModels');
 var config = require('config');
 
 //Sprint 5
@@ -27,7 +26,7 @@ var log4js=require('log4js');
 
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+
 
 
 
