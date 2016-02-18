@@ -46,20 +46,20 @@ var MDB=config.Mongo.dbname;
 
 
 
-function FindCurrentVersion(FObj,reqId,callback)
+function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 {
     try
     {
         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
-        //DbConn.FileUpload.find({where: [{Filename: FObj.name}]}).complete(function (err, CurFileObject)
-        DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name}]}).then(function (resFile) {
+        DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
 
             if(resFile)
             {
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((resFile)+1));
                 callback(undefined,parseInt((resFile)+1));
             }
-            else{
+            else
+            {
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
                 callback(undefined,1);
             }
@@ -71,31 +71,6 @@ function FindCurrentVersion(FObj,reqId,callback)
 
         });
 
-
-
-
-
-        /*complete(function (err, CurFileObject)
-         {
-         if(err)
-         {
-         logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,err);
-         callback(err,undefined);
-         }
-         else
-         {
-         if(CurFileObject)
-         {
-         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((CurFileObject)+1));
-         callback(undefined,parseInt((CurFileObject)+1));
-         }
-         else{
-         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
-         callback(undefined,1);
-         }
-
-         }
-         });*/
     }
     catch (ex)
     {
@@ -121,9 +96,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
     try
     {
-console.log("OPTION IS "+option);
 
-        FindCurrentVersion(Fobj,reqId,function(err,result)
+        FindCurrentVersion(Fobj,company,tenant,reqId,function(err,result)
         {
             if(err)
             {
@@ -215,24 +189,6 @@ console.log("OPTION IS "+option);
 
                     });
 
-
-                    /*complete(function (errUpFile, resUpFile) {
-                     if (errUpFile) {
-
-                     logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
-                     callback(errUpFile, undefined);
-
-
-
-
-                     }
-                     else {
-                     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                     callback(undefined, resUpFile.UniqueId);
-                     }
-
-
-                     });*/
                 }
                 catch(ex)
                 {
@@ -1150,21 +1106,16 @@ function PickVoiceAppClipById(RecId,callback) {
     }
 
 
-}
+};
 
-function FileAssignWithApplication(fileUID,appID,callback)
+function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
 {
     if(fileUID&&appID&&!isNaN(appID))
     {
         try
         {
-            DbConn.FileUpload.find({where:[{UniqueId:fileUID}]}).complete(function(errFile,resFile)
-            {
-                if(errFile)
-                {
-                    callback(errFile,undefined);
-                }else
-                {
+            DbConn.FileUpload.find({where:[{UniqueId:fileUID},{CompanyId:Company},{TenantId:Tenant}]}).
+                then(function (resFile) {
                     if(!resFile)
                     {
                         callback(new Error("No file"),undefined);
@@ -1226,39 +1177,39 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                                                 callback(errMap, undefined);
                                                             });
 
-                                                               /* complete(function (errMap, resMap) {
-                                                                if (errMap) {
-                                                                    callback(errMap, undefined);
-                                                                }
-                                                                else {
-                                                                    callback(undefined,resMap);
-                                                                }
-                                                            });*/
+                                                            /* complete(function (errMap, resMap) {
+                                                             if (errMap) {
+                                                             callback(errMap, undefined);
+                                                             }
+                                                             else {
+                                                             callback(undefined,resMap);
+                                                             }
+                                                             });*/
 
                                                         }).catch(function (errNull) {
                                                             callback(errNull,undefined);
                                                         });
 
 
-                                                            /*complete(function (errNull, resNull) {
+                                                        /*complete(function (errNull, resNull) {
 
-                                                            if(errNull)
-                                                            {
-                                                                callback(errNull,undefined);
-                                                            }
-                                                            else
-                                                            {
-                                                                resFile.setApplication(resApp).complete(function (errMap, resMap) {
-                                                                    if (errMap) {
-                                                                        callback(errMap, undefined);
-                                                                    }
-                                                                    else {
-                                                                        callback(undefined,resMap);
-                                                                    }
-                                                                });
-                                                            }
+                                                         if(errNull)
+                                                         {
+                                                         callback(errNull,undefined);
+                                                         }
+                                                         else
+                                                         {
+                                                         resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                         if (errMap) {
+                                                         callback(errMap, undefined);
+                                                         }
+                                                         else {
+                                                         callback(undefined,resMap);
+                                                         }
+                                                         });
+                                                         }
 
-                                                        });*/
+                                                         });*/
                                                     }
                                                 }
                                                 //for (var index in resVFileNm) {
@@ -1281,8 +1232,10 @@ function FileAssignWithApplication(fileUID,appID,callback)
                             }
                         });
                     }
-                }
-            });
+                }).catch(function (errFile) {
+                    callback(errFile,undefined);
+                });
+
         }
         catch(ex)
         {
@@ -1294,7 +1247,7 @@ function FileAssignWithApplication(fileUID,appID,callback)
         callback(new Error("Invalid Inputs"),undefined);
     }
 
-}
+};
 
 
 

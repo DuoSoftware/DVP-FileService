@@ -14,6 +14,12 @@ var uuid = require('node-uuid');
 var log4js=require('log4js');
 
 
+// Security
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
+var authorization = require('dvp-common/Authentication/Authorization.js');
+//...............................................
+
 var config = require('config');
 
 var port = config.Host.port || 3000;
@@ -26,6 +32,7 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var option = config.Option;
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
+
 //restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
 
@@ -49,11 +56,11 @@ var RestServer = restify.createServer({
 
 RestServer.use(restify.CORS());
 RestServer.use(restify.fullResponse());
+RestServer.pre(restify.pre.userAgentConnection());
+RestServer.use(jwt({secret: secret.Secret}));
 
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
-RestServer.use(restify.CORS());
-RestServer.use(restify.fullResponse());
 
 
 //Server listen
@@ -75,16 +82,12 @@ RestServer.use(restify.queryParser());
 
 
 
-//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFile/:cmp/:ten/:prov',function(req,res,next)
 
-//RestServer.post('/DVP/API/'+version+'/FIleService/FileHandler/UploadFileWithProvision/:prov/ToCompany/:CmpID/Of/:TenID',function(req,res,next)
-RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 // instance 1,
     // profile 2,
     //shared 3
-    var Company=1;
-    var Tenant=1;
 
     var reqId='';
     try {
@@ -97,6 +100,19 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
         {
 
         }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
         logger.debug('[DVP-FIleService.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,Company,Tenant);
 
         var rand2 = uuid.v4().toString();
@@ -259,9 +275,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
             }
         }
 
-
-
-
         else
         {
             try {
@@ -331,13 +344,30 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
-
-    console.log(option);
     var reqId='';
-    var Company=1;
-    var Tenant=1;
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
     var prov=1;
 
     var Clz='';
@@ -368,10 +398,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 
 
     var ref=req.body.referenceid;
-
-       // Category="tempCat";
-   // }
-
 
     var ref="tempRef";
 
@@ -669,11 +695,10 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',function(req,res,
 });
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
+
     var reqId='';
-
-
     try
     {
         reqId = uuid.v1();
@@ -683,8 +708,21 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
 
     }
 
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
 
-    DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),function(errMap,resMap)
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
+
+
+
+    DeveloperFileUpoladManager.FileAssignWithApplication(req.params.uuid,parseInt(req.params.AppId),Company,Tenant,function(errMap,resMap)
     {
         if(errMap)
         {
@@ -706,10 +744,8 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
-    var Company=1;
-    var Tenant=1;
     var reqId='';
     try {
 
@@ -721,14 +757,21 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
         {
 
         }
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
 
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
 
 
         logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.name,req.params.AppID,Tenant,Company);
         FileHandler.PickVoiceClipByName(req.params.name,req.params.AppID,Tenant,Company,reqId,function (err, resz) {
             if (err) {
-                //console.log(err);
-                //
+
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
@@ -756,7 +799,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -772,7 +815,18 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-        FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,reqId,function(errDownFile,resDownFile)
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+
+        FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
         {
             if(errDownFile)
             {
@@ -803,7 +857,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
     return next();
 
-})
+});
 
 // appilication development phase
 
@@ -860,7 +914,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
-RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -874,10 +928,21 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',function(r
 
         }
 
+
+
         logger.debug('[DVP-FIleService.PickAttachmentMetaData] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.UUID);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.PickAttachmentMetaData(req.params.UUID,reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickAttachmentMetaData(req.params.UUID,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -913,7 +978,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',function(r
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -929,8 +994,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req
 
         logger.debug('[DVP-FIleService.PickFileInfo] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.appId);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFileInfo] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.PickFileInfo(req.params.appId,reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickFileInfo(req.params.appId,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -965,7 +1039,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',function(req
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -981,8 +1055,18 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',functio
 
         logger.debug('[DVP-FIleService.PickFileWithAppID] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.appId);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFileWithAppID] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.PickFileWithAppID(req.params.UUID,parseInt(req.params.appId),reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+
+        FileHandler.PickFileWithAppID(req.params.UUID,parseInt(req.params.appId),Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1021,7 +1105,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',functio
 
 //Sprint 4
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1036,9 +1120,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',function(req,
         }
 
         logger.debug('[DVP-FIleService.PickFilesWithRefID] - [%s] - [HTTP] - Request received - Inputs - APP ID : %s ',reqId,req.params.SessionID);
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFilesWithRefID] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
 
-        FileHandler.PickAllVoiceRecordingsOfSession(req.params.SessionID,reqId,function(err,resz)
+        FileHandler.PickAllVoiceRecordingsOfSession(req.params.SessionID,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1073,10 +1165,9 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',function(req,
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:Category',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
-    var st=1;
     try {
 
         try
@@ -1090,8 +1181,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:
 
         logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,st,reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1099,7 +1199,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:
                 logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
@@ -1126,10 +1226,9 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
-    var st=2;
     try {
 
         try
@@ -1143,8 +1242,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
 
         logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,st,reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.AllVoiceRecordingsOfSessionAndTypes(req.params.SessionID,req.params.Class,req.params.Type,req.params.Category,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1152,11 +1260,9 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
                 logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
-                //var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                //logger.debug('[DVP-FIleService.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
-                //res.end(jsonString);
+
                 FileHandler.DownloadFileByID(res,resz.UniqueId,option,reqId,function(errDownFile,resDownFile)
                 {
                     if(errDownFile)
@@ -1203,7 +1309,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
 
 // application development phase
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1221,8 +1327,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
         logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Request received - ',reqId);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.PickAllFiles(reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickAllFiles(Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1260,7 +1375,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
 // app development phase
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
+/*RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1278,8 +1393,18 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
         logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Request received - ',reqId);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.PickAllFiles(reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+
+        FileHandler.PickAllFiles(Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1312,9 +1437,9 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',function(req,res,next)
 
     return next();
 
-});
+});*/
 
-RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1332,8 +1457,18 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
 
         logger.debug('[DVP-FIleService.DeleteFile] - [%s] - [HTTP] - Request received - ID: %s',reqId,req.params.id);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-        FileHandler.DeleteFile(req.params.id,reqId,function(err,resz)
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+
+        FileHandler.DeleteFile(req.params.id,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1367,11 +1502,9 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',function(req,res,next
     return next();
 
 
-    // FileHandler.DeleteFile(res);
-
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 { var reqId='';
     try {
 
@@ -1388,6 +1521,15 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',function(req,r
 
         logger.debug('[DVP-FIleService.LoadCategories] - [%s] - [HTTP] - Request received - ',reqId);
 
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
 
         FileHandler.LoadCategories(reqId,function(err,resz)
         {
@@ -1424,10 +1566,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',function(req,r
 
 });
 
-RestServer.del('/DVP',function(req,res,next)
-{
-    FileHandler.delIt(res);
-})
+
 
 
 

@@ -259,12 +259,12 @@ function downF()
     source.on('error', function(err) { /* error */ });
 }
 //log done...............................................................................................................
-function PickAttachmentMetaData(UUID,reqId,callback)
+function PickAttachmentMetaData(UUID,Company,Tenant,reqId,callback)
 {
     if(UUID)
     {
         try {
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}]}).then(function (resFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resFile) {
 
                 if(resFile)
                 {
@@ -300,14 +300,14 @@ function PickAttachmentMetaData(UUID,reqId,callback)
 }
 
 //log done...............................................................................................................
-function DownloadFileByID(res,UUID,display,option,reqId,callback)
+function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 {
     if(UUID)
     {
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}, {Filename: display}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID}, {Filename: display},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
 
@@ -496,15 +496,13 @@ function DownloadFileByID(res,UUID,display,option,reqId,callback)
 
 }
 
-function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
+function PickVoiceClipByName(FileName,AppID,TenantId,CompanyId,reqId,callback)
 {
     if(FileName&&AppID&&!isNaN(AppID))
     {
 
-        var TenantId=Tid;
-        var CompanyId=Cid;
 
-        DbConn.Application.find({where:[{id:AppID}]}).then(function (resApp) {
+        DbConn.Application.find({where:[{id:AppID},{CompanyId:CompanyId},{TenantId:TenantId}]}).then(function (resApp) {
 
             if(resApp)
             {
@@ -568,11 +566,7 @@ function PickVoiceClipByName(FileName,AppID,Tid,Cid,reqId,callback)
 
 
 
-
-
-
-
-}
+};
 
 function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
 {
@@ -651,13 +645,13 @@ function SaveDownloadDetails(req,reqId,callback)
 
 }
 
-function PickFileInfo(appid,reqId,callback)
+function PickFileInfo(appid,Company,Tenant,reqId,callback)
 {
     if(appid&&!isNaN(appid))
     {
         try
         {
-            DbConn.FileUpload.find({where:[{ApplicationId:appid}]}).then(function (resFile) {
+            DbConn.FileUpload.find({where:[{ApplicationId:appid},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resFile) {
 
                 if(!resFile)
                 {
@@ -688,14 +682,14 @@ function PickFileInfo(appid,reqId,callback)
 
 }
 
-function PickFileWithAppID(UUID,appid,reqId,callback)
+function PickFileWithAppID(UUID,appid,Company,Tenant,reqId,callback)
 {
 
     if(UUID&&appid&&!isNaN(appid))
     {
         try
         {
-            DbConn.FileUpload.find({where:[{UniqueId:UUID},{ApplicationId:appid}]}).then(function (resFile) {
+            DbConn.FileUpload.find({where:[{UniqueId:UUID},{ApplicationId:appid},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resFile) {
 
                 if(!resFile)
                 {
@@ -726,9 +720,9 @@ function PickFileWithAppID(UUID,appid,reqId,callback)
 
 }
 
-function PickAllVoiceRecordingsOfSession(SessID,reqId,callback) {
+function PickAllVoiceRecordingsOfSession(SessID,Company,Tenant,reqId,callback) {
     try {
-        DbConn.FileUpload.findAll({where: [{RefId: SessID}]}).then(function (result) {
+        DbConn.FileUpload.findAll({where: [{RefId: SessID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (result) {
 
             if(result.length==0)
             {
@@ -743,10 +737,7 @@ function PickAllVoiceRecordingsOfSession(SessID,reqId,callback) {
             callback(err, undefined);
         });
 
-
-
     }
-
 
     catch (ex) {
         callback(ex, undefined);
@@ -755,9 +746,9 @@ function PickAllVoiceRecordingsOfSession(SessID,reqId,callback) {
 
 }
 
-function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId,callback) {
+function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,Tenant,reqId,callback) {
     try {
-        DbConn.FileUpload.findAll({where: [{RefId: SessID},{ObjClass: Class},{ObjType: Type},{ObjCategory: Category}]})
+        DbConn.FileUpload.findAll({where: [{RefId: SessID},{ObjClass: Class},{ObjType: Type},{ObjCategory: Category},{CompanyId:Company},{TenantId:Tenant}]})
             .then(function (result) {
                 if(result.length==0)
                 {
@@ -765,22 +756,11 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId
                 }
                 else
                 {
-                    if(st==1)
-                    {
-                        callback(undefined, result);
-                    }
-                    else
-                    {
-                        callback(undefined,result);
-                    }
-
+                    callback(undefined,result);
                 }
             }).catch(function (err) {
                 callback(err, undefined);
             });
-
-
-
 
     }
 
@@ -793,12 +773,12 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,st,reqId
 }
 
 // app dev
-function PickAllFiles(reqId,callback)
+function PickAllFiles(Company,Tenant,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'] ,include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'],where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -820,40 +800,39 @@ function PickAllFiles(reqId,callback)
 
 }
 
-function PickAllFiles(reqId,callback)
+function PickAllFiles(Company,Tenant,reqId,callback)
 {
 
-        try
-        {
-            DbConn.FileUpload.findAll({include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+    try
+    {
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}]},{include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
-                callback(undefined,resFile);
+            callback(undefined,resFile);
 
 
-            }).catch(function (errFile) {
-                callback(errFile,undefined);
-            });
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
 
 
 
-        }
-        catch(ex)
-        {
-            callback(ex,undefined);
-        }
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
 
 
 
 }
 
-function DeleteFile(fileID,reqId,callback)
+function DeleteFile(fileID,Company,Tenant,reqId,callback)
 
 {
-    console.log("Hit func del");
     try
     {
-        PickAttachmentMetaData(fileID,reqId, function (errFile,resFile) {
+        PickAttachmentMetaData(fileID,Company,Tenant,reqId, function (errFile,resFile) {
 
             if(errFile)
             {
@@ -872,8 +851,7 @@ function DeleteFile(fileID,reqId,callback)
                     }
                     else
                     {
-                        //console.log("Done");
-                        //(undefined,undefined);
+
                         resFile.destroy().then(function (resDel) {
                             callback(undefined,resDel);
                         }).catch(function (errDel) {
@@ -923,6 +901,32 @@ function  LoadCategories(reqId,callback)
     }
 }
 
+function PickVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,Tenant,reqId,callback) {
+    try {
+        DbConn.FileUpload.find({where: [{RefId: SessID},{ObjClass: Class},{ObjType: Type},{ObjCategory: Category},{CompanyId:Company},{TenantId:Tenant}]})
+            .then(function (result) {
+                if(!result)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+                callback(err, undefined);
+            });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
 function delIt(res)
 {
     fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
@@ -944,6 +948,7 @@ module.exports.AllVoiceRecordingsOfSessionAndTypes = AllVoiceRecordingsOfSession
 module.exports.PickAllFiles = PickAllFiles;
 module.exports.DeleteFile = DeleteFile;
 module.exports.LoadCategories = LoadCategories;
+module.exports.PickVoiceRecordingsOfSessionAndTypes = PickVoiceRecordingsOfSessionAndTypes;
 module.exports.delIt = delIt;
 
 
