@@ -8,7 +8,6 @@ var fs=require('fs');
 var stringify = require('stringify');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
-var DbConn = require('DVP-DBModels');
 var config = require('config');
 // sprint 5
 
