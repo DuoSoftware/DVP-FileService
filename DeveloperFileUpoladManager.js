@@ -96,7 +96,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
     try
     {
 
-        FindCurrentVersion(Fobj,company,tenant,reqId,function(err,result)
+        FindCurrentVersion(Fobj,cmp,ten,reqId,function(err,result)
         {
             if(err)
             {
@@ -1121,15 +1121,9 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
                     }
                     else
                     {
-                        DbConn.Application.find({where:[{id:appID}]}).complete(function(errApp,resApp)
-                        {
-                            if(errApp)
-                            {
-                                callback(errApp,undefined);
+                        DbConn.Application.find({where:[{id:appID}]}).
+                            then(function (resApp) {
 
-                            }
-                            else
-                            {
                                 if(!resApp)
                                 {
                                     callback(new Error("No Application"),undefined);
@@ -1138,89 +1132,77 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
                                 {
                                     try
                                     {
-                                        DbConn.FileUpload.find({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:appID}]}).complete(function(errVFileNm,resVFileNm)
-                                        {
-                                            if(errVFileNm)
+                                        DbConn.FileUpload.find({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:appID}]}).then(function (resVFileNm) {
+
+                                            if(!resVFileNm)
                                             {
-                                                callback(errVFileNm,undefined);
+                                                //callback(new Error("No suchFile"),undefined) ;
+                                                resFile.setApplication(resApp).then(function (resAdd) {
+
+                                                    callback(undefined,resAdd);
+                                                }).catch(function (errAdd) {
+
+                                                    callback(errAdd,undefined);
+                                                });
+
+
                                             }
                                             else
                                             {
-
-                                                if(!resVFileNm)
+                                                if(fileUID==resVFileNm.UniqueId)
                                                 {
-                                                    //callback(new Error("No suchFile"),undefined) ;
-                                                    resFile.setApplication(resApp).then(function (resAdd) {
-
-                                                        callback(undefined,resAdd);
-                                                    }).catch(function (errAdd) {
-
-                                                        callback(errAdd,undefined);
-                                                    });
-
-
+                                                    callback(undefined,new Object("Already assigned"));
                                                 }
                                                 else
                                                 {
-                                                    if(fileUID==resVFileNm.UniqueId)
-                                                    {
-                                                        callback(undefined,new Object("Already assigned"));
-                                                    }
-                                                    else
-                                                    {
-                                                        resVFileNm.setApplication(null).then(function (resNull) {
+                                                    resVFileNm.setApplication(null).then(function (resNull) {
 
-                                                            resFile.setApplication(resApp).then(function (resMap) {
-                                                                callback(undefined,resMap);
-                                                            }).catch(function (errMap) {
-                                                                callback(errMap, undefined);
-                                                            });
-
-                                                            /* complete(function (errMap, resMap) {
-                                                             if (errMap) {
-                                                             callback(errMap, undefined);
-                                                             }
-                                                             else {
-                                                             callback(undefined,resMap);
-                                                             }
-                                                             });*/
-
-                                                        }).catch(function (errNull) {
-                                                            callback(errNull,undefined);
+                                                        resFile.setApplication(resApp).then(function (resMap) {
+                                                            callback(undefined,resMap);
+                                                        }).catch(function (errMap) {
+                                                            callback(errMap, undefined);
                                                         });
 
-
-                                                        /*complete(function (errNull, resNull) {
-
-                                                         if(errNull)
-                                                         {
-                                                         callback(errNull,undefined);
-                                                         }
-                                                         else
-                                                         {
-                                                         resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                        /* complete(function (errMap, resMap) {
                                                          if (errMap) {
                                                          callback(errMap, undefined);
                                                          }
                                                          else {
                                                          callback(undefined,resMap);
                                                          }
-                                                         });
-                                                         }
-
                                                          });*/
-                                                    }
+
+                                                    }).catch(function (errNull) {
+                                                        callback(errNull,undefined);
+                                                    });
+
+
+                                                    /*complete(function (errNull, resNull) {
+
+                                                     if(errNull)
+                                                     {
+                                                     callback(errNull,undefined);
+                                                     }
+                                                     else
+                                                     {
+                                                     resFile.setApplication(resApp).complete(function (errMap, resMap) {
+                                                     if (errMap) {
+                                                     callback(errMap, undefined);
+                                                     }
+                                                     else {
+                                                     callback(undefined,resMap);
+                                                     }
+                                                     });
+                                                     }
+
+                                                     });*/
                                                 }
-                                                //for (var index in resVFileNm) {
-
-
-
-
-                                                // }
-
-
                                             }
+
+                                        }).catch(function (errVFileNm) {
+                                            callback(errVFileNm,undefined);
                                         });
+
 
                                     }
                                     catch(ex)
@@ -1228,8 +1210,11 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
                                         callback(ex,undefined);
                                     }
                                 }
-                            }
-                        });
+
+                            }).catch(function (errApp) {
+                                callback(errApp,undefined);
+                            });
+
                     }
                 }).catch(function (errFile) {
                     callback(errFile,undefined);

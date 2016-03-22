@@ -15,8 +15,8 @@ var log4js=require('log4js');
 
 
 // Security
-var jwt = require('restify-jwt');
-var secret = require('dvp-common/Authentication/Secret.js');
+//var jwt = require('restify-jwt');
+//var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
 //...............................................
 
@@ -366,6 +366,8 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
     var Company=req.user.company;
     var Tenant=req.user.tenant;
+
+
 
 
     var prov=1;
@@ -768,6 +770,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
     var Tenant=req.user.tenant;
 
 
+
         logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.name,req.params.AppID,Tenant,Company);
         FileHandler.PickVoiceClipByName(req.params.name,req.params.AppID,Tenant,Company,reqId,function (err, resz) {
             if (err) {
@@ -824,6 +827,67 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
         var Company=req.user.company;
         var Tenant=req.user.tenant;
+
+
+        FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+        {
+            if(errDownFile)
+            {
+                var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+                console.log("Done err");
+
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+                console.log("Done");
+
+            }
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+// for freeswitch compatability
+RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+           if(!req.user.company || !req.user.tenant)
+         {
+         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+
+         var Company=req.user.company;
+         var Tenant=req.user.tenant;
 
 
         FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)

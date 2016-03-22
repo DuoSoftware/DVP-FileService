@@ -311,6 +311,12 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                 if (resUpFile) {
 
+                    var resObj=
+                    {
+                        "Last-Modified":resUpFile.createdAt,
+                        "ETag":resUpFile.ApplicationId+":"+"display"+":"+resUpFile.Version
+                    };
+
                     if(option=="MONGO")
                     {
 
@@ -446,7 +452,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             source.pipe(res);
                             source.on('end', function (result) {
                                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                res.end();
+                                res.end(JSON.stringify(resObj));
                             });
                             source.on('error', function (err) {
                                 logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
@@ -506,7 +512,7 @@ function PickVoiceClipByName(FileName,AppID,TenantId,CompanyId,reqId,callback)
 
             if(resApp)
             {
-                CurrentFileVersion(Cid,Tid,AppID,FileName,reqId,function(errVersion,resVersion)
+                CurrentFileVersion(CompanyId,TenantId,AppID,FileName,reqId,function(errVersion,resVersion)
                 {
                     if(errVersion)
                     {
