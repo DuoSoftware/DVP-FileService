@@ -12,6 +12,8 @@ var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 var uuid = require('node-uuid');
 var log4js=require('log4js');
+//var jwt = require('restify-jwt');
+//var secret = require('dvp-common/Authentication/Secret.js');
 
 
 // Security
@@ -344,7 +346,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload'/*,authorization({resource:"fileservice", action:"write"})*/,function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',/*authorization({resource:"fileservice", action:"write"}),*/function(req,res,next)
 {
     var reqId='';
     try
@@ -762,7 +764,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
         {
 
         }
-    /*if(!req.user.company || !req.user.tenant)
+   /* if(!req.user.company || !req.user.tenant)
     {
         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
         logger.debug('[DVP-APPRegistry.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
@@ -774,7 +776,6 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
         var Company=1;
         var Tenant=1;
-
 
 
         logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.name,req.params.AppID,Tenant,Company);
@@ -833,10 +834,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
         var Company=req.user.company;
         var Tenant=req.user.tenant;*/
-
         var Company=1;
         var Tenant=1;
-
 
         FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
         {
@@ -888,7 +887,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-          /* if(!req.user.company || !req.user.tenant)
+         /* if(!req.user.company || !req.user.tenant)
          {
          var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
          logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
