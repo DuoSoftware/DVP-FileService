@@ -21,7 +21,7 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
 var fs=require('fs');
 var stringify = require('stringify');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 var Db = require('mongodb').Db,
