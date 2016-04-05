@@ -11,7 +11,6 @@ var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 var uuid = require('node-uuid');
-var log4js=require('log4js');
 //var jwt = require('restify-jwt');
 //var secret = require('dvp-common/Authentication/Secret.js');
 
@@ -40,11 +39,6 @@ restify.CORS.ALLOW_HEADERS.push('authorization');
 
 
 
-
-
-
-log4js.configure(config.Host.logfilepath, { cwd: hpath });
-var log = log4js.getLogger("app");
 
 
 var RestServer = restify.createServer({

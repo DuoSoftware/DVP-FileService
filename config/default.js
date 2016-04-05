@@ -10,7 +10,8 @@ module.exports = {
   "Redis":
   {
     "ip": "45.55.142.207",
-    "port": "6379"
+    "port": "6379",
+    "password":"DuoS123s"
 
   },
 
@@ -30,7 +31,8 @@ module.exports = {
   {
     "ip":"127.0.0.1",
     "port":"27017",
-    "dbname":"test"
+    "dbname":"test",
+    "password":"DuoS123"
   },
 
   "Couch":

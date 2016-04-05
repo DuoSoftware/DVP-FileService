@@ -3,16 +3,10 @@
  */
 var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var log4js=require('log4js');
-
 
 var config = require('config');
-var hpath=config.Host.hostpath;
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
-
-log4js.configure(config.Host.logfilepath, { cwd: hpath });
-var log = log4js.getLogger("cspicker");
 
 function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
 {

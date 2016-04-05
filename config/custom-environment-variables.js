@@ -12,7 +12,8 @@ module.exports = {
     "Redis":
     {
         "ip": "SYS_REDIS_HOST",
-        "port": "SYS_REDIS_PORT"
+        "port": "SYS_REDIS_PORT",
+        "password":"SYS_REDIS_PASSWORD"
 
     },
 
@@ -30,8 +31,9 @@ module.exports = {
     "Mongo":
     {
         "ip":"MONGO_IP",
-            "port":"MONGO_PORT",
-        "dbname":"MONGO_DBNAME"
+        "port":"MONGO_PORT",
+        "dbname":"MONGO_DBNAME",
+        "password":"MONGO_PASSWORD"
     },
 
     "Couch":
