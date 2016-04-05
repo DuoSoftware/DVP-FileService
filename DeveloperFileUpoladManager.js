@@ -8,7 +8,6 @@
 var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var fs=require('fs');
-var stringify = require('stringify');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 var config = require('config');
@@ -23,7 +22,6 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
 
 var fs=require('fs');
-var stringify = require('stringify');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
