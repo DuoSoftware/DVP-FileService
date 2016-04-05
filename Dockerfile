@@ -7,8 +7,7 @@
 
 #EXPOSE 8812
 
-FROM node:argon
-RUN npm install npm -g
+FROM node:5.10.0
 RUN git clone git://github.com/DuoSoftware/DVP-FileService.git /usr/local/src/fileservice
 RUN cd /usr/local/src/fileservice;
 WORKDIR /usr/local/src/fileservice
