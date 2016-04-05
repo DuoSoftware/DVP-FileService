@@ -38,17 +38,20 @@ module.exports = {
 
     "Mongo":
     {
-        "ip":"MONGO_IP",
-        "port":"MONGO_PORT",
-        "dbname":"MONGO_DBNAME",
-        "password":"MONGO_PASSWORD"
+        "ip":"SYS_MONGO_HOST",
+        "port":"SYS_MONGO_PORT",
+        "dbname":"SYS_MONGO_DB",
+        "password":"SYS_MONGO_PASSWORD",
+        "user":"SYS_MONGO_USER"
     },
 
     "Couch":
     {
-        "ip":"COUCH_IP",
-        "port":"COUCH_PORT",
-        "bucket":"COUCH_BUCKET"
+        "ip":"SYS_COUCH_HOST",
+        "port":"SYS_COUCH_PORT",
+        "bucket":"SYS_COUCH_BUCKET",
+        "user":"SYS_COUCH_USER",
+        "password":"SYS_COUCH_PASSWORD"
     }
 };
 

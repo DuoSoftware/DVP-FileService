@@ -39,13 +39,16 @@ module.exports = {
     "ip":"127.0.0.1",
     "port":"27017",
     "dbname":"test",
-    "password":"DuoS123"
+    "password":"DuoS123",
+    "user":"duo"
   },
 
   "Couch":
   {
     "ip":"127.0.0.1",
     "port":"",
-    "bucket":"default"
+    "bucket":"default",
+    "user":"duo",
+    "password":"DuoS123"
   }
 };
