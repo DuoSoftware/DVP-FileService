@@ -36,7 +36,7 @@ var option = config.Option;
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
 
-//restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
+restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
 
 
