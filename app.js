@@ -18,6 +18,8 @@ var uuid = require('node-uuid');
 // Security
 //var jwt = require('restify-jwt');
 //var secret = require('dvp-common/Authentication/Secret.js');
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
 //...............................................
 
@@ -72,6 +74,7 @@ RestServer.listen(port, function () {
 RestServer.use(restify.bodyParser());
 RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
+RestServer.use(jwt({secret: secret.Secret}));
 
 
 

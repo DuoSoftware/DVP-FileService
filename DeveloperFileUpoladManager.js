@@ -215,23 +215,29 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 function MongoUploader(uuid,path,reqId,callback)
 {
-
+    console.log("Done2");
     var db = new Db(MDB, new Server(MIP, MPORT));
-    db.open(function(err, db) {
+    db.open(function(err, dbs) {
+        console.log("Err open ",err);
+        //console.log("Done2");
         // Open a file for writing
-        var gridStoreWrite = new GridStore(db, uuid, "w", {chunkSize:1024});
+        var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
         gridStoreWrite.writeFile(path, function(err, result) {
             // Ensure we correctly returning a Gridstore object
-            assert.ok(typeof result.close == 'function');
+            console.log("Err write ",err);
+            console.log("result write ",result);
+            //assert.ok(typeof result.close == 'function');
 
             if(err)
             {
+                console.log(err);
                 db.close();
                 logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
                 callback(err,undefined);
             }
             else
             {
+                console.log("Done");
                 db.close();
                 logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
                 callback(undefined,result);

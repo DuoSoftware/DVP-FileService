@@ -17,7 +17,7 @@ module.exports = {
   "Security":
   {
     "ip" : "45.55.142.207",
-    "port": 6379,
+    "port": 6389,
     "user": "duo",
     "password": "DuoS123"
   },
@@ -31,14 +31,14 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"LOCAL",
+  "Option":"MONGO",
 
 
   "Mongo":
   {
-    "ip":"127.0.0.1",
+    "ip":"45.55.142.207",
     "port":"27017",
-    "dbname":"test",
+    "dbname":"dvpdb",
     "password":"DuoS123",
     "user":"duo"
   },
