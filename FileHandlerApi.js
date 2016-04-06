@@ -339,7 +339,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             });
 
                             bucket.openDownloadStreamByName(UUID).
-                                pipe(fs.createWriteStream(display)).
+                                pipe(res).
                                 on('error', function(error) {
                                     console.log('Error !'+error);
                                     res.end();
