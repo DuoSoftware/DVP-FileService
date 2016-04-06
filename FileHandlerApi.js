@@ -26,6 +26,7 @@ var log4js=require('log4js');
 
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
+var mongodb = require('mongodb');
 
 
 
@@ -324,60 +325,91 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                         var extArr=resUpFile.FileStructure.split('/');
                         var extension=extArr[1];
-                        var db = new Db(MDB, new Server(MIP, MPORT));
-                        db.open(function(err, db) {
 
-                            res.setHeader('Content-Type', resUpFile.FileStructure);
-                            var gridStore = new GridStore(db, UUID, "r");
-                            gridStore.open(function(errOpen, gridStore) {
+                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
 
-                                if(errOpen)
-                                {
-                                    callback(errOpen,undefined);
-                                    res.end();
-                                }
-                                else
-                                {
-                                    var stream = gridStore.stream(true);
-
-                                    stream.on('error',function(err)
-                                    {
-                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                        callback(err,undefined);
-                                    });
-                                    stream.on('end',function(result) {
-
-
-                                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-
-                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                                        {
-                                            if(errSv)
-                                            {
-                                                callback(errSv,undefined);
-                                            }
-                                            else
-                                            {
-                                                callback(undefined,resSv);
-                                            }
-                                        });
-
-                                        res.end();
-
-                                        db.close();
-
-
-                                    });
-
-
-                                    stream.pipe(res);
-
-                                }
-
+                        mongodb.MongoClient.connect(uri, function(error, db)
+                        {
+                            console.log(uri);
+                            console.log("Error1 "+error);
+                            //console.log("db "+JSON.stringify(db));
+                            //assert.ifError(error);
+                            var bucket = new mongodb.GridFSBucket(db, {
+                                chunkSizeBytes: 1024
                             });
 
-                            //});
+                            bucket.openDownloadStreamByName(UUID).
+                                pipe(fs.createWriteStream(display)).
+                                on('error', function(error) {
+                                    console.log('Error !'+error);
+                                    res.end();
+                                    //callback(error,undefined);
+                                }).
+                                on('finish', function() {
+                                    console.log('done!');
+                                    res.end();
+                                    //process.exit(0);
+                                });
+
                         });
+
+
+                        /*var db = new Db(MDB, new Server(MIP, MPORT));
+                         db.open(function(err, db) {
+
+                         res.setHeader('Content-Type', resUpFile.FileStructure);
+                         var gridStore = new GridStore(db, UUID, "r");
+                         gridStore.open(function(errOpen, gridStore) {
+
+                         if(errOpen)
+                         {
+                         callback(errOpen,undefined);
+                         res.end();
+                         }
+                         else
+                         {
+                         var stream = gridStore.stream(true);
+
+                         stream.on('error',function(err)
+                         {
+                         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                         callback(err,undefined);
+                         });
+                         stream.on('end',function(result) {
+
+
+                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+
+                         SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                         {
+                         if(errSv)
+                         {
+                         callback(errSv,undefined);
+                         }
+                         else
+                         {
+                         callback(undefined,resSv);
+                         }
+                         });
+
+                         res.end();
+
+                         db.close();
+
+
+                         });
+
+
+                         stream.pipe(res);
+
+                         }
+
+                         });
+
+                         //});
+                         });*/
+
+
                     }
                     else if(option=="COUCH")
                     {

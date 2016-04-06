@@ -83,7 +83,7 @@ RestServer.use(jwt({secret: secret.Secret}));
 
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov',function(req,res,next)
 {
 // instance 1,
     // profile 2,
@@ -342,10 +342,12 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 //.......................................................................................................................
 
-
+//authorization({resource:"fileservice", action:"write"}),
 
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
+
+
     console.log("HIT");
     var reqId='';
     try
@@ -379,6 +381,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
     var Clz='';
     var Type='';
     var Category=req.body.fileCategory;
+    //var Category="";
 
     if(req.body.class)
     {
@@ -808,9 +811,10 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'/*,authorization({resource:"fileservice", action:"read"})*/,function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
+
     try {
 
         try
@@ -824,17 +828,16 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-        /* if(!req.user.company || !req.user.tenant)
-         {
-         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-         logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
-         res.end(jsonString);
-         }
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-         var Company=req.user.company;
-         var Tenant=req.user.tenant;*/
-        var Company=1;
-        var Tenant=1;
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
 
         FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
         {

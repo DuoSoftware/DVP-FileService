@@ -288,8 +288,8 @@ function MongoUploader(uuid,path,reqId,callback)
     {
         console.log(uri);
         console.log("Error1 "+error);
-        console.log("db "+JSON.stringify(db));
-        assert.ifError(error);
+        //console.log("db "+JSON.stringify(db));
+        //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
 
         fs.createReadStream(path).
@@ -301,7 +301,7 @@ function MongoUploader(uuid,path,reqId,callback)
             }).
             on('finish', function() {
                 console.log('done!');
-                process.exit(0);
+                //process.exit(0);
                 callback(undefined,uuid);
             });
 
