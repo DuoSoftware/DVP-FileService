@@ -753,7 +753,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID'/*,authorization({resource:"fileservice", action:"read"})*/,function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -776,8 +776,15 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
          var Company=req.user.company;
          var Tenant=req.user.tenant;*/
 
-        var Company=1;
-        var Tenant=1;
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
 
 
         logger.debug('[DVP-FIleService.PickVoiceClipByName] - [%s] - [HTTP] - Request received - Inputs - File name : %s , AppName : %s , Tenant : %s , Company : %s',reqId,req.params.name,req.params.AppID,Tenant,Company);
