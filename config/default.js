@@ -17,7 +17,7 @@ module.exports = {
   "Security":
   {
     "ip" : "45.55.142.207",
-    "port": 6389,
+    "port": "6389",
     "user": "duo",
     "password": "DuoS123"
   },
@@ -25,13 +25,13 @@ module.exports = {
   "Host":
   {
     "domain": "0.0.0.0",
-    "port": "8081",
+    "port": "8888",
     "version":"6.0",
     "hostpath":"./config",
     "logfilepath": ""
   },
 
-  "Option":"LOCAL",
+  "Option":"MONGO",
 
 
   "Mongo":

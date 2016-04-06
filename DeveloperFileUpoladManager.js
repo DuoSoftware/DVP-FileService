@@ -10,7 +10,6 @@ var DbConn = require('dvp-dbmodels');
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
-var config = require('config');
 // sprint 5
 
 var couchbase = require('couchbase');
@@ -43,30 +42,30 @@ var MIP=config.Mongo.ip;
 var MPORT=config.Mongo.port;
 var MDB=config.Mongo.dbname;
 
-
+var mongodb = require('mongodb');
 
 
 function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 {
     try
     {
-        logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
+        logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
         DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
 
             if(resFile)
             {
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((resFile)+1));
+                logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((resFile)+1));
                 callback(undefined,parseInt((resFile)+1));
             }
             else
             {
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
+                logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
                 callback(undefined,1);
             }
 
         }).catch(function (errFile) {
 
-            logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,errFile);
+            logger.error('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,errFile);
             callback(errFile,undefined);
 
         });
@@ -74,7 +73,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
     }
     catch (ex)
     {
-        logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,FObj.name,ex);
+        logger.error('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,FObj.name,ex);
         callback(ex,undefined);
     }
 }
@@ -213,41 +212,103 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 }
 
 
+/*function MongoUploader(uuid,path,reqId,callback)
+ {
+ console.log("Done2");
+ var db = new Db(MDB, new Server(MIP, MPORT));
+ db.open(function(err, dbs) {
+ console.log("Err open ",err);
+ //console.log("Done2");
+ // Open a file for writing
+ var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
+ gridStoreWrite.writeFile(path, function(err, result) {
+ // Ensure we correctly returning a Gridstore object
+ console.log("Err write ",err);
+ console.log("result write ",result);
+ //assert.ok(typeof result.close == 'function');
+
+ if(err)
+ {
+ console.log(err);
+ db.close();
+ logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
+ callback(err,undefined);
+ }
+ else
+ {
+ console.log("Done");
+ db.close();
+ logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
+ callback(undefined,result);
+ }
+ // Open the gridStore for reading and pipe to a file
+
+ })
+ });
+
+ }*/
+
 function MongoUploader(uuid,path,reqId,callback)
 {
-    console.log("Done2");
-    var db = new Db(MDB, new Server(MIP, MPORT));
-    db.open(function(err, dbs) {
-        console.log("Err open ",err);
-        //console.log("Done2");
-        // Open a file for writing
-        var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
-        gridStoreWrite.writeFile(path, function(err, result) {
-            // Ensure we correctly returning a Gridstore object
-            console.log("Err write ",err);
-            console.log("result write ",result);
-            //assert.ok(typeof result.close == 'function');
+    /* console.log("Done2");
+     var db = new Db(MDB, new Server(MIP, MPORT));
+     db.open(function(err, dbs) {
+     console.log("Err open ",err);
+     //console.log("Done2");
+     // Open a file for writing
+     var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
+     gridStoreWrite.writeFile(path, function(err, result) {
+     // Ensure we correctly returning a Gridstore object
+     console.log("Err write ",err);
+     console.log("result write ",result);
+     //assert.ok(typeof result.close == 'function');
 
-            if(err)
-            {
-                console.log(err);
-                db.close();
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
-                callback(err,undefined);
-            }
-            else
-            {
-                console.log("Done");
-                db.close();
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
-                callback(undefined,result);
-            }
-            // Open the gridStore for reading and pipe to a file
+     if(err)
+     {
+     console.log(err);
+     db.close();
+     logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
+     callback(err,undefined);
+     }
+     else
+     {
+     console.log("Done");
+     db.close();
+     logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
+     callback(undefined,result);
+     }
+     // Open the gridStore for reading and pipe to a file
 
-        })
+     })
+     });*/
+
+
+    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+    mongodb.MongoClient.connect(uri, function(error, db)
+    {
+        console.log(uri);
+        console.log("Error1 "+error);
+        console.log("db "+JSON.stringify(db));
+        assert.ifError(error);
+        var bucket = new mongodb.GridFSBucket(db);
+
+        fs.createReadStream(path).
+            pipe(bucket.openUploadStream(uuid)).
+            on('error', function(error) {
+                // assert.ifError(error);
+                console.log("Error "+error);
+                callback(error,undefined);
+            }).
+            on('finish', function() {
+                console.log('done!');
+                process.exit(0);
+                callback(undefined,uuid);
+            });
+
     });
 
 }
+
 
 function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
 {
@@ -315,48 +376,48 @@ function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
     //var cluster = new couchbase.Cluster();
     //var bucket = cluster.openBucket('default');
-   // var fl=strm.read();
+    // var fl=strm.read();
     //console.log(strm);
 
 
 
 
     /*bucket.upsert('testdoc5', fl, function(err, result) {
-        if (err) {console.log(err);}
+     if (err) {console.log(err);}
 
-        bucket.get('testdoc5', function(err, result) {
-            if (err) {console.log(err);}
+     bucket.get('testdoc5', function(err, result) {
+     if (err) {console.log(err);}
 
-            console.log("W is "+JSON.stringify(result.value));
-           // strm.pipe(dest);
-            // {name: Frank}
-        });
-    });
-
-
-*/
+     console.log("W is "+JSON.stringify(result.value));
+     // strm.pipe(dest);
+     // {name: Frank}
+     });
+     });
 
 
-
-   /* bucket.get('testdoc3', function(err, result) {
-        if (err) {
-            console.log(err);
-        }
+     */
 
 
 
-        var source=result.value._readableState.buffer;
-        console.log("S is "+JSON.stringify(source));
+    /* bucket.get('testdoc3', function(err, result) {
+     if (err) {
+     console.log(err);
+     }
 
 
 
-       var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
-        //source.pipe(dest);
-      var s=  streamifier.createReadStream(source.toString());
-        console.log("stmfris "+JSON.stringify(s));
-        s.pipe(dest);
+     var source=result.value._readableState.buffer;
+     console.log("S is "+JSON.stringify(source));
 
-    });*/
+
+
+     var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
+     //source.pipe(dest);
+     var s=  streamifier.createReadStream(source.toString());
+     console.log("stmfris "+JSON.stringify(s));
+     s.pipe(dest);
+
+     });*/
 
 
 }

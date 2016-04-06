@@ -3,6 +3,8 @@
  */
 var DbConn = require('dvp-dbmodels');
 var restify = require('restify');
+var cors = require('cors');
+
 //var sre = require('swagger-restify-express');
 
 var FileHandler=require('./FileHandlerApi.js');
@@ -36,7 +38,7 @@ var option = config.Option;
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
 
-restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
+//restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
 
 
@@ -55,7 +57,6 @@ var RestServer = restify.createServer({
 RestServer.use(restify.CORS());
 RestServer.use(restify.fullResponse());
 RestServer.pre(restify.pre.userAgentConnection());
-//RestServer.use(jwt({secret: secret.Secret}));
 
 
 restify.CORS.ALLOW_HEADERS.push('authorization');
@@ -101,15 +102,15 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
         }
 
 
-    if(!req.user.company || !req.user.tenant)
-    {
-        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-        logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
-        res.end(jsonString);
-    }
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
 
-    var Company=req.user.company;
-    var Tenant=req.user.tenant;
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
 
 
         logger.debug('[DVP-FIleService.UploadFile] - [%s] - [HTTP] - Request received  - Inputs - Provision : %s Company : %s Tenant : %s',reqId,req.params.prov,Company,Tenant);
@@ -345,6 +346,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
+    console.log("HIT");
     var reqId='';
     try
     {
@@ -367,7 +369,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
     var Tenant=req.user.tenant;
 
     /*var Company=1;
-    var Tenant=1;*/
+     var Tenant=1;*/
 
 
 
@@ -383,7 +385,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
         Clz=req.body.class;
 
-      //  Clz="tempClz";
+        //  Clz="tempClz";
 
     }
     if(req.body.category)
@@ -761,15 +763,15 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
         {
 
         }
-   /* if(!req.user.company || !req.user.tenant)
-    {
-        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-        logger.debug('[DVP-APPRegistry.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
-        res.end(jsonString);
-    }
+        /* if(!req.user.company || !req.user.tenant)
+         {
+         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-APPRegistry.PickVoiceClipByName] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
 
-    var Company=req.user.company;
-    var Tenant=req.user.tenant;*/
+         var Company=req.user.company;
+         var Tenant=req.user.tenant;*/
 
         var Company=1;
         var Tenant=1;
@@ -822,15 +824,15 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-       /* if(!req.user.company || !req.user.tenant)
-        {
-            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-            logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
-            res.end(jsonString);
-        }
+        /* if(!req.user.company || !req.user.tenant)
+         {
+         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
 
-        var Company=req.user.company;
-        var Tenant=req.user.tenant;*/
+         var Company=req.user.company;
+         var Tenant=req.user.tenant;*/
         var Company=1;
         var Tenant=1;
 
@@ -884,7 +886,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname
 
         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
 
-         /* if(!req.user.company || !req.user.tenant)
+        /* if(!req.user.company || !req.user.tenant)
          {
          var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
          logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
@@ -1447,68 +1449,68 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
 // app development phase
 
 /*RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
-{
-    var reqId='';
-    try {
+ {
+ var reqId='';
+ try {
 
-        try
-        {
-            reqId = uuid.v1();
-        }
-        catch(ex)
-        {
+ try
+ {
+ reqId = uuid.v1();
+ }
+ catch(ex)
+ {
 
-        }
-
-
-
-        logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Request received - ',reqId);
-
-        if(!req.user.company || !req.user.tenant)
-        {
-            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-            logger.debug('[DVP-APPRegistry.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
-            res.end(jsonString);
-        }
-
-        var Company=req.user.company;
-        var Tenant=req.user.tenant;
-
-
-        FileHandler.PickAllFiles(Company,Tenant,reqId,function(err,resz)
-        {
-            if(err)
-            {
-                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
-            else
-            {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
+ }
 
 
 
+ logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Request received - ',reqId);
 
-        });
+ if(!req.user.company || !req.user.tenant)
+ {
+ var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+ logger.debug('[DVP-APPRegistry.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+ res.end(jsonString);
+ }
+
+ var Company=req.user.company;
+ var Tenant=req.user.tenant;
+
+
+ FileHandler.PickAllFiles(Company,Tenant,reqId,function(err,resz)
+ {
+ if(err)
+ {
+ var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+ logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+ res.end(jsonString);
+ }
+ else
+ {
+ var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+ logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+ res.end(jsonString);
+ }
 
 
 
-    }
-    catch(ex)
-    {
-        logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Exception occurred when starting PickAllFiles service',reqId);
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
-        res.end(jsonString);
-    }
 
-    return next();
+ });
 
-});*/
+
+
+ }
+ catch(ex)
+ {
+ logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Exception occurred when starting PickAllFiles service',reqId);
+ var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+ logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+ res.end(jsonString);
+ }
+
+ return next();
+
+ });*/
 
 RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
@@ -1641,18 +1643,18 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',authorization(
 
 
 
-/*function Crossdomain(req,res,next){
+function Crossdomain(req,res,next){
 
 
     var xml='<?xml version=""1.0""?><!DOCTYPE cross-domain-policy SYSTEM ""http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd""> <cross-domain-policy>    <allow-access-from domain=""*"" />        </cross-domain-policy>';
 
-    /!*var xml='<?xml version="1.0"?>\n';
+    var xml='<?xml version="1.0"?>\n';
 
-     xml+= '<!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">\n';
-     xml+='';
-     xml+=' \n';
-     xml+='\n';
-     xml+='';*!/
+    xml+= '<!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">\n';
+    xml+='';
+    xml+=' \n';
+    xml+='\n';
+    xml+='';
     req.setEncoding('utf8');
     res.end(xml);
 
@@ -1668,7 +1670,7 @@ function Clientaccesspolicy(req,res,next){
 }
 
 RestServer.get("/crossdomain.xml",Crossdomain);
-RestServer.get("/clientaccesspolicy.xml",Clientaccesspolicy);*/
+RestServer.get("/clientaccesspolicy.xml",Clientaccesspolicy);
 
 
 
