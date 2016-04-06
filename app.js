@@ -343,7 +343,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',/*authorization({resource:"fileservice", action:"write"}),*/function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
     var reqId='';
     try
@@ -356,7 +356,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',/*authorization({
     }
 
 
-    /*if(!req.user.company || !req.user.tenant)
+    if(!req.user.company || !req.user.tenant)
     {
         var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
         logger.debug('[DVP-APPRegistry.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
@@ -364,10 +364,10 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',/*authorization({
     }
 
     var Company=req.user.company;
-    var Tenant=req.user.tenant;*/
+    var Tenant=req.user.tenant;
 
-    var Company=1;
-    var Tenant=1;
+    /*var Company=1;
+    var Tenant=1;*/
 
 
 
@@ -1641,18 +1641,18 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Categories',authorization(
 
 
 
-function Crossdomain(req,res,next){
+/*function Crossdomain(req,res,next){
 
 
     var xml='<?xml version=""1.0""?><!DOCTYPE cross-domain-policy SYSTEM ""http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd""> <cross-domain-policy>    <allow-access-from domain=""*"" />        </cross-domain-policy>';
 
-    /*var xml='<?xml version="1.0"?>\n';
+    /!*var xml='<?xml version="1.0"?>\n';
 
      xml+= '<!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">\n';
      xml+='';
      xml+=' \n';
      xml+='\n';
-     xml+='';*/
+     xml+='';*!/
     req.setEncoding('utf8');
     res.end(xml);
 
@@ -1668,7 +1668,7 @@ function Clientaccesspolicy(req,res,next){
 }
 
 RestServer.get("/crossdomain.xml",Crossdomain);
-RestServer.get("/clientaccesspolicy.xml",Clientaccesspolicy);
+RestServer.get("/clientaccesspolicy.xml",Clientaccesspolicy);*/
 
 
 
