@@ -865,7 +865,7 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
-function DeleteFile(fileID,Company,Tenant,reqId,callback)
+function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
 {
     try
@@ -874,6 +874,7 @@ function DeleteFile(fileID,Company,Tenant,reqId,callback)
 
             if(errFile)
             {
+                console.log("Metadata Error");
                 callback(errFile,undefined);
             }
             else
@@ -881,24 +882,91 @@ function DeleteFile(fileID,Company,Tenant,reqId,callback)
 
                 var URL= resFile.URL.replace(/\\/g, "/");
                 console.log(URL);
-                fs.unlink(URL,function(err){
-                    if(err)
+                /* fs.unlink(URL,function(err){
+                 if(err)
+                 {
+                 console.log(err);
+                 callback(err,undefined);
+                 }
+                 else
+                 {
+
+                 resFile.destroy().then(function (resDel) {
+                 callback(undefined,resDel);
+                 }).catch(function (errDel) {
+                 callback(errDel,undefined);
+                 });
+                 }
+
+
+                 });*/
+
+                if(option=="LOCAL")
+                {
+                    console.log("Local");
+                    fs.unlink(URL,function(err){
+                        if(err)
+                        {
+                            console.log(err);
+                            callback(err,undefined);
+                        }
+                        else
+                        {
+
+                            resFile.destroy().then(function (resDel) {
+                                callback(undefined,resDel);
+                            }).catch(function (errDel) {
+                                callback(errDel,undefined);
+                            });
+                        }
+
+
+                    });
+                }
+                else
+                {
+                    if(option=="MONGO")
                     {
-                        console.log(err);
-                        callback(err,undefined);
+                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                        mongodb.MongoClient.connect(uri, function(error, db)
+                        {
+                            if(error)
+                            {
+                                console.log("DB Opening Error");
+                                callback(error,undefined);
+                            }
+                            else
+                            {
+                                db.collection(config.Collection).deleteOne(
+                                    { "filename": fileID },
+                                    function(err, results) {
+                                        //console.log(results);
+                                        if(err)
+                                        {
+                                            console.log("Deletion Error");
+                                            callback(err,undefined);
+                                        }
+                                        else
+                                        {
+                                            resFile.destroy().then(function (resDel) {
+                                                console.log("Record destroy success");
+                                                callback(undefined,resDel);
+                                            }).catch(function (errDel) {
+                                                console.log("Record destroy error");
+                                                callback(errDel,undefined);
+                                            });
+                                        }
+
+                                    }
+                                );
+                            }
+                        });
                     }
                     else
                     {
 
-                        resFile.destroy().then(function (resDel) {
-                            callback(undefined,resDel);
-                        }).catch(function (errDel) {
-                            callback(errDel,undefined);
-                        });
                     }
-
-
-                });
+                }
             }
 
         });
@@ -906,6 +974,7 @@ function DeleteFile(fileID,Company,Tenant,reqId,callback)
     }
     catch(ex)
     {
+        console.log("Exception");
         callback(ex,undefined);
 
     }

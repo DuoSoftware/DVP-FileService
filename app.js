@@ -1551,7 +1551,7 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resour
         var Tenant=req.user.tenant;
 
 
-        FileHandler.DeleteFile(req.params.id,Company,Tenant,reqId,function(err,resz)
+        FileHandler.DeleteFile(req.params.id,Company,Tenant,option,reqId,function(err,resz)
         {
             if(err)
             {
