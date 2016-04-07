@@ -1587,7 +1587,7 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resour
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Categories',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 { var reqId='';
     try {
 
