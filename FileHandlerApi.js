@@ -337,6 +337,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             var bucket = new mongodb.GridFSBucket(db, {
                                 chunkSizeBytes: 1024
                             });
+                            res.setHeader('Content-Type', resUpFile.FileStructure);
 
                             bucket.openDownloadStreamByName(UUID).
                                 pipe(res).

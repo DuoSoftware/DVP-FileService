@@ -22,6 +22,12 @@ client.auth(password, function (error) {
     console.log("Redis Auth Error " + error);
 });
 
+client.on("error", function (err) {
+    console.log("Error " + err);
+    client=null;
+
+});
+
 
 
 
