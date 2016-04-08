@@ -818,13 +818,12 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',/*authorization({resource:"fileservice", action:"read"}),*/function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
     try {
 
-        req.user ={company:10, tenant:5};
         try
         {
             reqId = uuid.v1();
@@ -881,7 +880,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 });
 
 // for freeswitch compatability
-RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'/*,authorization({resource:"fileservice", action:"read"})*/,function(req,res,next)
+RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
