@@ -24,7 +24,7 @@ client.auth(password, function (error) {
 
 client.on("error", function (err) {
     console.log("Error " + err);
-    client=null;
+
 
 });
 
