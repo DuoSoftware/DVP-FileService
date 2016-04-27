@@ -451,7 +451,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
         var ProvTyp=prov;
 
-        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
+        DeveloperFileUpoladManager.DeveloperUploadFilesTest(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
 
 
             if(errz)
