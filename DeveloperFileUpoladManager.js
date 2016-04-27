@@ -59,7 +59,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
             }
             else
             {
-                logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
+                logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] -  Version of %s is not found and New version will be 1',reqId,FObj.name);
                 callback(undefined,1);
             }
 
@@ -1250,7 +1250,7 @@ function DeveloperUploadFilesTest(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Categor
             {
                 if(option=="LOCAL")
                 {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Local',reqId,JSON.stringify(NewUploadObj));
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment  successfully inserted to Local',reqId);
                     //callback(undefined, resUpFile.UniqueId);
                     FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,result, function (err,res) {
                         callback(err,rand2);
@@ -1258,7 +1258,7 @@ function DeveloperUploadFilesTest(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Categor
                 }
                 else if(option=="MONGO")
                 {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to MongoDB',reqId,JSON.stringify(NewUploadObj));
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
                     console.log("TO MONGO >>>>>>>>> "+rand2);
                     MongoUploader(rand2,Fobj.path,reqId,function(errMongo,resMongo)
                     {
@@ -1281,9 +1281,9 @@ function DeveloperUploadFilesTest(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Categor
                     });
                 }
                 // sprint 5
-                else if(option=="COUCH")
+                /*else if(option=="COUCH")
                 {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId,JSON.stringify(NewUploadObj));
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId);
                     console.log("TOCOUCH >>>>>>>>> "+rand2);
                     CouchUploader(rand2,Fobj,resUpFile,reqId,function(errCouch,resCouch)
                     {
@@ -1302,7 +1302,7 @@ function DeveloperUploadFilesTest(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Categor
 
                     });
 
-                }
+                }*/
 
 
 
