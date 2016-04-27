@@ -308,7 +308,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID}, {Filename: display},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
 
@@ -354,61 +354,6 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                         });
 
-
-                        /*var db = new Db(MDB, new Server(MIP, MPORT));
-                         db.open(function(err, db) {
-
-                         res.setHeader('Content-Type', resUpFile.FileStructure);
-                         var gridStore = new GridStore(db, UUID, "r");
-                         gridStore.open(function(errOpen, gridStore) {
-
-                         if(errOpen)
-                         {
-                         callback(errOpen,undefined);
-                         res.end();
-                         }
-                         else
-                         {
-                         var stream = gridStore.stream(true);
-
-                         stream.on('error',function(err)
-                         {
-                         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                         callback(err,undefined);
-                         });
-                         stream.on('end',function(result) {
-
-
-                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-
-                         SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                         {
-                         if(errSv)
-                         {
-                         callback(errSv,undefined);
-                         }
-                         else
-                         {
-                         callback(undefined,resSv);
-                         }
-                         });
-
-                         res.end();
-
-                         db.close();
-
-
-                         });
-
-
-                         stream.pipe(res);
-
-                         }
-
-                         });
-
-                         //});
-                         });*/
 
 
                     }
