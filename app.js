@@ -380,7 +380,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
     var Clz='';
     var Type='';
-    var Category=req.body.fileCategory;
+    var Category="";
     //var Category="";
 
     if(req.body.class)
@@ -467,7 +467,8 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
                 console.log("up save");
                 logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(respg),AttchVal);
                 RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
-                        if (errRDS) {
+                        if (errRDS)
+                        {
 
                             console.log("read error");
                             var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
@@ -477,7 +478,8 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
 
                         }
-                        else {
+                        else
+                        {
                             console.log(AttchVal.id);
                             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
                             logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);

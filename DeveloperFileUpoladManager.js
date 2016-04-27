@@ -131,6 +131,20 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                         logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
 
+                        DbConn.FileCategory({where:{Category:Category}}).then(function (resCat) {
+
+                            resUpFile.setFileCategory(resCat.id).then(function (resCatset) {
+
+                                console.log("Category attached successfully");
+
+                            }).catch(function (errCatSet) {
+                                console.log("Error in category attaching "+errCatSet);
+                            });
+
+                        }).catch(function (errCat) {
+                            console.log("Error in searching file categories "+errCat);
+                        });
+
                         if(option=="LOCAL")
                         {
                             logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Local',reqId,JSON.stringify(NewUploadObj));
@@ -212,75 +226,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 }
 
 
-/*function MongoUploader(uuid,path,reqId,callback)
- {
- console.log("Done2");
- var db = new Db(MDB, new Server(MIP, MPORT));
- db.open(function(err, dbs) {
- console.log("Err open ",err);
- //console.log("Done2");
- // Open a file for writing
- var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
- gridStoreWrite.writeFile(path, function(err, result) {
- // Ensure we correctly returning a Gridstore object
- console.log("Err write ",err);
- console.log("result write ",result);
- //assert.ok(typeof result.close == 'function');
-
- if(err)
- {
- console.log(err);
- db.close();
- logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
- callback(err,undefined);
- }
- else
- {
- console.log("Done");
- db.close();
- logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
- callback(undefined,result);
- }
- // Open the gridStore for reading and pipe to a file
-
- })
- });
-
- }*/
-
 function MongoUploader(uuid,path,reqId,callback)
 {
-    /* console.log("Done2");
-     var db = new Db(MDB, new Server(MIP, MPORT));
-     db.open(function(err, dbs) {
-     console.log("Err open ",err);
-     //console.log("Done2");
-     // Open a file for writing
-     var gridStoreWrite = new GridStore(dbs, uuid, "w", {chunkSize:1024});
-     gridStoreWrite.writeFile(path, function(err, result) {
-     // Ensure we correctly returning a Gridstore object
-     console.log("Err write ",err);
-     console.log("result write ",result);
-     //assert.ok(typeof result.close == 'function');
-
-     if(err)
-     {
-     console.log(err);
-     db.close();
-     logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
-     callback(err,undefined);
-     }
-     else
-     {
-     console.log("Done");
-     db.close();
-     logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
-     callback(undefined,result);
-     }
-     // Open the gridStore for reading and pipe to a file
-
-     })
-     });*/
 
 
     var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
@@ -1231,39 +1178,12 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
                                                             callback(errMap, undefined);
                                                         });
 
-                                                        /* complete(function (errMap, resMap) {
-                                                         if (errMap) {
-                                                         callback(errMap, undefined);
-                                                         }
-                                                         else {
-                                                         callback(undefined,resMap);
-                                                         }
-                                                         });*/
+
 
                                                     }).catch(function (errNull) {
                                                         callback(errNull,undefined);
                                                     });
 
-
-                                                    /*complete(function (errNull, resNull) {
-
-                                                     if(errNull)
-                                                     {
-                                                     callback(errNull,undefined);
-                                                     }
-                                                     else
-                                                     {
-                                                     resFile.setApplication(resApp).complete(function (errMap, resMap) {
-                                                     if (errMap) {
-                                                     callback(errMap, undefined);
-                                                     }
-                                                     else {
-                                                     callback(undefined,resMap);
-                                                     }
-                                                     });
-                                                     }
-
-                                                     });*/
                                                 }
                                             }
 
