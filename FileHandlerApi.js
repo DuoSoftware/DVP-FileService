@@ -957,7 +957,7 @@ function PickFileInfo(appid,Company,Tenant,reqId,callback)
     {
         try
         {
-            DbConn.FileUpload.find({where:[{ApplicationId:appid},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resFile) {
+            DbConn.FileUpload.findAll({where:[{ApplicationId:appid},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resFile) {
 
                 if(!resFile)
                 {
