@@ -1221,7 +1221,7 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
 
 };
 
-function DetachApplication(fileUID,Company,Tenant,callback)
+function DetachFromApplication(fileUID,Company,Tenant,callback)
 {
     if(fileUID)
     {
@@ -1456,7 +1456,7 @@ module.exports.PickCallRecordById = PickCallRecordById;
 module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
 module.exports.FileAssignWithApplication = FileAssignWithApplication;
 module.exports.CouchUploader = CouchUploader;
-module.exports.DetachApplication = DetachApplication;
+module.exports.DetachFromApplication = DetachFromApplication;
 
 //module.exports.DeveloperUploadFilesTest = DeveloperUploadFilesTest;
 

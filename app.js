@@ -543,6 +543,54 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
     next();
 });
 
+RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/DetachFromApplication',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.UploadFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
+
+
+
+    DeveloperFileUpoladManager.DetachFromApplication(req.params.uuid,Company,Tenant,function(errMap,resMap)
+    {
+        if(errMap)
+        {
+            //console.log(errMap);
+            var jsonString = messageFormatter.FormatMessage(errMap, "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-FIleService.DetachFromApplication] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resMap);
+            logger.debug('[DVP-FIleService.DetachFromApplication] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        //res.end();
+    });
+    next();
+});
+
 
 RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
