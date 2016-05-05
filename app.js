@@ -386,6 +386,12 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
         Category=req.body.fileCategory;
 
     }
+    if(req.body.category)
+    {
+        Category=req.body.category;
+
+    }
+    
     if(req.body.type)
     {
 
