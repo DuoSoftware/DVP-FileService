@@ -1221,6 +1221,46 @@ function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
 
 };
 
+function DetachApplication(fileUID,Company,Tenant,callback)
+{
+    if(fileUID)
+    {
+        try
+        {
+            DbConn.FileUpload.find({where:[{UniqueId:fileUID},{CompanyId:Company},{TenantId:Tenant}]}).
+                then(function (resFile) {
+                    if(!resFile)
+                    {
+                        callback(new Error("No file"),undefined);
+                    }
+                    else
+                    {
+                        resFile.setApplication(null).then(function (resNull) {
+
+                                callback(undefined,resNull);
+
+                        }).catch(function (errNull) {
+                            callback(errNull,undefined);
+                        });
+
+                    }
+                }).catch(function (errFile) {
+                    callback(errFile,undefined);
+                });
+
+        }
+        catch(ex)
+        {
+            callback(ex,undefined);
+        }
+    }
+    else
+    {
+        callback(new Error("Invalid Inputs"),undefined);
+    }
+
+};
+
 
 function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,reqId,callback)
 {
@@ -1416,6 +1456,8 @@ module.exports.PickCallRecordById = PickCallRecordById;
 module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
 module.exports.FileAssignWithApplication = FileAssignWithApplication;
 module.exports.CouchUploader = CouchUploader;
+module.exports.DetachApplication = DetachApplication;
+
 //module.exports.DeveloperUploadFilesTest = DeveloperUploadFilesTest;
 
 
