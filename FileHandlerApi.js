@@ -1079,12 +1079,40 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,
 }
 
 // app dev
+/*function PickAllFiles(Company,Tenant,reqId,callback)
+ {
+
+ try
+ {
+ DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'],where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.Application, as:"Application"},{model:DbConn.FileCategory, as:"FileCategory"}]}).then(function (resFile) {
+
+
+
+ callback(undefined,resFile);
+
+
+ }).catch(function (errFile) {
+ callback(errFile,undefined);
+ });
+
+
+
+ }
+ catch(ex)
+ {
+ callback(ex,undefined);
+ }
+
+
+
+ }*/
+
 function PickAllFiles(Company,Tenant,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'],where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1093,34 +1121,6 @@ function PickAllFiles(Company,Tenant,reqId,callback)
         }).catch(function (errFile) {
             callback(errFile,undefined);
         });
-
-
-
-    }
-    catch(ex)
-    {
-        callback(ex,undefined);
-    }
-
-
-
-}
-
-function PickAllFiles(Company,Tenant,reqId,callback)
-{
-
-    try
-    {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}]},{include:[{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
-
-
-            callback(undefined,resFile);
-
-
-        }).catch(function (errFile) {
-            callback(errFile,undefined);
-        });
-
 
 
     }
