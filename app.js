@@ -1587,7 +1587,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',authorization({
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {

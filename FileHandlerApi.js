@@ -1081,6 +1081,8 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,
 
 function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
     try {
+
+
         DbConn.FileUpload.findAll({where: [{ObjCategory: Category},{CompanyId:Company},{TenantId:Tenant}]})
             .then(function (result) {
                 if(result.length==0)
