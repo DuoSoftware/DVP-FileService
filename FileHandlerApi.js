@@ -1148,8 +1148,8 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
             else
             {
 
-                var URL= resFile.URL.replace(/\\/g, "/");
-                console.log(URL);
+
+                //console.log(URL);
                 /* fs.unlink(URL,function(err){
                  if(err)
                  {
@@ -1171,6 +1171,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
                 if(option=="LOCAL")
                 {
+                    var URL= resFile.URL.replace(/\\/g, "/");
                     console.log("Local");
                     fs.unlink(URL,function(err){
                         if(err)
