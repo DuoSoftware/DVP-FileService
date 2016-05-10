@@ -347,6 +347,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
+    console.log(req);
     var reqId='';
     try
     {
@@ -391,7 +392,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
         Category=req.body.category;
 
     }
-    
+
     if(req.body.type)
     {
 
@@ -419,6 +420,24 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
+
+        if(req.body.mediatype && req.body.filetype){
+
+            file.type = req.body.mediatype + "/" + req.body.filetype;
+        }
+
+
+        if(req.body.display){
+
+
+            file.display = req.body.display;
+        }
+
+        if(req.body.filename)
+        {
+            file.name=req.body.filename;
+        }
+
 
         logger.info('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
 
@@ -804,7 +823,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',
     }
     catch(ex)
     {
-       // logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        // logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         res.status(404);
         res.end(jsonString);
@@ -833,7 +852,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename'
         if(!req.user.company || !req.user.tenant)
         {
             var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-           // logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+            // logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
             res.status(400);
             res.end(jsonString);
         }
