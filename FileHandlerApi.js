@@ -1078,6 +1078,34 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,
 
 }
 
+
+function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
+    try {
+        DbConn.FileUpload.findAll({where: [{ObjCategory: Category},{CompanyId:Company},{TenantId:Tenant}]})
+            .then(function (result) {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+                callback(err, undefined);
+            });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+
 // app dev
 /*function PickAllFiles(Company,Tenant,reqId,callback)
  {
@@ -1337,6 +1365,7 @@ module.exports.PickVoiceRecordingsOfSessionAndTypes = PickVoiceRecordingsOfSessi
 module.exports.FileInfoByID = FileInfoByID;
 module.exports.DownloadLatestFileByID = DownloadLatestFileByID;
 module.exports.LatestFileInfoByID = LatestFileInfoByID;
+module.exports.AllFilesWithCategory = AllFilesWithCategory;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 
