@@ -1107,6 +1107,38 @@ function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
 
 }
 
+function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,callback) {
+    try {
+
+
+        DbConn.FileUpload.findAll({
+            where: [{FileCategoryId: CategoryID},{CompanyId:Company},{TenantId:Tenant}],
+            offset:((pageNo - 1) * rowCount),
+            limit: rowCount
+
+        })
+            .then(function (result) {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+                callback(err, undefined);
+            });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
 
 // app dev
 /*function PickAllFiles(Company,Tenant,reqId,callback)
@@ -1368,6 +1400,7 @@ module.exports.FileInfoByID = FileInfoByID;
 module.exports.DownloadLatestFileByID = DownloadLatestFileByID;
 module.exports.LatestFileInfoByID = LatestFileInfoByID;
 module.exports.AllFilesWithCategory = AllFilesWithCategory;
+module.exports.AllFilesWithCategoryID = AllFilesWithCategoryID;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 
