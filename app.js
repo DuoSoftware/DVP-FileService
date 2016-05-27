@@ -1708,6 +1708,129 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileInfo/FileCategory/:Category
 
 });
 
+RestServer.get('/DVP/API/'+version+'/FileService/FileInfo/Files/:rowCount/:pageNo',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.AllFilesWithPaging] - [%s] - [HTTP] - Request received ',reqId);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.AllFilesWithPaging] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickAllFilesWithPaging(req.params.rowCount,req.params.pageNo,Company,Tenant,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.AllFilesWithPaging] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.AllFilesWithPaging] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.AllFilesWithPaging] - [%s] - [HTTP] - Exception occurred when starting AllFilesWithPaging service - ',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.AllFilesWithPaging] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/FileInfo/AllCats',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{console.log("hit");
+
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        // logger.debug('[DVP-FIleService.AllCats] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickFileCountsOFCategories(Company,Tenant,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.AllCats] - [%s] - [HTTP] - Exception occurred when starting AllFilesWithCategory service - Inputs - File Category : %s ',reqId,req.params.Category);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 
 
 function Crossdomain(req,res,next){

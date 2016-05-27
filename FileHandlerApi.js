@@ -1195,6 +1195,40 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
+function PickAllFilesWithPaging(pageNo,rowCount,Company,Tenant,reqId,callback)
+{
+
+    try
+    {
+        DbConn.FileUpload.findAll({
+            where:[{CompanyId:Company},{TenantId:Tenant}],
+            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
+            offset:((pageNo - 1) * rowCount),
+            limit: rowCount,
+            order: '"updatedAt" DESC'
+
+
+        }).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+}
+
 function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
 {
@@ -1365,6 +1399,28 @@ function PickVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company
 
 }
 
+
+function PickFileCountsOFCategories(company,tenant,callback)
+{
+    DbConn.FileUpload.findAll({
+
+        attributes: ['ObjCategory',[DbConn.sequelize.fn('COUNT',DbConn.sequelize.col('ObjCategory'),'Category')]],
+        group:['ObjCategory']
+
+    }).then(function (res) {
+        callback(undefined,res);
+    }).catch(function (err) {
+        callback(err,undefined);
+    });
+
+    /*return Model.findAll({
+     attributes: ['id', [sequelize.fn('count', sequelize.col('likes.id')), 'likecount']],
+     include: [{ attributes: [], model: Like }],
+     group: ['model.id']
+     });*/
+}
+
+
 function delIt(res)
 {
     fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
@@ -1401,6 +1457,8 @@ module.exports.DownloadLatestFileByID = DownloadLatestFileByID;
 module.exports.LatestFileInfoByID = LatestFileInfoByID;
 module.exports.AllFilesWithCategory = AllFilesWithCategory;
 module.exports.AllFilesWithCategoryID = AllFilesWithCategoryID;
+module.exports.PickFileCountsOFCategories = PickFileCountsOFCategories;
+module.exports.PickAllFilesWithPaging = PickAllFilesWithPaging;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 
