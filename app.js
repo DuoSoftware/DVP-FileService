@@ -1769,7 +1769,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',author
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/FileInfo/AllCats',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {console.log("hit");
 
     var reqId='';
@@ -1796,27 +1796,45 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileInfo/AllCats',authorization
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        FileHandler.PickFileCountsOFCategories(Company,Tenant,function(err,resz)
-        {
-            if(err)
+        /*FileHandler.PickFileCountsOFCategories(Company,Tenant,function(err,resz)
+         {
+         if(err)
+         {
+         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+         logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+         else
+         {
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+         logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
+         res.end(jsonString);
+         }
+
+
+
+
+         });*/
+        FileHandler.PickFileCountsOFCategories(req.params.categoryID,Company,Tenant, function (e,r) {
+
+            if(e)
             {
-                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.CategoryCount] - [%s] - [HTTP] - Exception occurred when starting AllFilesWithCategory service - Inputs - File CategoryID : %s ',reqId,req.params.categoryID);
+                var jsonString = messageFormatter.FormatMessage(e, "EXCEPTION", false, undefined);
                 logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
+
+
             }
             else
             {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.CategoryCount] - [%s] - [HTTP] - Success AllFilesWithCategory service - Inputs - File CategoryID : %s ',reqId,req.params.categoryID);
+                var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, r);
                 logger.debug('[DVP-FIleService.AllCats] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
+
             }
-
-
-
-
         });
-
-
 
     }
     catch(ex)

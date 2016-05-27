@@ -60,6 +60,9 @@ log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("fhandler");
 
 
+
+var CatObj={};
+
 log.info('\n.............................................File handler Starts....................................................\n');
 
 /*
@@ -1114,7 +1117,8 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
         DbConn.FileUpload.findAll({
             where: [{FileCategoryId: CategoryID},{CompanyId:Company},{TenantId:Tenant}],
             offset:((pageNo - 1) * rowCount),
-            limit: rowCount
+            limit: rowCount,
+            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
 
         })
             .then(function (result) {
@@ -1400,26 +1404,82 @@ function PickVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company
 }
 
 
-function PickFileCountsOFCategories(company,tenant,callback)
-{
-    DbConn.FileUpload.findAll({
+function PickFileCountsOFCategories(catID,company,tenant,callback) {
 
-        attributes: ['ObjCategory',[this.sequelize.fn('COUNT',this.sequelize.col('ObjCategory'),'Category')]],
-        group:['ObjCategory']
+    DbConn.FileCategory.find({where: [{id: catID}]}).then(function (resCat) {
 
-    }).then(function (res) {
-        callback(undefined,res);
-    }).catch(function (err) {
-        callback(err,undefined);
+        if (!resCat) {
+            console.log("No cat");
+            callback(new Error("No Category found"), undefined);
+        }
+        else
+        {
+            DbConn.FileUpload.count({where: ['"FileCategoryId" = '+ catID.toString(),{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
+
+                if (!resCount)
+                {
+                    console.log("No count");
+                    callback(new Error("No Category found"), undefined);
+                }
+
+                else
+                {
+                    var CatObj ={};
+                    CatObj['ID']=catID;
+                    CatObj['Category']=resCat.Category;
+                    CatObj['Count']=resCount;
+                    var arr=[];
+                    arr.push(CatObj);
+                    console.log(CatObj);
+                    callback(undefined,arr);
+
+                }
+
+            }).catch(function (errCount) {
+                console.log("Err count");
+                console.log(errCount);
+                callback(errCount, undefined);
+            });
+        }
+
+
+    }).catch(function (errCat) {
+        console.log("err cat");
+        callback(errCat, undefined);
     });
 
-    /*return Model.findAll({
-     attributes: ['id', [sequelize.fn('count', sequelize.col('likes.id')), 'likecount']],
-     include: [{ attributes: [], model: Like }],
-     group: ['model.id']
-     });*/
+
 }
 
+
+
+
+function getCategoryCount(catID,catName,i,len,res)
+{
+    DbConn.FileUpload.count({where:['"FileCategoryId" = ?',catID]}).then(function (resCount) {
+
+        if(resCount)
+        {
+            console.log("Category "+catName);
+            console.log("Count "+resCount);
+            CatObj.catName=resCount;
+            return 1;
+
+
+        }
+        else
+        {
+            return 1;
+
+        }
+
+    }).catch(function (errCount) {
+
+        return 1;
+    });
+
+
+}
 
 function delIt(res)
 {
