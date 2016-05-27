@@ -1195,16 +1195,16 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
-function PickAllFilesWithPaging(pageNo,rowCount,Company,Tenant,reqId,callback)
+function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
 {
 
     try
     {
         DbConn.FileUpload.findAll({
             where:[{CompanyId:Company},{TenantId:Tenant}],
-            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
+            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
             order: '"updatedAt" DESC'
 
 
@@ -1404,7 +1404,7 @@ function PickFileCountsOFCategories(company,tenant,callback)
 {
     DbConn.FileUpload.findAll({
 
-        attributes: ['ObjCategory',[DbConn.sequelize.fn('COUNT',DbConn.sequelize.col('ObjCategory'),'Category')]],
+        attributes: ['ObjCategory',[this.sequelize.fn('COUNT',this.sequelize.col('ObjCategory'),'Category')]],
         group:['ObjCategory']
 
     }).then(function (res) {

@@ -1647,7 +1647,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
     return next();
 
 });
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Category/:CategoryID/:rowCount/:pageNo',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/:rowCount/:pageNo',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
