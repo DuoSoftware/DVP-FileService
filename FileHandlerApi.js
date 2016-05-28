@@ -1428,10 +1428,8 @@ function PickFileCountsOFCategories(catID,company,tenant,callback) {
                     CatObj['ID']=catID;
                     CatObj['Category']=resCat.Category;
                     CatObj['Count']=resCount;
-                    var arr=[];
-                    arr.push(CatObj);
-                    console.log(CatObj);
-                    callback(undefined,arr);
+
+                    callback(undefined,CatObj);
 
                 }
 
