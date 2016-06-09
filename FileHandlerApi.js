@@ -1199,6 +1199,32 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
+function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+{
+
+    try
+    {
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat},{ApplicationId:null}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+}
+
 function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
 {
 
@@ -1210,6 +1236,37 @@ function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
             limit: rowCount,
             include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
             order: '"updatedAt" DESC'
+
+
+        }).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+}
+
+function PickUnassignedFilesWithPaging(Company,Tenant,reqId,callback)
+{
+
+    try
+    {
+        DbConn.FileUpload.findAll({
+            where:[{CompanyId:Company},{TenantId:Tenant},{ApplicationId:null}],
+            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]
 
 
         }).then(function (resFile) {
@@ -1517,6 +1574,8 @@ module.exports.AllFilesWithCategory = AllFilesWithCategory;
 module.exports.AllFilesWithCategoryID = AllFilesWithCategoryID;
 module.exports.PickFileCountsOFCategories = PickFileCountsOFCategories;
 module.exports.PickAllFilesWithPaging = PickAllFilesWithPaging;
+module.exports.PickUnassignedFilesWithPaging = PickUnassignedFilesWithPaging;
+module.exports.PickSpecifiedFiles = PickSpecifiedFiles;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 
