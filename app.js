@@ -1418,15 +1418,13 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        console.log("First "+req.query.assignedState);
         var assignedState = req.query.assignedState;
         var fileCategory = req.query.fileCategory;
         var fileFormat = req.query.fileFormat;
-        console.log(assignedState);
 
         if(fileFormat && fileCategory && (assignedState == "false"))
         {
-            console.log("Hit");
+            console.log("Picking customized files");
             FileHandler.PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,function(err,resz)
             {
                 if(err)
@@ -1450,6 +1448,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
         }
         else
         {
+            console.log("Picking all files");
             FileHandler.PickAllFiles(Company,Tenant,reqId,function(err,resz)
             {
                 if(err)
@@ -1470,17 +1469,6 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
 
             });
         }
-
-
-        if(req.query)
-        {
-            console.log("query found" +JSON.stringify(req.query));
-        }
-        else
-        {
-
-        }
-
 
 
 
