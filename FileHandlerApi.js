@@ -1223,7 +1223,33 @@ function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callbac
 
 
 
-}
+};
+
+function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+{
+
+    try
+    {
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat}],include:[{model:DbConn.FileCategory, as:"FileCategory"}]}).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+};
 
 function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
 {
@@ -1576,6 +1602,7 @@ module.exports.PickFileCountsOFCategories = PickFileCountsOFCategories;
 module.exports.PickAllFilesWithPaging = PickAllFilesWithPaging;
 module.exports.PickUnassignedFilesWithPaging = PickUnassignedFilesWithPaging;
 module.exports.PickSpecifiedFiles = PickSpecifiedFiles;
+module.exports.PickCategorySpecifiedFiles = PickCategorySpecifiedFiles;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 

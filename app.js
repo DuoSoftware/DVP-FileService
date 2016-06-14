@@ -1422,28 +1422,56 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
         var fileCategory = req.query.fileCategory;
         var fileFormat = req.query.fileFormat;
 
-        if(fileFormat && fileCategory && (assignedState == "false"))
+        if(fileFormat && fileCategory )
         {
-            console.log("Picking customized files");
-            FileHandler.PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,function(err,resz)
+            if(assignedState == "false")
             {
-                if(err)
+                console.log("Picking unassigned files");
+                FileHandler.PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,function(err,resz)
                 {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.debug('[DVP-FIleService.PickSpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
-                else
+                    if(err)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                        logger.debug('[DVP-FIleService.PickSpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                        logger.debug('[DVP-FIleService.PickSpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+
+
+
+
+                });
+            }
+            else
+            {
+                console.log("Picking all files with category customization");
+                FileHandler.PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,function(err,resz)
                 {
-                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                    logger.debug('[DVP-FIleService.PickSpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
+                    if(err)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                        logger.debug('[DVP-FIleService.PickCategorySpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                        logger.debug('[DVP-FIleService.PickCategorySpecifiedFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+                    }
 
 
 
 
-            });
+                });
+
+            }
+
 
         }
         else
@@ -1463,8 +1491,6 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
                     logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
                     res.end(jsonString);
                 }
-
-
 
 
             });
