@@ -347,7 +347,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
-    console.log(req);
+    // console.log(req);
     var reqId='';
     try
     {
@@ -405,14 +405,14 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 
     try {
 
-        try
-        {
-            reqId = uuid.v1();
-        }
-        catch(ex)
-        {
+        /*try
+         {
+         reqId = uuid.v1();
+         }
+         catch(ex)
+         {
 
-        }
+         }*/
 
 
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
@@ -420,6 +420,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
+        Type=file.type;
 
         if(req.body.mediatype && req.body.filetype){
 
