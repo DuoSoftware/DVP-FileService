@@ -8,6 +8,7 @@ var cors = require('cors');
 //var sre = require('swagger-restify-express');
 
 var FileHandler=require('./FileHandlerApi.js');
+var InternalFileHandler=require('./InternalFileHandler.js');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
@@ -75,7 +76,7 @@ RestServer.listen(port, function () {
 RestServer.use(restify.bodyParser());
 RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
-RestServer.use(jwt({secret: secret.Secret}));
+//RestServer.use(jwt({secret: secret.Secret}));
 
 
 
@@ -344,7 +345,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/UploadFileWithProvision/:prov'
 
 //authorization({resource:"fileservice", action:"write"}),
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
     // console.log(req);
@@ -515,7 +516,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',authorization({re
 });
 
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
     var reqId='';
@@ -563,7 +564,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/DetachFromApplication',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/DetachFromApplication',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
     var reqId='';
@@ -612,7 +613,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/DetachFromApplicati
 });
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -677,7 +678,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 
 
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -739,7 +740,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 });
 
 // for freeswitch compatability
-RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -787,7 +788,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -834,7 +835,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',
 
 });
 
-RestServer.head('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.head('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -936,7 +937,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename'
 
 
 //RestServer.get('/DVP/API/'+version+'/FIleService/FileHandler/GetAttachmentMetaData/:id',function(req,res,next)
-RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -999,7 +1000,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',authorizat
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Unassigned',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/Unassigned',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1060,7 +1061,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Unassigned',authorization
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1121,7 +1122,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/Info/:appId',authorizatio
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1187,7 +1188,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:UUID/Info/:appId',authori
 
 //Sprint 4
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1247,7 +1248,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID',authorization
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:Category',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1308,7 +1309,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1391,7 +1392,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
 
 // application development phase
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1580,7 +1581,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',authorization({resource:
 
  });*/
 
-RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/FileService/File/:id',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1645,7 +1646,7 @@ RestServer.del('/DVP/API/'+version+'/FileService/File/:id',authorization({resour
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 { var reqId='';
     try {
 
@@ -1707,7 +1708,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',authorization({
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1767,7 +1768,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
     return next();
 
 });
-RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/:rowCount/:pageNo',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/:rowCount/:pageNo',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1828,7 +1829,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
     try {
@@ -1889,7 +1890,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',author
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID',authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {console.log("hit");
 
     var reqId='';
@@ -1970,9 +1971,566 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID
 });
 
 
+// Internal file service services
+
+RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',jwt({secret: secret.Secret}),function(req,res,next)
+{
+    var reqId='';
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+        {
+            if(errDownFile)
+            {
+                var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+                logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+            }
+
+        });
 
 
 
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.head('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',jwt({secret: secret.Secret}),function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.FileInfoByID(res,req.params.id,Company,Tenant,reqId);
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.status(400);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',jwt({secret: secret.Secret}),function(req,res,next)
+{
+    var reqId='';
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        //logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.DownloadLatestFileByID(res,req.params.filename,option,Company,Tenant,reqId);
+
+
+    }
+    catch(ex)
+    {
+        // logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.status(404);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.head('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',jwt({secret: secret.Secret}),function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        //logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.LatestFileInfoByID(res,req.params.filename,Company,Tenant,reqId);
+
+
+    }
+    catch(ex)
+    {
+        //logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.status(400);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',jwt({secret: secret.Secret}),function(req,res,next)
+{
+
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    var Company=req.params.company;
+    var Tenant=req.params.tenant;
+
+    var prov=1;
+
+    var Clz='';
+    var Type='';
+    var Category="";
+    var ref="";
+    var FileStructure="";
+    var FilePath="";
+    var FileName="";
+    var BodyObj="";
+    var DisplayName="";
+
+
+    req.readable=true;
+
+    console.log("params "+req.params);
+    console.log("body "+req.body);
+    console.log("query "+req.query);
+
+
+    if (req.params)
+    {
+        if (req.params.class) {
+            Clz = req.params.class;
+
+        }
+        if (req.params.type) {
+
+            Type = req.params.type;
+        }
+        if (req.params.category) {
+            Category = req.params.category;
+
+        }
+        if (req.params.referenceid) {
+            ref = req.params.referenceid;
+        }
+        if (req.params.fileCategory) {
+            Category = req.params.fileCategory;
+
+        }
+    }
+
+    if(req.query)
+    {
+        if(req.query.put_file)
+        {
+            FilePath=req.query.put_file;
+        }
+
+        if(req.query.class)
+        {
+            Clz=req.query.class;
+        }
+        if(req.query.type)
+        {
+            Type=req.query.type;
+        }
+        if(req.query.category)
+        {
+            Category=req.query.category;
+        }
+        if(req.query.sessionid)
+        {
+            ref=req.query.sessionid;
+        }
+        if(req.query.mediatype && req.query.filetype)
+        {
+            if(req.query.filetype=="wav" || req.query.filetype=="mp3")
+            {
+                FileStructure="audio/"+req.query.filetype;
+            }
+            else
+            {
+                FileStructure=req.query.mediatype+"/"+req.query.filetype;
+            }
+
+        }
+        if(req.query.sessionid && req.query.filetype)
+        {
+            FileName=req.query.sessionid+"."+req.query.filetype;
+        }
+        if(req.query.display)
+        {
+            DisplayName=req.query.display;
+        }
+
+
+    }
+
+    if(req.body)
+    {
+        if (req.body.class) {
+            Clz = req.body.class;
+
+        }
+        if (req.body.fileCategory) {
+            Category = req.body.fileCategory;
+
+        }
+        if (req.body.category) {
+            Category = req.body.category;
+
+        }
+
+        if (req.body.type) {
+
+            Type = req.body.type;
+        }
+        if (req.body.referenceid) {
+            ref = req.body.referenceid;
+        }
+        if(req.body.display)
+        {
+            DisplayName=req.body.display;
+        }
+
+        BodyObj=req.body;
+    }
+
+    try {
+
+        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
+        var rand2 = uuid.v4().toString();
+        /* var fileKey = Object.keys(req.files)[0];
+         var file = req.files[fileKey];*/
+
+        logger.info('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,FilePath);
+
+        var ValObj={
+
+            "tenent":Tenant,
+            "company":Company,
+            "filename":FileName,
+            "type":Type,
+            "id":rand2
+
+        };
+
+        var file=
+        {
+            fClass:Clz,
+            type:Type,
+            fCategory:Category,
+            fRefID:ref,
+            fStructure:FileStructure,
+            path:FilePath,
+            name:FileName,
+            displayname:DisplayName
+        };
+
+
+        var AttchVal=JSON.stringify(ValObj);
+
+
+        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+
+        //DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
+        InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
+        {
+            if(errz)
+            {
+                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(respg),AttchVal);
+                RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
+                    if (errRDS)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+                        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+
+                    }
+
+
+                });
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        var x = JSON.parse(req);
+        console.log(JSON.stringify(x));
+        logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(JSON.stringify(x));
+    }
+    return next();
+});
+
+RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',jwt({secret: secret.Secret}),function(req,res,next)
+{
+
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    var Company=req.params.company;
+    var Tenant=req.params.tenant;
+
+
+    var prov=1;
+    var Clz='';
+    var Type='';
+    var Category="";
+    var ref="";
+    var FileStructure="";
+    var FilePath="";
+    var FileName="";
+    var BodyObj="";
+    var DisplayName="";
+    var Display="";
+
+
+    req.readable=true;
+
+    if (req.body) {
+        if (req.body.class) {
+            Clz = req.body.class;
+        }
+        if (req.body.fileCategory) {
+            Category = req.body.fileCategory;
+        }
+        if (req.body.category) {
+            Category = req.body.category;
+
+        }
+        if (req.body.type) {
+
+            Type = req.body.type;
+        }
+        if (req.body.referenceid) {
+            ref = req.body.referenceid;
+        }
+        if(req.body.display) {
+            Display=req.body.display;
+        }
+    }
+    if (req.params) {
+        if (req.params.class) {
+            Clz = req.params.class;
+
+        }
+        if (req.params.type) {
+
+            Type = req.params.type;
+        }
+        if (req.params.category) {
+            Category = req.params.category;
+
+        }
+        if (req.params.referenceid) {
+            ref = req.params.referenceid;
+        }
+        if (req.params.fileCategory) {
+            Category = req.params.fileCategory;
+
+        }
+    }
+
+    try {
+        logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
+        var rand2 = uuid.v4().toString();
+        var fileKey = Object.keys(req.files)[0];
+        var attachedFile = req.files[fileKey];
+        FileStructure=attachedFile.type;
+        FileName=attachedFile.name;
+        FilePath=attachedFile.path;
+
+        var DisplyArr = attachedFile.path.split('\\');
+
+        var DisplayName=DisplyArr[DisplyArr.length-1];
+
+
+        logger.info('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,FilePath);
+
+        var ValObj={
+
+            "tenent":Tenant,
+            "company":Company,
+            "filename":FileName,
+            "type":Type,
+            "id":rand2
+
+        };
+
+        var file=
+        {
+            fClass:Clz,
+            type:Type,
+            fCategory:Category,
+            fRefID:ref,
+            fStructure:FileStructure,
+            path:FilePath,
+            name:FileName,
+            displayname:Display
+        };
+
+        console.log("File Data "+file);
+
+
+        var AttchVal=JSON.stringify(ValObj);
+
+
+        logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+
+
+        //DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
+        DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
+
+        {
+            if(errz)
+            {
+                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+            else{
+
+
+                logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(respg),AttchVal);
+                RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
+                    if (errRDS)
+                    {
+                        var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+                        logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+
+                    }
+                    else
+                    {
+                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+                        logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                        res.end(jsonString);
+
+                    }
+
+                });
+            }
+
+        });
+
+
+    }
+    catch(ex)
+    {
+        var x = JSON.parse(req);
+        console.log(JSON.stringify(x));
+        logger.error('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(JSON.stringify(x));
+    }
+    return next();
+});
 
 
 
