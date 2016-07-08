@@ -1973,7 +1973,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID
 
 // Internal file service services
 
-RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',function(req,res,next)
 {
     var reqId='';
 
@@ -2027,7 +2027,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:
 
 });
 
-RestServer.head('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.head('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',function(req,res,next)
 {
     var reqId='';
     try {
@@ -2065,7 +2065,7 @@ RestServer.head('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/
 
 });
 
-RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
 {
     var reqId='';
 
@@ -2102,7 +2102,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 
 });
 
-RestServer.head('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.head('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
 {
     var reqId='';
     try {
@@ -2138,7 +2138,7 @@ RestServer.head('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:t
 
 });
 
-RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',function(req,res,next)
 {
 
     var reqId='';
@@ -2359,7 +2359,7 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
     return next();
 });
 
-RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',jwt({secret: secret.Secret}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',function(req,res,next)
 {
 
     var reqId='';
