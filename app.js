@@ -2483,7 +2483,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
 
 
         //DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
-        DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
+        InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
 
         {
             if(errz)
