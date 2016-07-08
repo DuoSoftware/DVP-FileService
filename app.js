@@ -2545,7 +2545,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         var fileKey = Object.keys(req.files)[0];
         var attachedFile = req.files[fileKey];
        // FileStructure=attachedFile.type;
-        FileName=attachedFile.name;
+        //FileName=attachedFile.name;
         FilePath=attachedFile.path;
 
         var DisplyArr = attachedFile.path.split('\\');
