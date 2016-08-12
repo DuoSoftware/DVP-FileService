@@ -2271,6 +2271,21 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         {
             DisplayName=req.body.display;
         }
+        
+        
+         if(req.body.mediatype && req.body.filetype)
+        {
+            if(req.body.filetype=="wav" || req.body.filetype=="mp3")
+            {
+                FileStructure="audio/"+req.body.filetype;
+            }
+            else
+            {
+                FileStructure=req.body.mediatype+"/"+req.body.filetype;
+            }
+
+        }
+        
 
         BodyObj=req.body;
     }
