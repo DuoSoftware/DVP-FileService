@@ -2499,6 +2499,17 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         if (req.body.referenceid) {
             ref = req.body.referenceid;
         }
+        if(req.body.mediatype && req.body.filetype)
+        {
+            if(req.body.filetype=="wav" || req.body.filetype=="mp3")
+            {
+                FileStructure="audio/"+req.body.filetype;
+            }
+            else
+            {
+                FileStructure=req.body.mediatype+"/"+req.body.filetype;
+            }
+        }
         if(req.body.display)
         {
             DisplayName=req.body.display;
