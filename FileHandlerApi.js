@@ -339,6 +339,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             if(error)
                             {
                                 res.status(400);
+                                db.close();
                                 res.end();
                             }
                             else
@@ -353,12 +354,14 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                     on('error', function(error) {
                                         console.log('Error !'+error);
                                         res.status(400);
+                                        db.close();
                                         res.end();
                                         //callback(error,undefined);
                                     }).
                                     on('finish', function() {
                                         console.log('done!');
                                         res.status(200);
+                                        db.close();
                                         res.end();
                                         //process.exit(0);
                                     });
@@ -579,6 +582,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 {
                                     logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint ',reqId);
                                     res.status(400);
+                                    db.close();
                                     res.end();
                                 }
                                 else
@@ -593,12 +597,14 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                         on('error', function(error) {
                                             console.log('Error !'+error);
                                             res.status(400);
+                                            db.close();
                                             res.end();
                                             //callback(error,undefined);
                                         }).
                                         on('finish', function() {
                                             console.log('done!');
                                             res.status(200);
+                                            db.close();
                                             res.end();
                                             //process.exit(0);
                                         });
@@ -1385,6 +1391,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                             if(error)
                             {
                                 console.log("DB Opening Error");
+                                db.close();
                                 callback(error,undefined);
                             }
                             else
@@ -1396,15 +1403,18 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                                         if(err)
                                         {
                                             console.log("Deletion Error");
+                                            db.close();
                                             callback(err,undefined);
                                         }
                                         else
                                         {
                                             resFile.destroy().then(function (resDel) {
                                                 console.log("Record destroy success");
+                                                db.close();
                                                 callback(undefined,resDel);
                                             }).catch(function (errDel) {
                                                 console.log("Record destroy error");
+                                                db.close();
                                                 callback(errDel,undefined);
                                             });
                                         }
@@ -1416,7 +1426,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                     }
                     else
                     {
-
+                        callback(new Error("Invalid DB Option"),undefined);
                     }
                 }
             }

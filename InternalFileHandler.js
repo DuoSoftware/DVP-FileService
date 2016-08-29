@@ -77,10 +77,12 @@ function MongoUploader(uuid,path,reqId,callback)
             on('error', function(error) {
                 // assert.ifError(error);
                 console.log("Error "+error);
+                db.close();
                 callback(error,undefined);
             }).
             on('finish', function() {
                 console.log('done!');
+                db.close();
                 //process.exit(0);
                 callback(undefined,uuid);
             });
@@ -197,6 +199,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             if(error)
                             {
                                 res.status(400);
+                                db.close();
                                 res.end();
                             }
                             else
@@ -211,12 +214,14 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                     on('error', function(error) {
                                         console.log('Error !'+error);
                                         res.status(400);
+                                        db.close();
                                         res.end();
 
                                     }).
                                     on('finish', function() {
                                         console.log('done!');
                                         res.status(200);
+                                        db.close();
                                         res.end();
 
                                     });
@@ -431,6 +436,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 {
                                     logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint ',reqId);
                                     res.status(400);
+                                    db.close();
                                     res.end();
                                 }
                                 else
@@ -443,12 +449,14 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                         on('error', function(error) {
                                             console.log('Error !'+error);
                                             res.status(400);
+                                            db.close();
                                             res.end();
                                             //callback(error,undefined);
                                         }).
                                         on('finish', function() {
                                             console.log('done!');
                                             res.status(200);
+                                            db.close();
                                             res.end();
                                             //process.exit(0);
                                         });

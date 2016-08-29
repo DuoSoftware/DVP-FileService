@@ -244,11 +244,13 @@ function MongoUploader(uuid,path,reqId,callback)
             on('error', function(error) {
                 // assert.ifError(error);
                 console.log("Error "+error);
+                db.close();
                 callback(error,undefined);
             }).
             on('finish', function() {
                 console.log('done!');
                 //process.exit(0);
+                db.close();
                 callback(undefined,uuid);
             });
 
