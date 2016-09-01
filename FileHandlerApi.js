@@ -1114,6 +1114,109 @@ function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
     }
 
 
+};
+function FilesWithCategoryId(CategoryID,Company,Tenant,reqId,callback) {
+    try {
+
+
+        if(CategoryID<0)
+        {
+            DbConn.FileUpload.findAll({where: [{CompanyId:Company},{TenantId:Tenant}]})
+                .then(function (result) {
+                    if(result.length==0)
+                    {
+                        callback(new Error("No record found"),undefined);
+                    }
+                    else
+                    {
+                        callback(undefined,result);
+                    }
+                }).catch(function (err) {
+                    callback(err, undefined);
+                });
+        }
+        else
+        {
+            DbConn.FileUpload.findAll({where: [{FileCategoryId: CategoryID},{CompanyId:Company},{TenantId:Tenant}]})
+                .then(function (result) {
+                    if(result.length==0)
+                    {
+                        callback(new Error("No record found"),undefined);
+                    }
+                    else
+                    {
+                        callback(undefined,result);
+                    }
+                }).catch(function (err) {
+                    callback(err, undefined);
+                });
+        }
+
+
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+};
+function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDate,reqId,callback) {
+    try {
+
+        var stratDateTime = new Date(startDate);
+        var endDateTime = new Date(endDate);
+
+        if(CategoryID>0)
+        {
+            var conditionalData = {
+                createdAt: {
+                    gt: stratDateTime,
+                    lt:endDateTime
+                },
+                FileCategoryId:CategoryID,
+                CompanyId :  Company,
+                TenantId: Tenant
+            };
+        }
+        else
+        {
+            var conditionalData = {
+                createdAt: {
+                    gt: stratDateTime,
+                    lt:endDateTime
+                },
+                CompanyId :  Company,
+                TenantId: Tenant
+            };
+        }
+
+
+
+        DbConn.FileUpload.findAll({where:conditionalData})
+            .then(function (result) {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+                callback(err, undefined);
+            });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
 }
 
 function AllFilesWithCategoryAndDateRange(Category,Company,Tenant,startDate,endDate,reqId,callback) {
@@ -1155,7 +1258,7 @@ function AllFilesWithCategoryAndDateRange(Category,Company,Tenant,startDate,endD
     }
 
 
-}
+};
 
 function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,callback) {
     try {
@@ -1189,36 +1292,10 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
     }
 
 
-}
-
-// app dev
-/*function PickAllFiles(Company,Tenant,reqId,callback)
- {
-
- try
- {
- DbConn.FileUpload.findAll({attributes:['UniqueId','FileStructure',['ObjCategory','Category'],'Filename','Version','DisplayName','RefId','Status','ApplicationId'],where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.Application, as:"Application"},{model:DbConn.FileCategory, as:"FileCategory"}]}).then(function (resFile) {
+};
 
 
 
- callback(undefined,resFile);
-
-
- }).catch(function (errFile) {
- callback(errFile,undefined);
- });
-
-
-
- }
- catch(ex)
- {
- callback(ex,undefined);
- }
-
-
-
- }*/
 
 function PickAllFiles(Company,Tenant,reqId,callback)
 {
@@ -1650,6 +1727,9 @@ module.exports.PickCategorySpecifiedFiles = PickCategorySpecifiedFiles;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
 module.exports.AllFilesWithCategoryAndDateRange = AllFilesWithCategoryAndDateRange;
+module.exports.FilesWithCategoryId = FilesWithCategoryId;
+module.exports.FilesWithCategoryAndDateRange = FilesWithCategoryAndDateRange;
+
 
 
 

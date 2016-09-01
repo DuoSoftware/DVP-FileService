@@ -1827,6 +1827,125 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
     return next();
 
 });
+RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:CategoryID',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+    req.readable=true;
+
+    var startDateTime='';
+    var endDateTime='';
+
+    if (req.params)
+    {
+        if(req.params.startDateTime)
+        {
+            startDateTime=req.params.startDateTime;
+        }
+        if(req.params.endDateTime)
+        {
+            endDateTime=req.params.endDateTime;
+        }
+
+    }
+
+    if (req.query)
+    {
+        if(req.query.startDateTime)
+        {
+            startDateTime=req.query.startDateTime;
+        }
+        if(req.query.endDateTime)
+        {
+            endDateTime=req.query.endDateTime;
+        }
+    }
+
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        if(!(startDateTime && endDateTime))
+        {
+            FileHandler.FilesWithCategoryId(req.params.CategoryID,Company,Tenant,reqId,function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryID] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryID] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+        }
+        else
+        {
+
+            FileHandler.FilesWithCategoryAndDateRange(req.params.CategoryID,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryIDAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryIDAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+
+        }
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - [HTTP] - Exception occurred when starting AllFilesWithCategory service - Inputs - File Category : %s ',reqId,req.params.Category);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
 RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/:rowCount/:pageNo',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
