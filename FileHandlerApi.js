@@ -1119,7 +1119,7 @@ function FilesWithCategoryId(CategoryID,Company,Tenant,reqId,callback) {
     try {
 
 
-        if(CategoryID<0)
+        if(parseInt(CategoryID)<0)
         {
             DbConn.FileUpload.findAll({where: [{CompanyId:Company},{TenantId:Tenant}]})
                 .then(function (result) {
@@ -1168,8 +1168,8 @@ function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDa
 
         var stratDateTime = new Date(startDate);
         var endDateTime = new Date(endDate);
-
-        if(CategoryID>0)
+        
+        if(parseInt(CategoryID)>0)
         {
             var conditionalData = {
                 createdAt: {
