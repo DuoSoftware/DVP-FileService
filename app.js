@@ -1711,6 +1711,37 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',jwt({secret: se
 RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
+    req.readable=true;
+
+    var startDateTime='';
+    var endDateTime='';
+
+    if (req.params)
+    {
+        if(req.params.startDateTime)
+        {
+            startDateTime=req.params.startDateTime;
+        }
+        if(req.params.endDateTime)
+        {
+            endDateTime=req.params.endDateTime;
+        }
+
+    }
+
+    if (req.query)
+    {
+        if(req.query.startDateTime)
+        {
+            startDateTime=req.query.startDateTime;
+        }
+        if(req.query.endDateTime)
+        {
+            endDateTime=req.query.endDateTime;
+        }
+    }
+
+
     try {
 
         try
@@ -1734,25 +1765,53 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        FileHandler.AllFilesWithCategory(req.params.Category,Company,Tenant,reqId,function(err,resz)
+        if(!(startDateTime && endDateTime))
         {
-            if(err)
+            FileHandler.AllFilesWithCategory(req.params.Category,Company,Tenant,reqId,function(err,resz)
             {
-                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
-            else
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+        }
+        else
+        {
+
+            FileHandler.AllFilesWithCategoryAndDateRange(req.params.Category,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
             {
-                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - Request response : %s ', reqId, jsonString);
-                res.end(jsonString);
-            }
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
 
 
 
 
-        });
+            });
+
+        }
+
 
 
 
@@ -2271,9 +2330,9 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         {
             DisplayName=req.body.display;
         }
-        
-        
-         if(req.body.mediatype && req.body.filetype)
+
+
+        if(req.body.mediatype && req.body.filetype)
         {
             if(req.body.filetype=="wav" || req.body.filetype=="mp3")
             {
@@ -2285,7 +2344,7 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
             }
 
         }
-        
+
 
         BodyObj=req.body;
     }
@@ -2570,7 +2629,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var attachedFile = req.files[fileKey];
-       // FileStructure=attachedFile.type;
+        // FileStructure=attachedFile.type;
         FileName=attachedFile.name;
         FilePath=attachedFile.path;
 

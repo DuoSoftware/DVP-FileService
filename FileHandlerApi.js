@@ -1116,6 +1116,47 @@ function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
 
 }
 
+function AllFilesWithCategoryAndDateRange(Category,Company,Tenant,startDate,endDate,reqId,callback) {
+    try {
+
+        var stratDateTime = new Date(startDate);
+        var endDateTime = new Date(endDate);
+
+        var conditionalData = {
+            createdAt: {
+                gt: stratDateTime,
+                lt:endDateTime
+            },
+            ObjCategory:Category,
+            CompanyId :  Company,
+            TenantId: Tenant
+        };
+
+
+        DbConn.FileUpload.findAll({where:conditionalData})
+            .then(function (result) {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+                callback(err, undefined);
+            });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
 function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,callback) {
     try {
 
@@ -1608,6 +1649,7 @@ module.exports.PickSpecifiedFiles = PickSpecifiedFiles;
 module.exports.PickCategorySpecifiedFiles = PickCategorySpecifiedFiles;
 module.exports.delIt = delIt;
 module.exports.testMax = testMax;
+module.exports.AllFilesWithCategoryAndDateRange = AllFilesWithCategoryAndDateRange;
 
 
 
