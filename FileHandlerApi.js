@@ -29,6 +29,8 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 var mongodb = require('mongodb');
 
+var moment= require('moment');
+
 
 
 
@@ -1166,15 +1168,22 @@ function FilesWithCategoryId(CategoryID,Company,Tenant,reqId,callback) {
 function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDate,reqId,callback) {
     try {
 
-        var stratDateTime = new Date(startDate);
-        var endDateTime = new Date(endDate);
-        
+        console.log("Start Time"+startDate);
+        console.log("End Time"+endDate);
+
+        var stratDateTime = startDate;
+        var endDateTime = endDate;
+        //console.log(stratDateTime);
+
+        //var stratDateTime = new Date(startDate);
+        //var endDateTime = new Date(endDate);
+
         if(parseInt(CategoryID)>0)
         {
             var conditionalData = {
                 createdAt: {
-                    gt: stratDateTime,
-                    lt:endDateTime
+                    gte: stratDateTime,
+                    lte:endDateTime
                 },
                 FileCategoryId:CategoryID,
                 CompanyId :  Company,
@@ -1185,8 +1194,8 @@ function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDa
         {
             var conditionalData = {
                 createdAt: {
-                    gt: stratDateTime,
-                    lt:endDateTime
+                    gte: stratDateTime,
+                    lte:endDateTime
                 },
                 CompanyId :  Company,
                 TenantId: Tenant

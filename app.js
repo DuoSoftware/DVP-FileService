@@ -1835,29 +1835,19 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:Categor
     var startDateTime='';
     var endDateTime='';
 
-    if (req.params)
-    {
-        if(req.params.startDateTime)
-        {
-            startDateTime=req.params.startDateTime;
-        }
-        if(req.params.endDateTime)
-        {
-            endDateTime=req.params.endDateTime;
-        }
-
-    }
 
     if (req.query)
     {
-        if(req.query.startDateTime)
+
+        if(JSON.parse(req.query[0]).startDateTime)
         {
-            startDateTime=req.query.startDateTime;
+            startDateTime=JSON.parse(req.query[0]).startDateTime;
         }
-        if(req.query.endDateTime)
+        if(JSON.parse(req.query[1]).endDateTime)
         {
-            endDateTime=req.query.endDateTime;
+            endDateTime=JSON.parse(req.query[1]).endDateTime;
         }
+
     }
 
 
@@ -1872,12 +1862,12 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:Categor
 
         }
 
-        logger.debug('[DVP-FIleService.PickFilesWithCategory] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+        logger.debug('[DVP-FIleService.PickFilesWithCategoryIDAndTimeRange] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
 
         if(!req.user.company || !req.user.tenant)
         {
             var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
-            logger.debug('[DVP-APPRegistry.PickFilesWithRefIDAndTypes] - [%s] - Request response : %s ', reqId, jsonString);
+            logger.debug('[DVP-APPRegistry.PickFilesWithCategoryIDAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
             res.end(jsonString);
         }
 
@@ -1891,13 +1881,13 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:Categor
                 if(err)
                 {
                     var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.debug('[DVP-FIleService.PickFilesWithCategoryID] - [%s] - Request response : %s ', reqId, jsonString);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryIDAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
                     res.end(jsonString);
                 }
                 else
                 {
                     var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                    logger.debug('[DVP-FIleService.PickFilesWithCategoryID] - [%s] - Request response : %s ', reqId, jsonString);
+                    logger.debug('[DVP-FIleService.PickFilesWithCategoryIDAndTimeRange] - [%s] - Request response : %s ', reqId, jsonString);
                     res.end(jsonString);
                 }
 
