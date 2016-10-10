@@ -1000,6 +1000,69 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/MetaData/:UUID',jwt({secre
 
 });
 
+RestServer.get('/DVP/API/'+version+'/FileService/File/:Filename/MetaData',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+
+
+        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.UUID);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        FileHandler.PickAttachmentMetaDataByName(req.params.UUID,Company,Tenant,reqId,function(err,resz)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.UUID);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 RestServer.get('/DVP/API/'+version+'/FileService/Files/Unassigned',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
