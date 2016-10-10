@@ -309,7 +309,7 @@ function PickAttachmentMetaData(UUID,Company,Tenant,reqId,callback)
 
 function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
 {
-    if(PickAttachmentMetaDataByName)
+    if(FileName)
     {
         try {
             logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Searching for Uploaded file %s',reqId,FileName);
@@ -330,7 +330,7 @@ function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
                         else
                         {
                             logger.error('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - No such file found',reqId,FileName);
-                            callback(new Error("No such file found"),undefined);
+                            callback(undefined,resUpFile);
                         }
 
                     }).catch(function (errFile) {
@@ -341,7 +341,7 @@ function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
                 else
                 {
                     logger.error('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Error in searching max version ',reqId,FileName);
-                    callback(new Error("Max version searching error"),undefined);
+                    callback(undefined,resMax);
                 }
             }).catch(function (errMax) {
                 logger.error('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Error in searching max version ',reqId,FileName);

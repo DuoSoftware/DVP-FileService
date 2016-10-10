@@ -1016,7 +1016,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:Filename/MetaData',jwt({s
 
 
 
-        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.UUID);
+        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.Filename);
 
         if(!req.user.company || !req.user.tenant)
         {
@@ -1028,7 +1028,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:Filename/MetaData',jwt({s
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        FileHandler.PickAttachmentMetaDataByName(req.params.UUID,Company,Tenant,reqId,function(err,resz)
+        FileHandler.PickAttachmentMetaDataByName(req.params.Filename,Company,Tenant,reqId,function(err,resz)
         {
             if(err)
             {
@@ -1053,7 +1053,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:Filename/MetaData',jwt({s
     }
     catch(ex)
     {
-        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.UUID);
+        logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - [HTTP] - Exception occurred when starting AttachmentMetaData service - Inputs - File ID : %s ',reqId,req.params.Filename);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
         res.end(jsonString);
