@@ -377,6 +377,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var Type='';
     var Category="";
     var ref="tempRef";
+    var resvID="";
 
     if(req.body.class)
     {
@@ -402,6 +403,11 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     if(req.body.referenceid)
     {
         ref=req.body.referenceid;
+    }
+
+    if(req.body.reservedId)
+    {
+        resvID=req.body.reservedId;
     }
 
     try {
@@ -460,7 +466,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
 
 
-        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,reqId,function (errz, respg) {
+        DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,resvID,reqId,function (errz, respg) {
 
 
             if(errz)
@@ -515,6 +521,119 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     return next();
 });
 
+RestServer.post('/DVP/API/'+version+'/FileService/File/Reserve',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    console.log(req.body);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.ReserveFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
+    var prov=1;
+
+    var Clz='';
+    var Category="";
+    var Display="";
+    var fileName="";
+
+
+    if(req.body.class)
+    {
+        Clz=req.body.class;
+
+    }
+    if(req.body.fileCategory)
+    {
+        Category=req.body.fileCategory;
+
+    }
+    if(req.body.category)
+    {
+        Category=req.body.category;
+
+    }
+
+
+
+
+
+    try {
+
+
+
+        logger.debug('[DVP-FIleService.ReserveFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
+
+        var rand2 = uuid.v4().toString();
+
+
+        if(req.body.display){
+
+
+            Display = req.body.display;
+        }
+
+        if(req.body.filename)
+        {
+            fileName=req.body.filename;
+        }
+
+
+
+
+        DeveloperFileUpoladManager.DeveloperReserveFiles(Display,fileName,rand2,Company, Tenant,Clz,Category,reqId,function (errReserve, resReserve) {
+
+
+            if(errReserve)
+            {
+                var jsonString = messageFormatter.FormatMessage(errReserve, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.ReserveFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+            else{
+
+
+                logger.debug('[DVP-FIleService.ReserveFiles] - [%s] - File reserved id: %s',reqId,rand2);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resReserve);
+                logger.debug('[DVP-FIleService.ReserveFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                res.end(jsonString);
+
+
+            }
+
+
+
+        });
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.ReserveFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.ReserveFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+    return next();
+});
 
 RestServer.post('/DVP/API/'+version+'/FileService/File/:uuid/AssignToApplication/:AppId',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
@@ -1036,7 +1155,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:Filename/MetaData',jwt({s
                 logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Request response : %s ', reqId, jsonString);

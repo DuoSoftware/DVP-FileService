@@ -340,7 +340,7 @@ function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
                 }
                 else
                 {
-                    logger.error('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Error in searching max version ',reqId,FileName);
+                    logger.error('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - No version found ',reqId,FileName);
                     callback(undefined,resMax);
                 }
             }).catch(function (errMax) {
