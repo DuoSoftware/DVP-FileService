@@ -22,6 +22,7 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var easyimg = require('easyimage');
 
 
 var Db = require('mongodb').Db,
@@ -259,8 +260,24 @@ function MongoUploader(uuid,path,reqId,callback)
             on('finish', function() {
                 console.log('done!');
                 //process.exit(0);
-                db.close();
-                callback(undefined,uuid);
+                easyimg.rescrop({
+                    src:'testImg.jpg', dst:'./output/kitten-thumbnail.jpg',
+                    width:50, height:50,
+                    cropwidth:12, cropheight:12,
+                    x:0, y:0
+                }).then(
+                    function(image) {
+                        console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                        db.close();
+                        callback(undefined,uuid);
+                    },
+                    function (err) {
+                        console.log(err);
+                        db.close();
+                        callback(undefined,uuid);
+                    }
+                );
+
             });
 
     });

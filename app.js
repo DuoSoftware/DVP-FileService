@@ -14,6 +14,7 @@ var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 var uuid = require('node-uuid');
+var easyimg = require('easyimage');
 //var jwt = require('restify-jwt');
 //var secret = require('dvp-common/Authentication/Secret.js');
 
