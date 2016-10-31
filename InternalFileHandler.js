@@ -937,3 +937,4 @@ module.exports.FileInfoByID = FileInfoByID;
 module.exports.DownloadLatestFileByID = DownloadLatestFileByID;
 module.exports.LatestFileInfoByID = LatestFileInfoByID;
 module.exports.InternalUploadFiles = InternalUploadFiles;
+module.exports.DownloadThumbnailByID = DownloadThumbnailByID;
