@@ -30,6 +30,7 @@ var config = require('config');
 var mongodb = require('mongodb');
 
 var moment= require('moment');
+var easyimg = require('easyimage');
 
 
 

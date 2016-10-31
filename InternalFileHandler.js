@@ -363,6 +363,217 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 };
 
+function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,callback)
+{
+    if(UUID)
+    {
+        try {
+
+            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
+
+                if (resUpFile) {
+
+
+                    if(option=="MONGO")
+                    {
+
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
+
+                        var extArr=resUpFile.FileStructure.split('/');
+                        var extension=extArr[1];
+
+                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+
+                        mongodb.MongoClient.connect(uri, function(error, db)
+                        {
+                            console.log(uri);
+                            console.log("Error1 "+error);
+                            if(error)
+                            {
+                                res.status(400);
+                                db.close();
+                                res.end();
+                            }
+                            else
+                            {
+                                var bucket = new mongodb.GridFSBucket(db, {
+                                    chunkSizeBytes: 1024
+                                });
+
+
+                                easyimg.thumbnail({
+                                    src:bucket.openDownloadStreamByName(UUID), dst:res,
+                                    width:128, height:128,
+                                    x:0, y:0
+                                }).then(function (image) {
+                                    console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                                    res.status(200);
+                                    db.close();
+                                    res.end();
+
+                                },function (err) {
+                                    console.log(err);
+                                    res.status(400);
+                                    db.close();
+                                    res.end();
+                                });
+
+
+                                /*bucket.openDownloadStreamByName(UUID).
+                                    pipe(res).
+                                    on('error', function(error) {
+                                        console.log('Error !'+error);
+                                        res.status(400);
+                                        db.close();
+                                        res.end();
+
+                                    }).
+                                    on('finish', function() {
+                                        console.log('done!');
+                                        res.status(200);
+                                        db.close();
+                                        res.end();
+
+                                    });*/
+                            }
+
+
+
+                        });
+
+
+
+                    }
+                    else if(option=="COUCH")
+                    {
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
+
+                        var bucket = cluster.openBucket(Cbucket);
+
+                        bucket.get(UUID, function(err, result) {
+                            if (err)
+                            {
+                                console.log(err);
+
+                                callback(err,undefined);
+                                res.status(400);
+                                res.end();
+                            }else
+                            {
+                                console.log(resUpFile.FileStructure);
+                                res.setHeader('Content-Type', resUpFile.FileStructure);
+
+                                var s = streamifier.createReadStream(result.value);
+
+                                s.pipe(res);
+
+
+                                s.on('end', function (result) {
+
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                    SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                    {
+                                        if(errSv)
+                                        {
+                                            callback(errSv,undefined);
+                                        }
+                                        else
+                                        {
+                                            callback(undefined,resSv);
+                                        }
+                                    });
+
+
+                                    console.log("ENDED");
+                                    res.status(200);
+                                    res.end();
+                                });
+                                s.on('error', function (err) {
+
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                    console.log("ERROR");
+                                    res.status(400);
+                                    res.end();
+                                });
+
+                            }
+
+
+                        });
+                    }
+                    else
+                    {
+                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
+                        try {
+                            res.setHeader('Content-Type', resUpFile.FileStructure);
+                            var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+
+                            logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+                            var source = fs.createReadStream(SourcePath);
+
+                            source.pipe(res);
+                            source.on('end', function (result) {
+                                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                res.status(200);
+                                res.end();
+                            });
+                            source.on('error', function (err) {
+                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                res.status(400);
+                                res.end();
+                            });
+                        }
+                        catch(ex)
+                        {
+                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+
+                            callback(ex, undefined);
+                            res.status(400);
+                            res.end();
+                        }
+                    }
+
+                }
+
+                else {
+                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
+                    callback(new Error('No record for id : ' + UUID), undefined);
+                    res.status(404);
+                    res.end();
+
+                }
+
+            }).catch(function (errUpFile) {
+
+                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
+                callback(errUpFile, undefined);
+                res.status(400);
+                res.end();
+
+            });
+
+
+
+        }
+        catch (ex) {
+            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,UUID);
+            callback(new Error("No record Found for the request"), undefined);
+            res.status(400);
+            res.end();
+        }
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Invalid input for UUID %s',reqId,UUID);
+        callback(new Error("Invalid input for UUID"), undefined);
+        res.status(404);
+        res.end();
+    }
+
+};
+
 function FileInfoByID(res,UUID,Company,Tenant,reqId)
 {
     logger.debug('[DVP-FIleService.InternalFileService.FileInfoByID] - [%s] - Searching for Uploaded file %s',reqId,UUID);

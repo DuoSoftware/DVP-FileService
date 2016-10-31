@@ -3013,7 +3013,59 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
     return next();
 });
 
+RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Thumbnail/:tenant/:company/:id/:displayname',function(req,res,next)
+{
+    var reqId='';
 
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+        {
+            if(errDownFile)
+            {
+                var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+                logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+                logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+            }
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
 
 
 function Crossdomain(req,res,next){
