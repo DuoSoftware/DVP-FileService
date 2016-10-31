@@ -398,30 +398,31 @@ function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,call
                             }
                             else
                             {
-                                var bucket = new mongodb.GridFSBucket(db, {
-                                    chunkSizeBytes: 1024
+                                var ThumbBucket = new mongodb.GridFSBucket(db, {
+                                    chunkSizeBytes: 1024,
+                                    bucketName: 'thumbnails'
                                 });
 
 
-                                easyimg.thumbnail({
-                                    src:bucket.openDownloadStreamByName(UUID), dst:res,
-                                    width:128, height:128,
-                                    x:0, y:0
-                                }).then(function (image) {
-                                    console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                                    res.status(200);
-                                    db.close();
-                                    res.end();
+                                /*  easyimg.thumbnail({
+                                 src:bucket.openDownloadStreamByName(UUID), dst:res,
+                                 width:128, height:128,
+                                 x:0, y:0
+                                 }).then(function (image) {
+                                 console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                                 res.status(200);
+                                 db.close();
+                                 res.end();
 
-                                },function (err) {
-                                    console.log(err);
-                                    res.status(400);
-                                    db.close();
-                                    res.end();
-                                });
+                                 },function (err) {
+                                 console.log(err);
+                                 res.status(400);
+                                 db.close();
+                                 res.end();
+                                 });*/
 
 
-                                /*bucket.openDownloadStreamByName(UUID).
+                                ThumbBucket.openDownloadStreamByName(UUID).
                                     pipe(res).
                                     on('error', function(error) {
                                         console.log('Error !'+error);
@@ -436,7 +437,7 @@ function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,call
                                         db.close();
                                         res.end();
 
-                                    });*/
+                                    });
                             }
 
 

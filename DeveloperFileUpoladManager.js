@@ -248,6 +248,7 @@ function MongoUploader(uuid,path,reqId,callback)
         //console.log("db "+JSON.stringify(db));
         //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
+        var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
 
         fs.createReadStream(path).
             pipe(bucket.openUploadStream(uuid)).
@@ -279,7 +280,7 @@ function MongoUploader(uuid,path,reqId,callback)
                  );*/
 
                 easyimg.thumbnail({
-                    src:'testImg.jpg', dst:'./output/kitten-thumbnail.jpg',
+                    src:path, dst:ThumbBucket.openUploadStream(uuid),
                     width:128, height:128,
                     x:0, y:0
                 }).then(function (image) {
