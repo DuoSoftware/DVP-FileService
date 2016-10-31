@@ -260,23 +260,39 @@ function MongoUploader(uuid,path,reqId,callback)
             on('finish', function() {
                 console.log('done!');
                 //process.exit(0);
-                easyimg.rescrop({
+                /*easyimg.rescrop({
+                 src:'testImg.jpg', dst:'./output/kitten-thumbnail.jpg',
+                 width:50, height:50,
+                 cropwidth:12, cropheight:12,
+                 x:0, y:0
+                 }).then(
+                 function(image) {
+                 console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                 db.close();
+                 callback(undefined,uuid);
+                 },
+                 function (err) {
+                 console.log(err);
+                 db.close();
+                 callback(undefined,uuid);
+                 }
+                 );*/
+
+                easyimg.thumbnail({
                     src:'testImg.jpg', dst:'./output/kitten-thumbnail.jpg',
-                    width:50, height:50,
-                    cropwidth:12, cropheight:12,
+                    width:128, height:128,
                     x:0, y:0
-                }).then(
-                    function(image) {
-                        console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                        db.close();
-                        callback(undefined,uuid);
-                    },
-                    function (err) {
-                        console.log(err);
-                        db.close();
-                        callback(undefined,uuid);
-                    }
-                );
+                }).then(function (image) {
+                    console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                    db.close();
+                    callback(undefined,uuid);
+
+                },function (err) {
+                    console.log(err);
+                    db.close();
+                    callback(undefined,uuid);
+                });
+
 
             });
 
@@ -1515,11 +1531,11 @@ function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplay
                 where:
                     [{UniqueId: resvID},{Status: "PROCESSING"}]
 
-        }).then(function (resUpdate) {
-            callback(undefined, resvID);
-        }).catch(function (errUpdate) {
-            callback(errUpdate, undefined);
-        });
+            }).then(function (resUpdate) {
+                callback(undefined, resvID);
+            }).catch(function (errUpdate) {
+                callback(errUpdate, undefined);
+            });
 
 
     }
@@ -1607,17 +1623,17 @@ function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplay
 };
 
 
-    module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
-    module.exports.UploadAssignToApplication = UploadAssignToApplication;
-    module.exports.DeveloperVoiceRecordsUploading = DeveloperVoiceRecordsUploading;
-    module.exports.PickAllVoiceRecordingsOfApplication = PickAllVoiceRecordingsOfApplication;
-    module.exports.PickAllVoiceAppClipsOfApplication = PickAllVoiceAppClipsOfApplication;
-    module.exports.PickCallRecordById = PickCallRecordById;
-    module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
-    module.exports.FileAssignWithApplication = FileAssignWithApplication;
-    module.exports.CouchUploader = CouchUploader;
-    module.exports.DetachFromApplication = DetachFromApplication;
-    module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
+module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
+module.exports.UploadAssignToApplication = UploadAssignToApplication;
+module.exports.DeveloperVoiceRecordsUploading = DeveloperVoiceRecordsUploading;
+module.exports.PickAllVoiceRecordingsOfApplication = PickAllVoiceRecordingsOfApplication;
+module.exports.PickAllVoiceAppClipsOfApplication = PickAllVoiceAppClipsOfApplication;
+module.exports.PickCallRecordById = PickCallRecordById;
+module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
+module.exports.FileAssignWithApplication = FileAssignWithApplication;
+module.exports.CouchUploader = CouchUploader;
+module.exports.DetachFromApplication = DetachFromApplication;
+module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
 
 //module.exports.DeveloperUploadFilesTest = DeveloperUploadFilesTest;
 
