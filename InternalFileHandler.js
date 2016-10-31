@@ -8,6 +8,7 @@ var DbConn = require('dvp-dbmodels');
 var config = require('config');
 var streamifier = require('streamifier');
 var fs=require('fs');
+var easyimg = require('easyimage');
 
 
 //Sprint 5
