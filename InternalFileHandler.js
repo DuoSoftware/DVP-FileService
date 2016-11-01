@@ -366,7 +366,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 };
 
-function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,callback)
+function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,thumbSize,callback)
 {
     if(UUID)
     {
@@ -422,9 +422,9 @@ function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,call
                                  db.close();
                                  res.end();
                                  });*/
+                                var thumbName=UUID+"_"+thumbSize+"X"+thumbSize;
 
-
-                                ThumbBucket.openDownloadStreamByName(UUID).
+                                ThumbBucket.openDownloadStreamByName(thumbName).
                                     pipe(res).
                                     on('error', function(error) {
                                         console.log('Error !'+error);

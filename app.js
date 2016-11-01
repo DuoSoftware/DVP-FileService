@@ -3016,8 +3016,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
 RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Thumbnail/:tenant/:company/:id/:displayname',function(req,res,next)
 {
     var reqId='';
-
-    try {
+    var thumbSize='100';
 
         try
         {
@@ -3033,8 +3032,13 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Thumbnail/:tenant/
         var Company=req.params.company;
         var Tenant=req.params.tenant;
 
+    if(req.params.sz)
+    {
+        thumbSize=req.params.sz;
+    }
 
-        InternalFileHandler.DownloadThumbnailByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+
+        InternalFileHandler.DownloadThumbnailByID(res,req.params.id,req.params.displayname,option,Company,Tenant,thumbSize,reqId,function(errDownFile,resDownFile)
         {
             if(errDownFile)
             {
@@ -3055,13 +3059,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Thumbnail/:tenant/
 
 
 
-    }
-    catch(ex)
-    {
-        logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        res.end(jsonString);
-    }
+
 
     return next();
 
