@@ -422,7 +422,8 @@ function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,thum
                                  db.close();
                                  res.end();
                                  });*/
-                                var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
+                               // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
+                                var thumbName="452d7234-9a46-4995-872f-940950c3dc9b_150X150";
 
                                 ThumbBucket.openDownloadStreamByName(thumbName).
                                     pipe(res).
