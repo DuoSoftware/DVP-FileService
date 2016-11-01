@@ -3038,7 +3038,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Thumbnail/:tenant/
     }
 
 
-        InternalFileHandler.DownloadThumbnailByID(res,req.params.id,req.params.displayname,option,Company,Tenant,thumbSize,reqId,function(errDownFile,resDownFile)
+        InternalFileHandler.DownloadThumbnailByID(res,req.params.id,option,Company,Tenant,thumbSize,reqId,function(errDownFile,resDownFile)
         {
             if(errDownFile)
             {

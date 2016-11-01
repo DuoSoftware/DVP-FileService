@@ -366,7 +366,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 };
 
-function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,thumbSize,callback)
+function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,,reqId,callback)
 {
     if(UUID)
     {
