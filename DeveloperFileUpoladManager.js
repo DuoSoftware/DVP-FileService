@@ -35,7 +35,6 @@ var Db = require('mongodb').Db,
     Grid = require('mongodb').Grid,
     Code = require('mongodb').Code,
     assert = require('assert');
-var fs = require('fs');
 
 
 
@@ -238,11 +237,13 @@ function FindCurrentVersion(fname,company,tenant,reqId,callback)
  }*/
 
 
-function MongoUploader(uuid,path,reqId,callback)
+function MongoUploader(uuid,Fobj,reqId,callback)
 {
-
+    var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
     var thumbnailArray=[];
+
+    var fileStruct=Fobj.type.split("/")[0];
 
     var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
     mongodb.MongoClient.connect(uri, function(error, db)
@@ -266,32 +267,29 @@ function MongoUploader(uuid,path,reqId,callback)
                 console.log('done!');
 
 
-
-                /*var request = require('request');
-                var url = "http://vignette4.wikia.nocookie.net/rio/images/9/91/Rio-2-Official-Trailer-3-40.jpg/revision/latest?cb=20131002062355";
-*/
-
-                sizeArray.forEach(function (size) {
+                if(fileStruct=="image")
+                {
+                    sizeArray.forEach(function (size) {
 
 
-                    thumbnailArray.push(function createContact(callbackThumb)
-                    {
+                        thumbnailArray.push(function createContact(callbackThumb)
+                        {
 
-                        gm(fs.createReadStream(path)).resize(size, size)
-                            .stream(function (err, stdout, stderr) {
-                                var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
-                                stdout.pipe(writeStream).on('error', function(error)
-                                {
-                                    console.log("Error in making thumbnail "+uuid + "_"+size);
-                                    callbackThumb(error,undefined);
-                                }). on('finish', function()
-                                {
-                                    console.log("Making thumbnail "+uuid + "_"+size+" Success");
-                                    callbackThumb(undefined,"Done");
+                            gm(fs.createReadStream(path)).resize(size, size).quality(40)
+                                .stream(function (err, stdout, stderr) {
+                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                    stdout.pipe(writeStream).on('error', function(error)
+                                    {
+                                        console.log("Error in making thumbnail "+uuid + "_"+size);
+                                        callbackThumb(error,undefined);
+                                    }). on('finish', function()
+                                    {
+                                        console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                        callbackThumb(undefined,"Done");
+                                    });
                                 });
-                            });
+                        });
                     });
-                });
 
                     async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
 
@@ -300,10 +298,12 @@ function MongoUploader(uuid,path,reqId,callback)
 
 
                     });
-
-
-
-
+                }
+                else
+                {
+                    db.close();
+                    callback(undefined,uuid);
+                }
 
 
             });
@@ -1359,7 +1359,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             }
 
             console.log("TO MONGO >>>>>>>>> "+rand2);
-            MongoUploader(rand2,Fobj.path,reqId,function(errMongo,resMongo)
+            MongoUploader(rand2,Fobj,reqId,function(errMongo,resMongo)
             {
                 if(errMongo)
                 {

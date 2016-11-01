@@ -802,7 +802,6 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 {
     var reqId='';
 
-    try {
 
         try
         {
@@ -847,13 +846,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
 
 
 
-    }
-    catch(ex)
-    {
-        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
-        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        res.end(jsonString);
-    }
+
 
     return next();
 
