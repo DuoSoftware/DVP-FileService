@@ -44,6 +44,8 @@ var MPORT=config.Mongo.port;
 var MDB=config.Mongo.dbname;
 
 var mongodb = require('mongodb');
+var gm = require('gm').subClass({imageMagick: true});
+var async= require('async');
 
 
 function FindCurrentVersion(fname,company,tenant,reqId,callback)
@@ -239,6 +241,8 @@ function FindCurrentVersion(fname,company,tenant,reqId,callback)
 function MongoUploader(uuid,path,reqId,callback)
 {
 
+    var sizeArray=['75','100','125','150','200'];
+    var thumbnailArray=[];
 
     var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
     mongodb.MongoClient.connect(uri, function(error, db)
@@ -260,39 +264,45 @@ function MongoUploader(uuid,path,reqId,callback)
             }).
             on('finish', function() {
                 console.log('done!');
-                //process.exit(0);
-                /*easyimg.rescrop({
-                 src:'testImg.jpg', dst:'./output/kitten-thumbnail.jpg',
-                 width:50, height:50,
-                 cropwidth:12, cropheight:12,
-                 x:0, y:0
-                 }).then(
-                 function(image) {
-                 console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                 db.close();
-                 callback(undefined,uuid);
-                 },
-                 function (err) {
-                 console.log(err);
-                 db.close();
-                 callback(undefined,uuid);
-                 }
-                 );*/
 
-                easyimg.thumbnail({
-                    src:path, dst:ThumbBucket.openUploadStream(uuid),
-                    width:128, height:128,
-                    x:0, y:0
-                }).then(function (image) {
-                    console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                    db.close();
-                    callback(undefined,uuid);
 
-                },function (err) {
-                    console.log(err);
-                    db.close();
-                    callback(undefined,uuid);
+
+                /*var request = require('request');
+                var url = "http://vignette4.wikia.nocookie.net/rio/images/9/91/Rio-2-Official-Trailer-3-40.jpg/revision/latest?cb=20131002062355";
+*/
+
+                sizeArray.forEach(function (size) {
+
+
+                    thumbnailArray.push(function createContact(callbackThumb)
+                    {
+                        gm(fs.createReadStream(path)).resize(size, size)
+                            .stream(function (err, stdout, stderr) {
+                                var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size+"X"+size);
+                                stdout.pipe(writeStream).on('error', function(error)
+                                {
+                                    console.log("Error in making thumbnail "+uuid + "_"+size+"X"+size);
+                                    callbackThumb(error,undefined);
+                                }). on('finish', function()
+                                {
+                                    console.log("Making thumbnail "+uuid + "_"+size+"X"+size+" Success");
+                                    callbackThumb(undefined,"Done");
+                                });
+                            });
+                    });
                 });
+
+                    async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+
+                        db.close();
+                        callback(undefined,uuid);
+
+
+                    });
+
+
+
+
 
 
             });
