@@ -276,16 +276,17 @@ function MongoUploader(uuid,path,reqId,callback)
 
                     thumbnailArray.push(function createContact(callbackThumb)
                     {
+
                         gm(fs.createReadStream(path)).resize(size, size)
                             .stream(function (err, stdout, stderr) {
-                                var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size+"X"+size);
+                                var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                 stdout.pipe(writeStream).on('error', function(error)
                                 {
-                                    console.log("Error in making thumbnail "+uuid + "_"+size+"X"+size);
+                                    console.log("Error in making thumbnail "+uuid + "_"+size);
                                     callbackThumb(error,undefined);
                                 }). on('finish', function()
                                 {
-                                    console.log("Making thumbnail "+uuid + "_"+size+"X"+size+" Success");
+                                    console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                     callbackThumb(undefined,"Done");
                                 });
                             });
