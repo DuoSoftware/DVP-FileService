@@ -423,7 +423,7 @@ function DownloadThumbnailByID(res,UUID,display,option,Company,Tenant,reqId,thum
                                  res.end();
                                  });*/
                                // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
-                                var thumbName=UUID+"_"+thumbSize;
+                                var thumbName=UUID+"_"+thumbSize.toString();
 
                                 ThumbBucket.openDownloadStreamByName(thumbName).
                                     pipe(res).
