@@ -231,49 +231,52 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
 
-                        var extArr=resUpFile.FileStructure.split('/');
-                        var extension=extArr[1];
 
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                        try {
+                            var extArr = resUpFile.FileStructure.split('/');
+                            var extension = extArr[1];
 
-                        mongodb.MongoClient.connect(uri, function(error, db)
-                        {
-                            console.log(uri);
-                            console.log("Error1 "+error);
-                            if(error)
-                            {
-                                res.status(400);
-                                db.close();
-                                res.end();
-                            }
-                            else
-                            {
-                                var bucket = new mongodb.GridFSBucket(db, {
-                                    chunkSizeBytes: 1024
-                                });
+                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + '/' + config.Mongo.dbname;
 
-
-                                bucket.openDownloadStreamByName(UUID).
-                                    pipe(res).
-                                    on('error', function(error) {
-                                        console.log('Error !'+error);
-                                        res.status(400);
-                                        db.close();
-                                        res.end();
-
-                                    }).
-                                    on('finish', function() {
-                                        console.log('done!');
-                                        res.status(200);
-                                        db.close();
-                                        res.end();
-
+                            mongodb.MongoClient.connect(uri, function (error, db) {
+                                console.log(uri);
+                                console.log("Error1 " + error);
+                                if (error) {
+                                    res.status(400);
+                                    db.close();
+                                    res.end();
+                                }
+                                else {
+                                    var bucket = new mongodb.GridFSBucket(db, {
+                                        chunkSizeBytes: 1024
                                     });
-                            }
 
 
+                                    bucket.openDownloadStreamByName(UUID).
+                                        pipe(res).
+                                        on('error', function (error) {
+                                            console.log('Error !' + error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
 
-                        });
+                                        }).
+                                        on('finish', function () {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+
+                                        });
+                                }
+
+
+                            });
+                        } catch (e) {
+                            console.log('Exception !' + e);
+                            res.status(400);
+                            res.end();
+                        }
 
 
 
