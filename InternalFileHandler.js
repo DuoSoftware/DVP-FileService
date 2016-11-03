@@ -424,70 +424,74 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
 
-                        var extArr=resUpFile.FileStructure.split('/');
-                        var extension=extArr[1];
 
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                        try {
+                            var extArr = resUpFile.FileStructure.split('/');
+                            var extension = extArr[1];
 
-                        mongodb.MongoClient.connect(uri, function(error, db)
-                        {
-                            console.log(uri);
-                            console.log("Error1 "+error);
-                            if(error)
-                            {
-                                res.status(400);
-                                db.close();
-                                res.end();
-                            }
-                            else
-                            {
-                                var ThumbBucket = new mongodb.GridFSBucket(db, {
-                                    chunkSizeBytes: 1024,
-                                    bucketName: 'thumbnails'
-                                });
+                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + '/' + config.Mongo.dbname;
 
-
-                                /*  easyimg.thumbnail({
-                                 src:bucket.openDownloadStreamByName(UUID), dst:res,
-                                 width:128, height:128,
-                                 x:0, y:0
-                                 }).then(function (image) {
-                                 console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                                 res.status(200);
-                                 db.close();
-                                 res.end();
-
-                                 },function (err) {
-                                 console.log(err);
-                                 res.status(400);
-                                 db.close();
-                                 res.end();
-                                 });*/
-                                // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
-                                var thumbName=UUID+"_"+thumbSize.toString();
-                                console.log(thumbName);
-
-                                ThumbBucket.openDownloadStreamByName(thumbName).
-                                    pipe(res).
-                                    on('error', function(error) {
-                                        console.log('Error !'+error);
-                                        res.status(400);
-                                        db.close();
-                                        res.end();
-
-                                    }).
-                                    on('finish', function() {
-                                        console.log('done!');
-                                        res.status(200);
-                                        db.close();
-                                        res.end();
-
+                            mongodb.MongoClient.connect(uri, function (error, db) {
+                                console.log(uri);
+                                console.log("Error1 " + error);
+                                if (error) {
+                                    res.status(400);
+                                    db.close();
+                                    res.end();
+                                }
+                                else {
+                                    var ThumbBucket = new mongodb.GridFSBucket(db, {
+                                        chunkSizeBytes: 1024,
+                                        bucketName: 'thumbnails'
                                     });
-                            }
+                                    /*  easyimg.thumbnail({
+                                     src:bucket.openDownloadStreamByName(UUID), dst:res,
+                                     width:128, height:128,
+                                     x:0, y:0
+                                     }).then(function (image) {
+                                     console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
+                                     res.status(200);
+                                     db.close();
+                                     res.end();
 
+                                     },function (err) {
+                                     console.log(err);
+                                     res.status(400);
+                                     db.close();
+                                     res.end();
+                                     });*/
+                                    // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
+                                    var thumbName=UUID+"_"+thumbSize.toString();
+                                    console.log(thumbName);
 
+                                    ThumbBucket.openDownloadStreamByName(thumbName).
+                                        pipe(res).
+                                        on(
+                                        'error',
+                                        function(error) {
+                                            console.log('Error !'+error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
 
-                        });
+                                        }).
+                                        on('finish', function
+                                            () {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+
+                                        });
+                                }
+                            });
+                        } catch (e)
+                        {
+                            console.log('Exception '+e);
+                            res.status(400);
+                            db.close();
+                            res.end();
+                        }
 
 
 
