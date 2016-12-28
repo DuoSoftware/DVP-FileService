@@ -4,39 +4,52 @@ module.exports = {
     "User":"duo",
     "Password":"DuoS123",
     "Port":5432,
-    "Host":"127.0.0.1",
-    "Database":"dvpdb"
+    "Host":"104.236.231.11",
+    "Database":"duo"
   },
   "Redis":
   {
-    "ip": "127.0.0.1",
-    "port": "6379"
+    "ip": "45.55.142.207",
+    "port": "6389",
+    "password":"DuoS123"
 
+  },
+  "Security":
+  {
+    "ip" : "45.55.142.207",
+    "port": "6389",
+    "user": "duo",
+    "password": "DuoS123"
   },
 
   "Host":
   {
-    "domain": "0.0.0.0",
-    "port": "8081",
-    "version":"6.0",
+    "domain": "127.0.0.1",
+    "port": "5645",
+    "version":"1.0.0.0",
     "hostpath":"./config",
     "logfilepath": ""
   },
 
-  "Option":"LOCAL",
+  "Option":"MONGO",
+  "Collection":"fs.files",
 
 
   "Mongo":
   {
-    "ip":"127.0.0.1",
+    "ip":"45.55.142.207",
     "port":"27017",
-    "dbname":"test"
+    "dbname":"dvpdb",
+    "password":"DuoS123",
+    "user":"duo"
   },
 
   "Couch":
   {
     "ip":"127.0.0.1",
     "port":"",
-    "bucket":"default"
+    "bucket":"default",
+    "user":"duo",
+    "password":"DuoS123"
   }
 };

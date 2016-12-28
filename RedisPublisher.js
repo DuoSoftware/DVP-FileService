@@ -4,25 +4,28 @@
 
 var redis=require('redis');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var DbConn = require('DVP-DBModels');
-var log4js=require('log4js');
+
 
 var config = require('config');
 var hpath=config.Host.hostpath;
-
-log4js.configure(config.Host.logfilepath, { cwd: hpath });
-var log = log4js.getLogger("redis");
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 
 var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
+var password = config.Redis.password;
 
 
 var client = redis.createClient(port,ip);
+client.auth(password, function (error) {
+    console.log("Redis Auth Error " + error);
+});
+
 client.on("error", function (err) {
     console.log("Error " + err);
+
+
 });
 
 
@@ -30,7 +33,6 @@ client.on("error", function (err) {
 
 function RedisPublish(SID,AID,reqId,callback)
 {
-log.info("Publish to redis (instance/profile) : Inputs :-  ServerID : "+SID+" AttachmentDetails : "+AID);
 
 if(client.connected)
 {
