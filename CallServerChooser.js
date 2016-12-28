@@ -1,18 +1,12 @@
 /**
  * Created by pawan on 3/26/2015.
  */
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var log4js=require('log4js');
-
 
 var config = require('config');
-var hpath=config.Host.hostpath;
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
-
-log4js.configure(config.Host.logfilepath, { cwd: hpath });
-var log = log4js.getLogger("cspicker");
 
 function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
 {
@@ -67,60 +61,7 @@ function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
             callback(errCloudUser,undefined);
         });
             
-            /*complete(function (errCloudUser, resCloudUser) {
 
-            if(errCloudUser)
-            {
-                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching CloudEndUser Company %s Tenant %s Provision 2',reqId,CompId,TenId,errCloudUser);
-                callback(errCloudUser,undefined);
-            }
-
-
-            else {
-                if (resCloudUser) {
-                    logger.info('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server found %s',reqId,resCloudUser.id);
-                    try {
-
-                        DbConn.SipNetworkProfile.findAll({where: [{id: resCloudUser.SipNetworkProfileId}]}).complete(function (errSipNwProf, resSipNwProf) {
-
-                            if (errSipNwProf) {
-                                logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching SipNetworkProfile -  SipNetworkProfileId %s',reqId,resCloudUser.SipNetworkProfileId,errSipNwProf);
-                                callback(errSipNwProf, undefined);
-                            }
-                            else
-                            {
-                                if (resSipNwProf) {
-                                    logger.debug('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Call server %s found by SipNetworkProfile ',reqId,resSipNwProf.CallServerId);
-                                callback(undefined, resSipNwProf.CallServerId);
-                            }
-
-                            else {
-                                    logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - No SipNetworkProfile record found -  SipNetworkProfileId %s',reqId,resCloudUser.SipNetworkProfileId);
-
-                                callback(new Error('No record found for SipNetworkProfile id : ' + resCloudUser.SipNetworkProfileId), undefined);
-                            }
-                        }
-
-
-
-                        });
-                    }
-                    catch (ex) {
-                        logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Exception on searching SipNetworkProfile records ',reqId,ex);
-                        callback(ex, undefined);
-                    }
-
-
-                }
-
-
-                else {
-                    logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - No CloudEndUser Found - Company %s Tenant %s Provision 2',reqId,CompId,TenId);
-                    callback(new Error("No Cloud end user record Found"), undefined);
-                }
-            }
-
-        });*/
     }
     catch (ex) {
         logger.error('[DVP-FIleService.UploadFile.ProfileTypeCallserverChooser] - [%s] - [PGSQL] - Exception on starting method : ProfileTypeCallserverChooser ',reqId,ex);
@@ -128,7 +69,6 @@ function ProfileTypeCallserverChooser(CompId,TenId,reqId,callback)
     }
 }
 
-//log Done...............................................................................................................
 function InstanceTypeCallserverChooser(CompId,TenId,reqId,callback)
 {
     try
@@ -154,43 +94,17 @@ function InstanceTypeCallserverChooser(CompId,TenId,reqId,callback)
             callback(errCS,undefined);
         });
 
-            /*complete(function (err, InsObject) {
 
-            if(err)
-            {
-                logger.error('[DVP-FIleService.UploadFile.InstanceTypeCallserverChooser] - [%s] - [PGSQL] - Error occurred while searching Call server - Company %s Tenant %s',reqId,CompId,TenId,err);
-                callback(err,undefined);
-            }
-            else
-            {
-                if (InsObject) {
-                    //console.log("................................... Given Call server found ................................  : " + InsObject.id);
-                    //log.info("Record found "+JSON.stringify(InsObject));
-                    logger.info('[DVP-FIleService.UploadFile.InstanceTypeCallserverChooser] - [%s] - [PGSQL] - Call server found %s',reqId,InsObject.id,err);
-                    callback(undefined, InsObject.id);
-                    //res.end();
-                }
-                else {
-                    // var jsonString = messageFormatter.FormatMessage(err, "ERROR found", false, null);
-                    //log.error("No record found ");
-                    logger.error('[DVP-FIleService.UploadFile.InstanceTypeCallserverChooser] - [%s] - [PGSQL] - No call server found',reqId);
-                    callback("Error Found", undefined);
-                    // res.end();
-                }
-            }
-
-        });*/
     }
     catch(ex)
     {
-        //log.fatal("Exception is occurred : "+ex);
-        //logger.error('[DVP-FIleService.UploadFile] - [%s] - [PGSQL] - No call server found',reqId);
+
         logger.error('[DVP-FIleService.UploadFile.InstanceTypeCallserverChooser] - [%s] - [PGSQL] - Exception occurred when call server picking' ,reqId,ex);
         callback("Exception Found", undefined);
     }
 
 }
-//log done
+
 function SharedTypeCallsereverChooser(CompId,TenId,reqId,callback)
 {
     try

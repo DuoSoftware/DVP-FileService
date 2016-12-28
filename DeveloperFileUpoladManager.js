@@ -1,7 +1,14 @@
 /**
  * Created by pawan on 4/9/2015.
  */
-var DbConn = require('DVP-DBModels');
+//.....................................................................................................
+// change mongodb module to mongoose
+//.....................................................................................................
+
+var DbConn = require('dvp-dbmodels');
+//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var fs=require('fs');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 // sprint 5
 
@@ -14,8 +21,8 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
 
 var fs=require('fs');
-var stringify = require('stringify');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var easyimg = require('easyimage');
 
 
 var Db = require('mongodb').Db,
@@ -28,7 +35,6 @@ var Db = require('mongodb').Db,
     Grid = require('mongodb').Grid,
     Code = require('mongodb').Code,
     assert = require('assert');
-var fs = require('fs');
 
 
 
@@ -36,249 +42,276 @@ var MIP=config.Mongo.ip;
 var MPORT=config.Mongo.port;
 var MDB=config.Mongo.dbname;
 
+var mongodb = require('mongodb');
+var gm = require('gm').subClass({imageMagick: true});
+var async= require('async');
 
 
-
-function FindCurrentVersion(FObj,reqId,callback)
+function FindCurrentVersion(fname,company,tenant,reqId,callback)
 {
     try
     {
-        logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,FObj.name);
-        //DbConn.FileUpload.find({where: [{Filename: FObj.name}]}).complete(function (err, CurFileObject)
-        DbConn.FileUpload.max('Version',{where: [{Filename: FObj.name}]}).then(function (resFile) {
+        logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,fname);
+        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
 
             if(resFile)
             {
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((resFile)+1));
+                logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,fname,parseInt((resFile)+1));
                 callback(undefined,parseInt((resFile)+1));
             }
-            else{
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
-                callback(undefined,1);
+            else
+            {
+                if(resFile<0)
+                {
+                    logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] -  Reserved file found',reqId,fname);
+                    callback(undefined,0);
+                }
+                else
+                {
+                    logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] -  Version of %s is not found and New version will be 1',reqId,fname);
+                    callback(undefined,1);
+                }
+
             }
 
         }).catch(function (errFile) {
 
-            logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,errFile);
+            logger.error('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,fname,errFile);
             callback(errFile,undefined);
 
         });
 
-
-
-
-
-        /*complete(function (err, CurFileObject)
-         {
-         if(err)
-         {
-         logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FObj.name,err);
-         callback(err,undefined);
-         }
-         else
-         {
-         if(CurFileObject)
-         {
-         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d',reqId,FObj.name,parseInt((CurFileObject)+1));
-         callback(undefined,parseInt((CurFileObject)+1));
-         }
-         else{
-         logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FObj.name,1);
-         callback(undefined,1);
-         }
-
-         }
-         });*/
     }
     catch (ex)
     {
-        logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,FObj.name,ex);
+        logger.error('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Exception occurred when start searching current version of %s',reqId,FObj.name,ex);
         callback(ex,undefined);
     }
 }
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,reqId,callback)
+/*function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,reqId,callback)
+ {
+
+ try
+ {
+ var DisplyArr = Fobj.path.split('\\');
+
+ var DisplayName=DisplyArr[DisplyArr.length-1];
+ }
+ catch(ex)
+ {
+ logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred while creating DisplayName %s',reqId,JSON.stringify(Fobj));
+ callback(ex,undefined);
+ }
+
+ try
+ {
+
+ FindCurrentVersion(Fobj,cmp,ten,reqId,function(err,result)
+ {
+ if(err)
+ {
+ callback(err,undefined);
+ }
+ else
+ {
+ try
+ {
+ var NewUploadObj = DbConn.FileUpload
+ .build(
+ {
+ UniqueId: rand2,
+ FileStructure: Fobj.type,
+ ObjClass: Clz,
+ ObjType: Type,
+ ObjCategory: Category,
+ URL: Fobj.path,
+ UploadTimestamp: Date.now(),
+ Filename: Fobj.name,
+ Version:result,
+ DisplayName: DisplayName,
+ CompanyId:cmp,
+ TenantId: ten,
+ RefId:ref
+
+
+ }
+ );
+ logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
+ NewUploadObj.save().then(function (resUpFile) {
+
+ logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+
+ DbConn.FileCategory.find({where:{Category:Category}}).then(function (resCat) {
+
+ resUpFile.setFileCategory(resCat.id).then(function (resCatset) {
+
+ console.log("Category attached successfully");
+
+ }).catch(function (errCatSet) {
+ console.log("Error in category attaching "+errCatSet);
+ });
+
+ }).catch(function (errCat) {
+ console.log("Error in searching file categories "+errCat);
+ });
+
+ if(option=="LOCAL")
+ {
+ logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Local',reqId,JSON.stringify(NewUploadObj));
+ callback(undefined, resUpFile.UniqueId);
+ }
+ else if(option=="MONGO")
+ {
+ logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to MongoDB',reqId,JSON.stringify(NewUploadObj));
+ console.log("TO MONGO >>>>>>>>> "+rand2);
+ MongoUploader(rand2,Fobj.path,reqId,function(errMongo,resMongo)
+ {
+ if(errMongo)
+ {
+ console.log(errMongo);
+ callback(errMongo,undefined);
+ }else
+ {
+ console.log(resMongo);
+ callback(undefined,resUpFile.UniqueId);
+ }
+
+ });
+ }
+ // sprint 5
+ else if(option=="COUCH")
+ {
+ logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId,JSON.stringify(NewUploadObj));
+ console.log("TOCOUCH >>>>>>>>> "+rand2);
+ CouchUploader(rand2,Fobj,resUpFile,reqId,function(errCouch,resCouch)
+ {
+ if(errCouch)
+ {
+ console.log(errCouch);
+ callback(errCouch,undefined);
+ }
+ else
+ {
+ console.log(resCouch);
+ callback(undefined,resUpFile.UniqueId);
+ }
+
+ });
+
+ }
+
+
+
+
+ }).catch(function (errUpFile) {
+
+ logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+ callback(errUpFile, undefined);
+
+
+
+ });
+
+ }
+ catch(ex)
+ {
+ logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object creating ',reqId,ex);
+ callback(ex,undefined);
+ }
+ }
+ });
+
+ }
+ catch(ex)
+ {
+ logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object saving starting ',reqId,ex);
+ callback(ex,undefined);
+ }
+
+
+
+
+
+
+ }*/
+
+
+function MongoUploader(uuid,Fobj,reqId,callback)
 {
+    var path=Fobj.path;
+    var sizeArray=['75','100','125','150','200'];
+    var thumbnailArray=[];
 
-    try
+    var fileStruct=Fobj.type.split("/")[0];
+
+    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+    mongodb.MongoClient.connect(uri, function(error, db)
     {
-        var DisplyArr = Fobj.path.split('\\');
+        console.log(uri);
+        console.log("Error1 "+error);
+        //console.log("db "+JSON.stringify(db));
+        //assert.ifError(error);
+        var bucket = new mongodb.GridFSBucket(db);
+        var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
 
-        var DisplayName=DisplyArr[DisplyArr.length-1];
-    }
-    catch(ex)
-    {
-        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred while creating DisplayName %s',reqId,JSON.stringify(Fobj));
-        callback(ex,undefined);
-    }
+        fs.createReadStream(path).
+            pipe(bucket.openUploadStream(uuid)).
+            on('error', function(error) {
+                // assert.ifError(error);
+                console.log("Error "+error);
+                db.close();
+                callback(error,undefined);
+            }).
+            on('finish', function() {
+                console.log('done!');
 
-    try
-    {
-console.log("OPTION IS "+option);
 
-        FindCurrentVersion(Fobj,reqId,function(err,result)
-        {
-            if(err)
-            {
-                callback(err,undefined);
-            }
-            else
-            {
-                try
+                if(fileStruct=="image")
                 {
-                    var NewUploadObj = DbConn.FileUpload
-                        .build(
+                    sizeArray.forEach(function (size) {
+
+
+                        thumbnailArray.push(function createContact(callbackThumb)
                         {
-                            UniqueId: rand2,
-                            FileStructure: Fobj.type,
-                            ObjClass: Clz,
-                            ObjType: Type,
-                            ObjCategory: Category,
-                            URL: Fobj.path,
-                            UploadTimestamp: Date.now(),
-                            Filename: Fobj.name,
-                            Version:result,
-                            DisplayName: DisplayName,
-                            CompanyId:cmp,
-                            TenantId: ten,
-                            RefId:ref
 
+                            gm(fs.createReadStream(path)).resize(size, size).quality(50)
+                                .stream(function (err, stdout, stderr) {
+                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                    stdout.pipe(writeStream).on('error', function(error)
+                                    {
+                                        console.log("Error in making thumbnail "+uuid + "_"+size);
+                                        callbackThumb(error,undefined);
+                                    }). on('finish', function()
+                                    {
+                                        console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                        callbackThumb(undefined,"Done");
+                                    });
+                                });
+                        });
+                    });
 
-                        }
-                    );
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
-                    NewUploadObj.save().then(function (resUpFile) {
+                    async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
 
-                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-
-                        if(option=="LOCAL")
-                        {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted to Local',reqId,JSON.stringify(NewUploadObj));
-                            callback(undefined, resUpFile.UniqueId);
-                        }
-                        else if(option=="MONGO")
-                        {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to MongoDB',reqId,JSON.stringify(NewUploadObj));
-                            console.log("TO MONGO >>>>>>>>> "+rand2);
-                            MongoUploader(rand2,Fobj.path,reqId,function(errMongo,resMongo)
-                            {
-                                if(errMongo)
-                                {
-                                    console.log(errMongo);
-                                    callback(errMongo,undefined);
-                                }else
-                                {
-                                    console.log(resMongo);
-                                    callback(undefined,resUpFile.UniqueId);
-                                }
-
-                            });
-                        }
-                        // sprint 5
-                        else if(option=="COUCH")
-                        {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId,JSON.stringify(NewUploadObj));
-                            console.log("TOCOUCH >>>>>>>>> "+rand2);
-                            CouchUploader(rand2,Fobj,resUpFile,reqId,function(errCouch,resCouch)
-                            {
-                                if(errCouch)
-                                {
-                                    console.log(errCouch);
-                                    callback(errCouch,undefined);
-                                }
-                                else
-                                {
-                                    console.log(resCouch);
-                                    callback(undefined,resUpFile.UniqueId);
-                                }
-
-                            });
-
-                        }
-
-
-
-
-                    }).catch(function (errUpFile) {
-
-                        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
-                        callback(errUpFile, undefined);
-
+                        db.close();
+                        callback(undefined,uuid);
 
 
                     });
-
-
-                    /*complete(function (errUpFile, resUpFile) {
-                     if (errUpFile) {
-
-                     logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
-                     callback(errUpFile, undefined);
-
-
-
-
-                     }
-                     else {
-                     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-                     callback(undefined, resUpFile.UniqueId);
-                     }
-
-
-                     });*/
                 }
-                catch(ex)
+                else
                 {
-                    logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object creating ',reqId,ex);
-                    callback(ex,undefined);
+                    db.close();
+                    callback(undefined,uuid);
                 }
-            }
-        });
-
-    }
-    catch(ex)
-    {
-        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object saving starting ',reqId,ex);
-        callback(ex,undefined);
-    }
 
 
+            });
 
-
-
-
-}
-
-
-function MongoUploader(uuid,path,reqId,callback)
-{
-
-    var db = new Db(MDB, new Server(MIP, MPORT));
-    db.open(function(err, db) {
-        // Open a file for writing
-        var gridStoreWrite = new GridStore(db, uuid, "w", {chunkSize:1024});
-        gridStoreWrite.writeFile(path, function(err, result) {
-            // Ensure we correctly returning a Gridstore object
-            assert.ok(typeof result.close == 'function');
-
-            if(err)
-            {
-                db.close();
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening failed',reqId,err);
-                callback(err,undefined);
-            }
-            else
-            {
-                db.close();
-                logger.debug('[DVP-FIleService.DeveloperUploadFiles.MongoUploader] - [%s]  - MongoDB opening succeeded',reqId,err);
-                callback(undefined,result);
-            }
-            // Open the gridStore for reading and pipe to a file
-
-        })
     });
 
 }
+
 
 function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
 {
@@ -346,48 +379,48 @@ function CouchUploader(uuid,fobj,resUpFile,reqId,callback)
     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
     //var cluster = new couchbase.Cluster();
     //var bucket = cluster.openBucket('default');
-   // var fl=strm.read();
+    // var fl=strm.read();
     //console.log(strm);
 
 
 
 
     /*bucket.upsert('testdoc5', fl, function(err, result) {
-        if (err) {console.log(err);}
+     if (err) {console.log(err);}
 
-        bucket.get('testdoc5', function(err, result) {
-            if (err) {console.log(err);}
+     bucket.get('testdoc5', function(err, result) {
+     if (err) {console.log(err);}
 
-            console.log("W is "+JSON.stringify(result.value));
-           // strm.pipe(dest);
-            // {name: Frank}
-        });
-    });
-
-
-*/
+     console.log("W is "+JSON.stringify(result.value));
+     // strm.pipe(dest);
+     // {name: Frank}
+     });
+     });
 
 
-
-   /* bucket.get('testdoc3', function(err, result) {
-        if (err) {
-            console.log(err);
-        }
+     */
 
 
 
-        var source=result.value._readableState.buffer;
-        console.log("S is "+JSON.stringify(source));
+    /* bucket.get('testdoc3', function(err, result) {
+     if (err) {
+     console.log(err);
+     }
 
 
 
-       var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
-        //source.pipe(dest);
-      var s=  streamifier.createReadStream(source.toString());
-        console.log("stmfris "+JSON.stringify(s));
-        s.pipe(dest);
+     var source=result.value._readableState.buffer;
+     console.log("S is "+JSON.stringify(source));
 
-    });*/
+
+
+     var dest = fs.createWriteStream('C:/Users/pawan/Desktop/dd');
+     //source.pipe(dest);
+     var s=  streamifier.createReadStream(source.toString());
+     console.log("stmfris "+JSON.stringify(s));
+     s.pipe(dest);
+
+     });*/
 
 
 }
@@ -1143,36 +1176,25 @@ function PickVoiceAppClipById(RecId,callback) {
     }
 
 
-}
+};
 
-function FileAssignWithApplication(fileUID,appID,callback)
+function FileAssignWithApplication(fileUID,appID,Company,Tenant,callback)
 {
     if(fileUID&&appID&&!isNaN(appID))
     {
         try
         {
-            DbConn.FileUpload.find({where:[{UniqueId:fileUID}]}).complete(function(errFile,resFile)
-            {
-                if(errFile)
-                {
-                    callback(errFile,undefined);
-                }else
-                {
+            DbConn.FileUpload.find({where:[{UniqueId:fileUID},{CompanyId:Company},{TenantId:Tenant}]}).
+                then(function (resFile) {
                     if(!resFile)
                     {
                         callback(new Error("No file"),undefined);
                     }
                     else
                     {
-                        DbConn.Application.find({where:[{id:appID}]}).complete(function(errApp,resApp)
-                        {
-                            if(errApp)
-                            {
-                                callback(errApp,undefined);
+                        DbConn.Application.find({where:[{id:appID}]}).
+                            then(function (resApp) {
 
-                            }
-                            else
-                            {
                                 if(!resApp)
                                 {
                                     callback(new Error("No Application"),undefined);
@@ -1181,89 +1203,50 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                 {
                                     try
                                     {
-                                        DbConn.FileUpload.find({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:appID}]}).complete(function(errVFileNm,resVFileNm)
-                                        {
-                                            if(errVFileNm)
+                                        DbConn.FileUpload.find({where:[{Filename:resFile.Filename},{CompanyId:resFile.CompanyId},{TenantId:resFile.TenantId},{ApplicationId:appID}]}).then(function (resVFileNm) {
+
+                                            if(!resVFileNm)
                                             {
-                                                callback(errVFileNm,undefined);
+                                                //callback(new Error("No suchFile"),undefined) ;
+                                                resFile.setApplication(resApp).then(function (resAdd) {
+
+                                                    callback(undefined,resAdd);
+                                                }).catch(function (errAdd) {
+
+                                                    callback(errAdd,undefined);
+                                                });
+
+
                                             }
                                             else
                                             {
-
-                                                if(!resVFileNm)
+                                                if(fileUID==resVFileNm.UniqueId)
                                                 {
-                                                    //callback(new Error("No suchFile"),undefined) ;
-                                                    resFile.setApplication(resApp).then(function (resAdd) {
-
-                                                        callback(undefined,resAdd);
-                                                    }).catch(function (errAdd) {
-
-                                                        callback(errAdd,undefined);
-                                                    });
-
-
+                                                    callback(undefined,new Object("Already assigned"));
                                                 }
                                                 else
                                                 {
-                                                    if(fileUID==resVFileNm.UniqueId)
-                                                    {
-                                                        callback(undefined,new Object("Already assigned"));
-                                                    }
-                                                    else
-                                                    {
-                                                        resVFileNm.setApplication(null).then(function (resNull) {
+                                                    resVFileNm.setApplication(null).then(function (resNull) {
 
-                                                            resFile.setApplication(resApp).then(function (resMap) {
-                                                                callback(undefined,resMap);
-                                                            }).catch(function (errMap) {
-                                                                callback(errMap, undefined);
-                                                            });
-
-                                                               /* complete(function (errMap, resMap) {
-                                                                if (errMap) {
-                                                                    callback(errMap, undefined);
-                                                                }
-                                                                else {
-                                                                    callback(undefined,resMap);
-                                                                }
-                                                            });*/
-
-                                                        }).catch(function (errNull) {
-                                                            callback(errNull,undefined);
+                                                        resFile.setApplication(resApp).then(function (resMap) {
+                                                            callback(undefined,resMap);
+                                                        }).catch(function (errMap) {
+                                                            callback(errMap, undefined);
                                                         });
 
 
-                                                            /*complete(function (errNull, resNull) {
 
-                                                            if(errNull)
-                                                            {
-                                                                callback(errNull,undefined);
-                                                            }
-                                                            else
-                                                            {
-                                                                resFile.setApplication(resApp).complete(function (errMap, resMap) {
-                                                                    if (errMap) {
-                                                                        callback(errMap, undefined);
-                                                                    }
-                                                                    else {
-                                                                        callback(undefined,resMap);
-                                                                    }
-                                                                });
-                                                            }
+                                                    }).catch(function (errNull) {
+                                                        callback(errNull,undefined);
+                                                    });
 
-                                                        });*/
-                                                    }
                                                 }
-                                                //for (var index in resVFileNm) {
-
-
-
-
-                                                // }
-
-
                                             }
+
+                                        }).catch(function (errVFileNm) {
+                                            callback(errVFileNm,undefined);
                                         });
+
 
                                     }
                                     catch(ex)
@@ -1271,11 +1254,16 @@ function FileAssignWithApplication(fileUID,appID,callback)
                                         callback(ex,undefined);
                                     }
                                 }
-                            }
-                        });
+
+                            }).catch(function (errApp) {
+                                callback(errApp,undefined);
+                            });
+
                     }
-                }
-            });
+                }).catch(function (errFile) {
+                    callback(errFile,undefined);
+                });
+
         }
         catch(ex)
         {
@@ -1287,11 +1275,364 @@ function FileAssignWithApplication(fileUID,appID,callback)
         callback(new Error("Invalid Inputs"),undefined);
     }
 
+};
+
+function DetachFromApplication(fileUID,Company,Tenant,callback)
+{
+    if(fileUID)
+    {
+        try
+        {
+            DbConn.FileUpload.find({where:[{UniqueId:fileUID},{CompanyId:Company},{TenantId:Tenant}]}).
+                then(function (resFile) {
+                    if(!resFile)
+                    {
+                        callback(new Error("No file"),undefined);
+                    }
+                    else
+                    {
+                        resFile.setApplication(null).then(function (resNull) {
+
+                            callback(undefined,resNull);
+
+                        }).catch(function (errNull) {
+                            callback(errNull,undefined);
+                        });
+
+                    }
+                }).catch(function (errFile) {
+                    callback(errFile,undefined);
+                });
+
+        }
+        catch(ex)
+        {
+            callback(ex,undefined);
+        }
+    }
+    else
+    {
+        callback(new Error("Invalid Inputs"),undefined);
+    }
+
+};
+
+
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,reqId,callback)
+{
+
+    try
+    {
+
+
+        var DisplayName="";
+
+
+        if(Fobj.display){
+
+
+            DisplayName = Fobj.display;
+        }
+        else
+        {
+            DisplayName=Fobj.name;
+        }
+
+        // is in processing level
+
+
+        if(option=="LOCAL")
+        {
+            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment  successfully inserted to Local',reqId);
+            //callback(undefined, resUpFile.UniqueId);
+            FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+                callback(err,rand2);
+            });
+        }
+        else if(option=="MONGO")
+        {
+            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
+
+            if(resvID)
+            {
+                rand2=resvID;
+            }
+
+            console.log("TO MONGO >>>>>>>>> "+rand2);
+            MongoUploader(rand2,Fobj,reqId,function(errMongo,resMongo)
+            {
+                if(errMongo)
+                {
+                    console.log(errMongo);
+                    callback(errMongo,undefined);
+                }
+                else
+                {
+                    console.log(resMongo);
+                    // callback(undefined,resUpFile.UniqueId);
+                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName ,resvID,reqId, function (err,res) {
+                        if(err)
+                        {
+                            callback(err,undefined);
+
+                        }
+                        else
+                        {
+                            if(res)
+                            {
+                                callback(undefined,res);
+                            }
+                            else
+                            {
+                                callback(new Error("Error in Operation "),undefined);
+                            }
+                        }
+                    });
+                }
+
+
+
+            });
+        }
+        // sprint 5
+        /*else if(option=="COUCH")
+         {
+         logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment object %s on process of uploading to COUCH',reqId);
+         console.log("TOCOUCH >>>>>>>>> "+rand2);
+         CouchUploader(rand2,Fobj,resUpFile,reqId,function(errCouch,resCouch)
+         {
+         if(errCouch)
+         {
+         console.log(errCouch);
+         callback(errCouch,undefined);
+         }
+         else
+         {
+         console.log(resCouch);
+         FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,result, function (err,res) {
+         callback(err,res.UniqueId);
+         });
+         }
+
+         });
+
+         }*/
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object saving starting ',reqId,ex);
+        callback(ex,undefined);
+    }
+
+
+
+
+
+
 }
 
+function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId,callback)
+{
+
+    try
+    {
 
 
 
+        FindCurrentVersion( fileName,cmp, ten, reqId, function (errVersion, resVersion) {
+
+            if(errVersion)
+            {
+                callback(errVersion,undefined);
+            }
+            else
+            {
+                try {
+                    var NewUploadObj = DbConn.FileUpload
+                        .build(
+                        {
+                            UniqueId: rand2,
+                            ObjClass: Clz,
+                            ObjCategory: Category,
+                            Filename: fileName,
+                            Version: resVersion,
+                            DisplayName: Display,
+                            CompanyId: cmp,
+                            TenantId: ten,
+                            Status:"PROCESSING",
+                            UploadTimestamp: Date.now()
+
+
+                        }
+                    );
+                    //logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
+                    NewUploadObj.save().then(function (resUpFile) {
+
+                        //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                        if (resUpFile) {
+                            DbConn.FileCategory.find({where: {Category: Category}}).then(function (resCat) {
+
+                                if (resCat) {
+                                    resUpFile.setFileCategory(resCat.id).then(function (resCatset) {
+
+                                        callback(undefined, resUpFile.UniqueId);
+
+                                    }).catch(function (errCatSet) {
+                                        callback(errCatSet, undefined);
+                                    });
+                                }
+                                else {
+                                    callback(undefined, resUpFile.UniqueId)
+                                }
+
+
+                            }).catch(function (errCat) {
+                                callback(errCat, undefined);
+                            });
+                        }
+                        else {
+                            callback(new Error("Upload records saving failed"), undefined);
+                        }
+
+
+                    }).catch(function (errUpFile) {
+
+                        //logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+                        callback(errUpFile, undefined);
+
+
+                    });
+
+                }
+                catch (ex) {
+                    //logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object creating ',reqId,ex);
+                    callback(ex, undefined);
+                }
+
+            }
+
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.DeveloperReserveFiles] - [%s] - Exception occurred when placing reservation for a file  ',reqId,ex);
+        callback(ex,undefined);
+    }
+
+
+
+
+
+
+}
+function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplayname,resvID,reqId,callback ) {
+    var result = 0;
+
+
+    if (resvID) {
+        // reserved file and no similar files found
+        DbConn.FileUpload.update({Status: "UPLOADED",FileStructure: Fobj.type,ObjType: Type,URL: Fobj.path,RefId: ref},
+            {
+                where:
+                    [{UniqueId: resvID},{Status: "PROCESSING"}]
+
+            }).then(function (resUpdate) {
+                callback(undefined, resvID);
+            }).catch(function (errUpdate) {
+                callback(errUpdate, undefined);
+            });
+
+
+    }
+    else {
+        // not a reserved file
+
+
+        FindCurrentVersion(Fobj.name, cmp, ten, reqId, function (errVersion, resVersion) {
+            if (errVersion) {
+                callback(errVersion, undefined);
+            }
+            else {
+                result = resVersion;
+                try {
+                    var NewUploadObj = DbConn.FileUpload
+                        .build(
+                        {
+                            UniqueId: rand2,
+                            FileStructure: Fobj.type,
+                            ObjClass: Clz,
+                            ObjType: Type,
+                            ObjCategory: Category,
+                            URL: Fobj.path,
+                            UploadTimestamp: Date.now(),
+                            Filename: Fobj.name,
+                            Version: result,
+                            DisplayName: desplayname,
+                            CompanyId: cmp,
+                            TenantId: ten,
+                            RefId: ref
+
+
+                        }
+                    );
+                    //logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
+                    NewUploadObj.save().then(function (resUpFile) {
+
+                        //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                        if (resUpFile) {
+                            DbConn.FileCategory.find({where: {Category: Category}}).then(function (resCat) {
+
+                                if (resCat) {
+                                    resUpFile.setFileCategory(resCat.id).then(function (resCatset) {
+
+                                        callback(undefined, resUpFile.UniqueId);
+
+                                    }).catch(function (errCatSet) {
+                                        callback(errCatSet, undefined);
+                                    });
+                                }
+                                else {
+                                    callback(undefined, resUpFile.UniqueId)
+                                }
+
+
+                            }).catch(function (errCat) {
+                                callback(errCat, undefined);
+                            });
+                        }
+                        else {
+                            callback(new Error("Upload records saving failed"), undefined);
+                        }
+
+
+                    }).catch(function (errUpFile) {
+
+                        //logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s insertion failed',reqId,JSON.stringify(NewUploadObj),errUpFile);
+                        callback(errUpFile, undefined);
+
+
+                    });
+
+                }
+                catch (ex) {
+                    //logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - Exception occurred when new attachment object creating ',reqId,ex);
+                    callback(ex, undefined);
+                }
+            }
+
+
+        });
+
+
+    }
+};
 
 
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
@@ -1303,5 +1644,9 @@ module.exports.PickCallRecordById = PickCallRecordById;
 module.exports.PickVoiceAppClipById = PickVoiceAppClipById;
 module.exports.FileAssignWithApplication = FileAssignWithApplication;
 module.exports.CouchUploader = CouchUploader;
+module.exports.DetachFromApplication = DetachFromApplication;
+module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
+
+//module.exports.DeveloperUploadFilesTest = DeveloperUploadFilesTest;
 
 
