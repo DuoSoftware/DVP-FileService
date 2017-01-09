@@ -245,7 +245,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
 
     var fileStruct=Fobj.type.split("/")[0];
 
-    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
     mongodb.MongoClient.connect(uri, function(error, db)
     {
         console.log(uri);
