@@ -72,7 +72,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
 
     var fileStruct=Fobj.type.split("/")[0];
 
-    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
     mongodb.MongoClient.connect(uri, function(error, db)
     {
         console.log(uri);
@@ -236,7 +236,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             var extArr = resUpFile.FileStructure.split('/');
                             var extension = extArr[1];
 
-                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + '/' + config.Mongo.dbname;
+                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
@@ -432,7 +432,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                             var extArr = resUpFile.FileStructure.split('/');
                             var extension = extArr[1];
 
-                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + '/' + config.Mongo.dbname;
+                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
@@ -691,7 +691,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
