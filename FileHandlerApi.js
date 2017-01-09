@@ -392,7 +392,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         var extArr=resUpFile.FileStructure.split('/');
                         var extension=extArr[1];
 
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
 
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
@@ -634,7 +634,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
@@ -1572,7 +1572,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 {
                     if(option=="MONGO")
                     {
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+'/'+config.Mongo.dbname;
+                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
                             if(error)
