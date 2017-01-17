@@ -1756,7 +1756,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',jwt({secret: secret.Secr
 
  });*/
 
-RestServer.del('/DVP/API/'+version+'/FileService/File/:id',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/FileService/File/:id',jwt({secret: secret.Secret}),authorization({resource:"fileservice", action:"delete"}),function(req,res,next)
 {
     var reqId='';
     try {
