@@ -259,13 +259,14 @@ function MongoUploader(uuid,Fobj,reqId,callback)
             pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
+                fs.unlink(path);
                 console.log("Error "+error);
                 db.close();
                 callback(error,undefined);
             }).
             on('finish', function() {
                 console.log('done!');
-
+                fs.unlink(path);
 
                 if(fileStruct=="image")
                 {
