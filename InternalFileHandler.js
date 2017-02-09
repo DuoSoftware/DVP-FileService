@@ -86,12 +86,14 @@ function MongoUploader(uuid,Fobj,reqId,callback)
             pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
+                fs.unlink(path);
                 console.log("Error "+error);
                 db.close();
                 callback(error,undefined);
             }).
             on('finish', function() {
                 console.log('done!');
+
                 if(fileStruct=="image")
                 {
                     sizeArray.forEach(function (size) {
@@ -105,10 +107,12 @@ function MongoUploader(uuid,Fobj,reqId,callback)
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
                                     {
+                                        fs.unlink(path);
                                         console.log("Error in making thumbnail "+uuid + "_"+size);
                                         callbackThumb(error,undefined);
                                     }). on('finish', function()
                                     {
+                                        fs.unlink(path);
                                         console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                         callbackThumb(undefined,"Done");
                                     });
