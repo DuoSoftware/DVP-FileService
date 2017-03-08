@@ -266,7 +266,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
             }).
             on('finish', function() {
                 console.log('done!');
-                fs.unlink(path);
+
 
                 if(fileStruct=="image")
                 {
@@ -294,6 +294,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
 
                     async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
 
+                        fs.unlink(path);
                         db.close();
                         callback(undefined,uuid);
 
@@ -302,6 +303,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
                 }
                 else
                 {
+                    fs.unlink(path);
                     db.close();
                     callback(undefined,uuid);
                 }
