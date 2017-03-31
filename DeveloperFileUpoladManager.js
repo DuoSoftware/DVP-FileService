@@ -1354,7 +1354,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             var month=Today.getMonth()+1;
             var year =Today.getFullYear();
 
-            var newDir = path.join(config.basePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
+            var newDir = path.join(config.BasePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
 
 
             mkdirp(newDir, function(err) {
