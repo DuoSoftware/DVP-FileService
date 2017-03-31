@@ -52,5 +52,5 @@ module.exports = {
     "user":"duo",
     "password":"DuoS123"
   },
-  "BasePath":"D:/My Projects/DVP/DVP-FileService/"
+  "BasePath":"/usr/local/src/upload/"
 };
