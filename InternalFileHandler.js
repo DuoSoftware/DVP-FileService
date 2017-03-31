@@ -28,6 +28,9 @@ var mongodb = require('mongodb');
 var Server = require('mongodb').Server,
     Code = require('mongodb').Code;
 
+var path= require('path');
+var mkdirp = require('mkdirp');
+
 
 
 function FindCurrentVersion(FObj,company,tenant,reqId,callback)
@@ -925,11 +928,38 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
             {
                 if(option=="LOCAL")
                 {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment  successfully inserted to Local',reqId);
+
                     //callback(undefined, resUpFile.UniqueId);
-                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
-                        callback(err,rand2);
+
+                    var Today= new Date();
+                    var date= Today.getDate();
+                    var month=Today.getMonth()+1;
+                    var year =Today.getFullYear();
+
+                    var newDir = path.join(config.basePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
+
+                    mkdirp(newDir, function(err) {
+
+                        if(err)
+                        {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
+                            callback(err,undefined);
+                        }
+                        else
+                        {
+                            var source = fs.createReadStream(Fobj.path);
+                            source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                            fs.unlink(Fobj.path);
+                            Fobj.path=path.join(newDir,rand2.toString());
+                            FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                callback(err,rand2);
+                            });
+                        }
+
                     });
+
+
+
                 }
                 else if(option=="MONGO")
                 {

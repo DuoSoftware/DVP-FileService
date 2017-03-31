@@ -52,7 +52,8 @@ module.exports = {
         "bucket":"SYS_COUCH_BUCKET",
         "user":"SYS_COUCH_USER",
         "password":"SYS_COUCH_PASSWORD"
-    }
+    },
+    "BasePath":"SYS_FILE_BASEPATH"
 };
 
 //NODE_CONFIG_DIR

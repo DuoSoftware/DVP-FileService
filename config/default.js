@@ -31,7 +31,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"MONGO",
+  "Option":"LOCAL",
   "Collection":"fs.files",
 
 
@@ -51,5 +51,6 @@ module.exports = {
     "bucket":"default",
     "user":"duo",
     "password":"DuoS123"
-  }
+  },
+  "BasePath":"D:/My Projects/DVP/DVP-FileService/"
 };

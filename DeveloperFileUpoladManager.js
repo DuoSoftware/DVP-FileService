@@ -45,6 +45,8 @@ var MDB=config.Mongo.dbname;
 var mongodb = require('mongodb');
 var gm = require('gm').subClass({imageMagick: true});
 var async= require('async');
+var path=require('path');
+var mkdirp = require('mkdirp');
 
 
 function FindCurrentVersion(fname,company,tenant,reqId,callback)
@@ -1328,6 +1330,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
     {
 
 
+
+
         var DisplayName="";
 
 
@@ -1341,16 +1345,42 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             DisplayName=Fobj.name;
         }
 
-        // is in processing level
 
 
         if(option=="LOCAL")
         {
-            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment  successfully inserted to Local',reqId);
-            //callback(undefined, resUpFile.UniqueId);
-            FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-                callback(err,rand2);
+            var Today= new Date();
+            var date= Today.getDate();
+            var month=Today.getMonth()+1;
+            var year =Today.getFullYear();
+
+            var newDir = path.join(config.basePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
+
+
+            mkdirp(newDir, function(err) {
+
+                if(err)
+                {
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
+                    callback(err,undefined);
+                }
+                else
+                {
+                    var source = fs.createReadStream(Fobj.path);
+                    source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                    fs.unlink(Fobj.path);
+                    Fobj.path=path.join(newDir,rand2.toString());
+
+                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+
+                        callback(err,rand2);
+                    });
+                }
+                // path exists unless there was an error
+
             });
+
+
         }
         else if(option=="MONGO")
         {
