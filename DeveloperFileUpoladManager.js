@@ -1448,9 +1448,11 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
                     LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                        fs.unlink(Fobj.path);
+                        Fobj.path=path.join(newDir,rand2.toString());
                         FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-                            fs.unlink(Fobj.path);
-                            Fobj.path=path.join(newDir,rand2.toString());
+
+
                             callback(err,rand2);
                         });
 
