@@ -238,6 +238,75 @@ function FindCurrentVersion(fname,company,tenant,reqId,callback)
 
  }*/
 
+function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
+{
+    var sizeArray=['75','100','125','150','200'];
+    var thumbnailArray=[];
+
+    var fileStruct=Fobj.type.split("/")[0];
+    var file_category=Category;
+
+
+    try {
+        if (fileStruct == "image") {
+            mkdirp(thumbDir, function (err) {
+                if (!err) {
+                    var readStream=fs.createReadStream(path.join(Fobj.path));
+                    console.log(path.join(Fobj.path));
+
+
+                    sizeArray.forEach(function (size) {
+
+
+                        thumbnailArray.push(function createContact(callbackThumb) {
+
+                            var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
+
+
+                            gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
+                            {
+                                stdout.pipe(writeStream).on('error', function (error) {
+                                    console.log("Error in making thumbnail " + uuid + "_" + size);
+                                    callbackThumb(error, undefined);
+                                }).on('finish', function () {
+                                    console.log("Making thumbnail " + uuid + "_" + size + " Success");
+                                    callbackThumb(undefined, "Done");
+                                });
+                            });
+
+
+
+                        });
+                    });
+
+                    async.parallel(thumbnailArray, function (errThumbMake, resThumbMake) {
+
+                        callback(undefined, uuid);
+
+
+                    });
+
+
+                }
+                else {
+                    console.log("Error in storage location of thumbnail " + uuid + "_" + "100");
+
+                    callback(err, uuid);
+                }
+            });
+
+        }
+        else {
+            callback(undefined, uuid);
+        }
+    } catch (e) {
+        console.log("Error in operation of localy stored thumbnail creation of " + uuid + "_100");
+        callback(e, uuid);
+    }
+
+
+}
+
 
 function MongoUploader(uuid,Fobj,reqId,callback)
 {
@@ -278,7 +347,9 @@ function MongoUploader(uuid,Fobj,reqId,callback)
                         thumbnailArray.push(function createContact(callbackThumb)
                         {
 
-                            gm(fs.createReadStream(path)).resize(size, size).quality(50)
+
+
+                                gm(fs.createReadStream(path)).resize(size, size).quality(50)
                                 .stream(function (err, stdout, stderr) {
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
@@ -1326,12 +1397,9 @@ function DetachFromApplication(fileUID,Company,Tenant,callback)
 function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,reqId,callback)
 {
 
+
     try
     {
-
-
-
-
         var DisplayName="";
 
 
@@ -1353,9 +1421,16 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             var date= Today.getDate();
             var month=Today.getMonth()+1;
             var year =Today.getFullYear();
+            var file_category=Category;
 
-            var newDir = path.join(config.basePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
+            var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
+            var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
 
+            /*var pathObj=newDir.split(path.sep);
+             pathObj.forEach(function (value,index) {
+             console.log(index+":"+value);
+             });
+             */
 
             mkdirp(newDir, function(err) {
 
@@ -1366,15 +1441,21 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                 }
                 else
                 {
+                    console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
                     var source = fs.createReadStream(Fobj.path);
                     source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
-                    fs.unlink(Fobj.path);
-                    Fobj.path=path.join(newDir,rand2.toString());
 
-                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
-                        callback(err,rand2);
+
+                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+                            fs.unlink(Fobj.path);
+                            Fobj.path=path.join(newDir,rand2.toString());
+                            callback(err,rand2);
+                        });
+
                     });
+
                 }
                 // path exists unless there was an error
 
@@ -1679,6 +1760,7 @@ module.exports.FileAssignWithApplication = FileAssignWithApplication;
 module.exports.CouchUploader = CouchUploader;
 module.exports.DetachFromApplication = DetachFromApplication;
 module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
+module.exports.LocalThumbnailMaker = LocalThumbnailMaker;
 
 //module.exports.DeveloperUploadFilesTest = DeveloperUploadFilesTest;
 

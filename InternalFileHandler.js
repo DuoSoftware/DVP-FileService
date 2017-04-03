@@ -31,6 +31,8 @@ var Server = require('mongodb').Server,
 var path= require('path');
 var mkdirp = require('mkdirp');
 
+var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
+
 
 
 function FindCurrentVersion(FObj,company,tenant,reqId,callback)
@@ -350,7 +352,9 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
-                            var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
+                            var SourcePath = path.join(resUpFile.URL.toString());
+                            console.log(SourcePath);
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
@@ -565,14 +569,32 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                     }
                     else
                     {
+
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
+                            var pathObj=resUpFile.URL.split(path.sep);
                             res.setHeader('Content-Type', resUpFile.FileStructure);
-                            var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            var SourcePath="";
+                            pathObj.forEach(function (value,index) {
+                                if(index==(pathObj.length-5))
+                                {
+                                    value=value+"_thumb"
+                                }
+                                if(index==pathObj.length-1)
+                                {
+                                    value=value+"_"+thumbSize;
+                                }
+
+                                SourcePath=path.join(SourcePath,value.toString());
+                            });
+                            //var SourcePath = (SourcePath.toString()).replace('\',' / '');
+
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                            var source = fs.createReadStream(SourcePath);
+
+                            var source = fs.createReadStream(SourcePath.toString());
 
                             source.pipe(res);
                             source.on('end', function (result) {
@@ -936,7 +958,11 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                     var month=Today.getMonth()+1;
                     var year =Today.getFullYear();
 
-                    var newDir = path.join(config.basePath,"Company_"+cmp.toString(),"Tenant_"+ten.toString(),year.toString(),month.toString(),date.toString());
+                    var file_category=Category;
+
+                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
+                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+
 
                     mkdirp(newDir, function(err) {
 
@@ -951,9 +977,13 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                             source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
                             fs.unlink(Fobj.path);
                             Fobj.path=path.join(newDir,rand2.toString());
-                            FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
-                                callback(err,rand2);
+
+                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                    callback(err,rand2);
+                                });
                             });
+
                         }
 
                     });
