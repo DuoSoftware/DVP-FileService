@@ -594,6 +594,8 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
 
+                            SourcePath = path.join(SourcePath);
+
                             var source = fs.createReadStream(SourcePath.toString());
 
                             source.pipe(res);
