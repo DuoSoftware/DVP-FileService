@@ -353,11 +353,8 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
                             /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
-                            //var SourcePath = path.join(resUpFile.URL.toString());
-                            var SourcePath = path.join("C:\\temp\\foo\\");
-                            console.log(path.parse(SourcePath));
-
-                            console.log(SourcePath);
+                            var SourcePath = path.join(resUpFile.URL.toString());
+                             console.log(SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
@@ -837,7 +834,8 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                             try {
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
-                                var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                var SourcePath = path.join(resUpFile.URL.toString());
+                                console.log(SourcePath);
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                                 logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
