@@ -353,7 +353,9 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
                             /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
-                            var SourcePath = path.join(resUpFile.URL.toString());
+                            //var SourcePath = path.join(resUpFile.URL.toString());
+                            var SourcePath = path.join("C:\\temp\\foo\\");
+                            console.log(path.parse(SourcePath));
 
                             console.log(SourcePath);
 
@@ -428,6 +430,16 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
     if(UUID)
     {
         try {
+
+            var Today= new Date();
+            var date= Today.getDate();
+            var month=Today.getMonth()+1;
+            var year =Today.getFullYear();
+
+
+
+
+
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
             DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
@@ -576,8 +588,12 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                         try {
                             var pathObj=resUpFile.URL.split(path.sep);
                             res.setHeader('Content-Type', resUpFile.FileStructure);
+                            var file_category=resUpFile.ObjCategory;
                             //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
-                            var SourcePath=path.parse(resUpFile.URL.toString()).root;
+
+                            var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+
+                            /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
                             pathObj.forEach(function (value,index) {
                                 if(index==(pathObj.length-5))
                                 {
@@ -590,14 +606,13 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
                                 SourcePath=path.join(SourcePath,value.toString());
                             });
-                            //var SourcePath = (SourcePath.toString()).replace('\',' / '');
+                            //var SourcePath = (SourcePath.toString()).replace('\',' / '');*/
                             console.log(SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
 
-                            SourcePath = path.join(SourcePath);
 
                             var source = fs.createReadStream(SourcePath.toString());
 
