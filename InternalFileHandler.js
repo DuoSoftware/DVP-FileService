@@ -588,7 +588,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                             var file_category=resUpFile.ObjCategory;
                             //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
 
-                            var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+                            var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString(),(UUID+"_"+thumbSize).toString());
 
                             /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
                             pathObj.forEach(function (value,index) {
