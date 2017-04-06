@@ -112,6 +112,237 @@ function RedisGet()
     });
 }
 
+function updateFileStorageRecord(fileCategory,fileSize,company,tenant)
+{
+    if(client.connected) {
+        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+        client.get(fileKey, function (errKey,resKey) {
+            if(errKey)
+            {
+                //callback(errKey,resKey);
+                logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+            }
+            else
+            {
+                if(!resKey)
+                {
+                    client.set(fileKey,fileSize, function (errSet,resSet) {
+
+                        if(errSet)
+                        {
+                            logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Error in setting new Key '+errSet);
+                        }
+                        else
+                        {
+                            logger.debug('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - setting new Key succeeded ');
+                        }
+
+                    });
+                }
+                else
+                {
+                    client.incrby(fileKey,fileSize, function (errSet,resSet) {
+
+                        if(errSet)
+                        {
+                            logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Key incrementing failed '+errSet);
+                        }
+                        else
+                        {
+                            logger.debug('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] -  Key incrementing succeeded ');
+                        }
+                    });
+                }
+            }
+        })
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Redis connection failed');
+    }
+}
+
+function getFileStorageRecordByCategory(fileCategory,company,tenant,callback)
+{
+    if(client.connected) {
+        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+        client.get(fileKey, function (errKey,resKey) {
+            if(errKey)
+            {
+                //callback(errKey,resKey);
+                logger.error('[DVP-FIleService.RedisPublisher.getFileStorageRecordByCategory] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+                callback(errKey,undefined);
+            }
+            else
+            {
+                if(!resKey)
+                {
+                    logger.debug('[DVP-FIleService.RedisPublisher.getFileStorageRecordByCategory] - [%s] -[REDIS] - [FS] -  No record for key ');
+                    callback(undefined,0);
+                }
+                else
+                {
+                    logger.debug('[DVP-FIleService.RedisPublisher.getFileStorageRecordByCategory] - [%s] -[REDIS] - [FS] -  Record found ');
+                    callback(undefined,resKey);
+                }
+            }
+        })
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Redis connection failed');
+        callback(new Error("Redis client connection failed"),undefined);
+    }
+}
+function getAllFileStorageRecords(company,tenant,callback)
+{
+    if(client.connected) {
+        var fileKey = tenant+":"+company+":STORAGE:*";
+        client.keys(fileKey, function (errKey,resKey) {
+            if(errKey)
+            {
+                //callback(errKey,resKey);
+                logger.error('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+                callback(errKey,undefined);
+            }
+            else
+            {
+                if(!resKey)
+                {
+                    logger.debug('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] -  No record for key ');
+                    callback(undefined,0);
+                }
+                else
+                {
+                    var storage=0;
+                    client.mget(resKey, function (errFkeys,resFkeys) {
+                        if(errFkeys)
+                        {
+
+                            logger.error('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+                            callback(errFkeys,undefined);
+
+
+                        }
+                        else
+                        {
+                           for(var i=0;i<resFkeys.length;i++)
+                           {
+                               storage+= Number(resFkeys[i]);
+                           }
+                            logger.debug('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] -  Record found ');
+                            callback(undefined,storage);
+                        }
+
+
+                    });
+
+                }
+            }
+        })
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Redis connection failed');
+        callback(new Error("Redis client connection failed"),undefined);
+    }
+}
+function UpdateFileStorageRecords(action,fileCategory,fileSize,company,tenant)
+{
+    if(client.connected) {
+        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+        if(action=="RELEASE")
+        {
+            client.decrby(fileKey,fileSize, function (errKey,resKey) {
+                if(errKey)
+                {
+                    //callback(errKey,resKey);
+                    logger.error('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] - Error in releasing storage ');
+
+                }
+                else
+                {
+                    if(!resKey)
+                    {
+                        logger.debug('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] -  No record for key ');
+
+                    }
+                    else
+                    {
+                        logger.debug('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] - Storage releasing succeeded ');
+
+
+                    }
+                }
+            })
+        }
+        else
+        {
+            logger.error('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] - Invali action found ');
+
+        }
+
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.RedisPublisher.getAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Redis connection failed');
+
+    }
+}
+
+/*function removeAllFileStorageRecords(company,tenant,callback)
+{
+    if(client.connected) {
+        var fileKey = tenant+":"+company+":STORAGE:*";
+        client.keys(fileKey, function (errKey,resKey) {
+            if(errKey)
+            {
+                //callback(errKey,resKey);
+                logger.error('[DVP-FIleService.RedisPublisher.removeAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+                callback(errKey,undefined);
+            }
+            else
+            {
+                if(!resKey)
+                {
+                    logger.debug('[DVP-FIleService.RedisPublisher.removeAllFileStorageRecords] - [%s] -[REDIS] - [FS] -  No record for key ');
+                    callback(undefined,0);
+                }
+                else
+                {
+                    var storage=0;
+
+
+                    client.mset(qObj, function (errFkeys,resFkeys) {
+                        if(errFkeys)
+                        {
+
+                            logger.error('[DVP-FIleService.RedisPublisher.removeAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+                            callback(errFkeys,undefined);
+
+
+                        }
+                        else
+                        {
+
+                            logger.debug('[DVP-FIleService.RedisPublisher.removeAllFileStorageRecords] - [%s] -[REDIS] - [FS] -  Record found ');
+                            callback(undefined,resFkeys);
+                        }
+
+
+                    });
+
+                }
+            }
+        })
+    }
+    else
+    {
+        logger.error('[DVP-FIleService.RedisPublisher.removeAllFileStorageRecords] - [%s] -[REDIS] - [FS] - Redis connection failed');
+        callback(new Error("Redis client connection failed"),undefined);
+    }
+}*/
+
 
 /*
  function TestIt()
@@ -139,3 +370,8 @@ function RedisGet()
 module.exports.RedisPublish = RedisPublish;
 module.exports.RedisGet = RedisGet;
 module.exports.SharedServerRedisUpdate = SharedServerRedisUpdate;
+module.exports.updateFileStorageRecord = updateFileStorageRecord;
+module.exports.getFileStorageRecordByCategory = getFileStorageRecordByCategory;
+module.exports.getAllFileStorageRecords = getAllFileStorageRecords;
+module.exports.UpdateFileStorageRecords = UpdateFileStorageRecords;
+/*module.exports.removeAllFileStorageRecords = removeAllFileStorageRecords;*/

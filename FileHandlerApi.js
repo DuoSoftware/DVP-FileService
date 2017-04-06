@@ -12,6 +12,7 @@ var streamifier = require('streamifier');
 var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 var cluster = new couchbase.Cluster("couchbase://"+CHip);
+var RedisPublisher=require('./RedisPublisher.js');
 //
 
 
@@ -1523,7 +1524,10 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
             }
             else
             {
-
+                var Today= new Date();
+                var date= Today.getDate();
+                var month=Today.getMonth()+1;
+                var year =Today.getFullYear();
 
                 //console.log(URL);
                 /* fs.unlink(URL,function(err){
@@ -1547,8 +1551,13 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
                 if(option=="LOCAL")
                 {
-                    var URL= resFile.URL.replace(/\\/g, "/");
+                    var URL = path.join(resFile.URL);
+                    var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString(),month.toString(),date.toString());
                     console.log("Local");
+                    console.log(URL);
+                    console.log(thumbDir);
+
+
                     fs.unlink(URL,function(err){
                         if(err)
                         {
@@ -1557,6 +1566,15 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                         }
                         else
                         {
+                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+
+                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+
+
 
                             resFile.destroy().then(function (resDel) {
                                 callback(undefined,resDel);
@@ -1595,6 +1613,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                                         }
                                         else
                                         {
+                                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
                                             resFile.destroy().then(function (resDel) {
                                                 console.log("Record destroy success");
                                                 db.close();

@@ -23,6 +23,7 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var easyimg = require('easyimage');
+var RedisPublisher=require('./RedisPublisher.js');
 
 
 var Db = require('mongodb').Db,
@@ -308,7 +309,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 }
 
 
-function MongoUploader(uuid,Fobj,reqId,callback)
+function MongoUploader(uuid,Fobj,otherData,reqId,callback)
 {
     var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
@@ -337,7 +338,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
             }).
             on('finish', function() {
                 console.log('done!');
-
+                RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
 
                 if(fileStruct=="image")
                 {
@@ -349,7 +350,7 @@ function MongoUploader(uuid,Fobj,reqId,callback)
 
 
 
-                                gm(fs.createReadStream(path)).resize(size, size).quality(50)
+                            gm(fs.createReadStream(path)).resize(size, size).quality(50)
                                 .stream(function (err, stdout, stderr) {
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
@@ -1413,6 +1414,12 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             DisplayName=Fobj.name;
         }
 
+        Fobj.sizeInMB=0;
+
+        if(Fobj.size!=0 && Fobj.size)
+        {
+            Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
+        }
 
 
         if(option=="LOCAL")
@@ -1444,6 +1451,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                     console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
                     var source = fs.createReadStream(Fobj.path);
                     source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                    RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
 
 
@@ -1475,7 +1483,13 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             }
 
             console.log("TO MONGO >>>>>>>>> "+rand2);
-            MongoUploader(rand2,Fobj,reqId,function(errMongo,resMongo)
+            var otherData =
+            {
+                fileCategory:Category,
+                company:cmp,
+                tenant:ten
+            }
+            MongoUploader(rand2,Fobj,otherData,reqId,function(errMongo,resMongo)
             {
                 if(errMongo)
                 {
@@ -1677,6 +1691,8 @@ function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplay
             }
             else {
                 result = resVersion;
+
+
                 try {
                     var NewUploadObj = DbConn.FileUpload
                         .build(
@@ -1693,7 +1709,8 @@ function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplay
                             DisplayName: desplayname,
                             CompanyId: cmp,
                             TenantId: ten,
-                            RefId: ref
+                            RefId: ref,
+                            Size:Fobj.sizeInMB
 
 
                         }

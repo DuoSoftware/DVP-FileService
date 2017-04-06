@@ -22,6 +22,7 @@ var CHip=config.Couch.ip;
 
 var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var RedisPublisher=require('./RedisPublisher.js');
 
 
 var mongodb = require('mongodb');
@@ -68,7 +69,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
     }
 };
 
-function MongoUploader(uuid,Fobj,reqId,callback)
+function MongoUploader(uuid,Fobj,otherData,reqId,callback)
 {
 
     var path=Fobj.path;
@@ -98,6 +99,8 @@ function MongoUploader(uuid,Fobj,reqId,callback)
             }).
             on('finish', function() {
                 console.log('done!');
+
+                RedisPublisher.updateFileStorageRecord(otherData.fileCategory,Fobj.sizeInMB,otherData.company,otherData.tenant);
 
                 if(fileStruct=="image")
                 {
@@ -144,11 +147,14 @@ function MongoUploader(uuid,Fobj,reqId,callback)
 
 };
 
-function FileUploadDataRecorder(Fobj,rand2,cmp,ten,result,callback )
+function InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result,callback )
 {
     console.log("Display name "+Fobj.displayname);
     try
+
     {
+
+
         var NewUploadObj = DbConn.FileUpload
             .build(
             {
@@ -164,7 +170,8 @@ function FileUploadDataRecorder(Fobj,rand2,cmp,ten,result,callback )
                 DisplayName: Fobj.displayname,
                 CompanyId:cmp,
                 TenantId: ten,
-                RefId:Fobj.fRefID
+                RefId:Fobj.fRefID,
+                Size:Fobj.sizeInMB
 
 
             }
@@ -583,7 +590,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
-                            var pathObj=resUpFile.URL.split(path.sep);
+
                             res.setHeader('Content-Type', resUpFile.FileStructure);
                             var file_category=resUpFile.ObjCategory;
                             //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
@@ -966,6 +973,12 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
             }
             else
             {
+                Fobj.sizeInMB=0;
+                if(Fobj.size!=0 && Fobj.size)
+                {
+                    Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
+                }
+
                 if(option=="LOCAL")
                 {
 
@@ -976,7 +989,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                     var month=Today.getMonth()+1;
                     var year =Today.getFullYear();
 
-                    var file_category=Category;
+                    var file_category=Fobj.fCategory;
 
                     var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
                     var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
@@ -995,9 +1008,12 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                             source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
                             fs.unlink(Fobj.path);
                             Fobj.path=path.join(newDir,rand2.toString());
+                            RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
-                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+
+
+                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
                                     callback(err,rand2);
                                 });
                             });
@@ -1013,7 +1029,13 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                 {
                     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
                     console.log("TO MONGO >>>>>>>>> "+rand2);
-                    MongoUploader(rand2,Fobj,reqId,function(errMongo,resMongo)
+                    var otherData =
+                    {
+                        fileCategory:Fobj.fCategory,
+                        company:cmp,
+                        tenant:ten
+                    }
+                    MongoUploader(rand2,Fobj,otherData,reqId,function(errMongo,resMongo)
                     {
                         if(errMongo)
                         {
@@ -1024,7 +1046,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                         {
                             console.log(resMongo);
                             // callback(undefined,resUpFile.UniqueId);
-                            FileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                            InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
                                 if(err)
                                 {
                                     callback(err,undefined);

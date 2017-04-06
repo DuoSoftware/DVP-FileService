@@ -25,7 +25,7 @@ module.exports = {
   "Host":
   {
     "domain": "127.0.0.1",
-    "port": "5645",
+    "port": "5646",
     "version":"1.0.0.0",
     "hostpath":"./config",
     "logfilepath": ""
@@ -52,5 +52,5 @@ module.exports = {
     "user":"duo",
     "password":"DuoS123"
   },
-  "BasePath":"/usr/local/src/upload/"
+  "BasePath":"./Test"
 };
