@@ -1552,7 +1552,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 if(option=="LOCAL")
                 {
                     var URL = path.join(resFile.URL);
-                    var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString(),month.toString(),date.toString());
+
                     console.log("Local");
                     console.log(URL);
                     console.log(thumbDir);
@@ -1568,11 +1568,16 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                         {
                             RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
 
-                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
-                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
-                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
-                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
-                            fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                            if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                            {
+                                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString(),month.toString(),date.toString());
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                            }
+
 
 
 
