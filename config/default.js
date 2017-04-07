@@ -52,5 +52,5 @@ module.exports = {
     "user":"duo",
     "password":"DuoS123"
   },
-  "BasePath":"./Test"
+  "BasePath":"/usr/local/src/upload/"
 };
