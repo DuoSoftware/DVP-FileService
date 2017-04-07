@@ -1551,13 +1551,8 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
                 if(option=="LOCAL")
                 {
+                    console.log("File operations on LOCAL ");
                     var URL = path.join(resFile.URL);
-
-                    console.log("Local");
-                    console.log(URL);
-                    console.log(thumbDir);
-
-
                     fs.unlink(URL,function(err){
                         if(err)
                         {
