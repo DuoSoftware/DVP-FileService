@@ -49,6 +49,11 @@ var async= require('async');
 var path=require('path');
 var mkdirp = require('mkdirp');
 
+const crypto = require('crypto');
+const cipher = crypto.createCipher('aes192', 'a password');
+var decrypt = crypto.createDecipher('aes192', 'a password');
+
+
 
 function FindCurrentVersion(fname,company,tenant,reqId,callback)
 {
@@ -309,7 +314,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 }
 
 
-function MongoUploader(uuid,Fobj,otherData,reqId,callback)
+function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
 {
     var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
@@ -326,9 +331,15 @@ function MongoUploader(uuid,Fobj,otherData,reqId,callback)
         //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
+        var uploadReadStream = fs.createReadStream(path);
+       //encripNeeded=true;
 
-        fs.createReadStream(path).
-            pipe(bucket.openUploadStream(uuid)).
+        if(encripNeeded)
+        {
+            uploadReadStream=fs.createReadStream(path).pipe(cipher);
+        }
+
+        uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
                 fs.unlink(path);
@@ -1395,7 +1406,7 @@ function DetachFromApplication(fileUID,Company,Tenant,callback)
 };
 
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,reqId,callback)
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,encripNeeded,reqId,callback)
 {
 
 
@@ -1489,7 +1500,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                 company:cmp,
                 tenant:ten
             }
-            MongoUploader(rand2,Fobj,otherData,reqId,function(errMongo,resMongo)
+            MongoUploader(rand2,Fobj,otherData,encripNeeded,reqId,function(errMongo,resMongo)
             {
                 if(errMongo)
                 {

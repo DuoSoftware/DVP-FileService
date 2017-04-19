@@ -34,6 +34,9 @@ var mkdirp = require('mkdirp');
 
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 
+const crypto = require('crypto');
+var decrypt = crypto.createDecipher('aes192', 'a password');
+
 
 
 function FindCurrentVersion(FObj,company,tenant,reqId,callback)
@@ -268,8 +271,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                     });
 
 
-                                    bucket.openDownloadStreamByName(UUID).
-                                        pipe(res).
+                                    bucket.openDownloadStreamByName(UUID).pipe(res).
                                         on('error', function (error) {
                                             console.log('Error !' + error);
                                             res.status(400);
@@ -278,7 +280,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                                         }).
                                         on('finish', function () {
-                                            console.log('done!');
+                                            console.log('Downloaded!');
                                             res.status(200);
                                             db.close();
                                             res.end();

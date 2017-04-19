@@ -1653,11 +1653,66 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
 }
 
+function  SaveNewCategory(categoryData,reqId,callback)
+{
+
+    try {
+        var CatObject = DbConn.FileCategory
+            .build(
+            {
+                Category: categoryData.Category,
+                Owner: "user",
+                Visible: categoryData.Visible,
+                Encripted: categoryData.Encripted
+
+
+            }
+        )
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [FILECATEGORY] - Exception occurred while creating file category',reqId,ex);
+        callback(ex, undefined);
+    }
+
+    CatObject.save().then(function (resSave) {
+
+        logger.info('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Save new file category succeeded %s',reqId,resSave);
+        callback(undefined, resSave);
+
+    }).catch(function (errSave) {
+        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Error occurred while saving file category %s',reqId,JSON.stringify(CatObject),errSave);
+        callback(errSave, undefined);
+    });
+}
+
 function  LoadCategories(reqId,callback)
 {
     try
     {
         DbConn.FileCategory.findAll().then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+function  UpdateCategory(catID,reqId,callback)
+{
+    try
+    {
+        DbConn.FileCategory.findAndUpdate({where:[{id:CatID}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1818,6 +1873,7 @@ module.exports.AllFilesWithCategoryAndDateRange = AllFilesWithCategoryAndDateRan
 module.exports.FilesWithCategoryId = FilesWithCategoryId;
 module.exports.FilesWithCategoryAndDateRange = FilesWithCategoryAndDateRange;
 module.exports.PickAttachmentMetaDataByName = PickAttachmentMetaDataByName;
+module.exports.SaveNewCategory = SaveNewCategory;
 
 
 
