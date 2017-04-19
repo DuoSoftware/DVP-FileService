@@ -334,7 +334,7 @@ function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
         var uploadReadStream = fs.createReadStream(path);
        //encripNeeded=true;
 
-        if(encripNeeded)
+       if(encripNeeded)
         {
             uploadReadStream=fs.createReadStream(path).pipe(cipher);
         }
@@ -348,7 +348,7 @@ function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
                 callback(error,undefined);
             }).
             on('finish', function() {
-                console.log('done!');
+                console.log('uploaded to Mongo!');
                 RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
 
                 if(fileStruct=="image")
@@ -371,7 +371,7 @@ function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
                                     }). on('finish', function()
                                     {
                                         console.log("Making thumbnail "+uuid + "_"+size+" Success");
-                                        callbackThumb(undefined,"Done");
+                                        callbackThumb(undefined,"Thumbnails created ");
                                     });
                                 });
                         });
