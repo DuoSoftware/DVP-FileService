@@ -34,7 +34,7 @@ module.exports = {
         "logfilepath": "LOG4JS_CONFIG"
     },
 
-    "Option":"MONGO",
+    "Option":"STORAGE_OPTION",
 
     "Mongo":
     {
