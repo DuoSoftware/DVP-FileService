@@ -1433,7 +1433,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
         }
 
 
-        if(option=="LOCAL")
+        if(option.toUpperCase()=="LOCAL")
         {
             var Today= new Date();
             var date= Today.getDate();
@@ -1484,7 +1484,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
         }
-        else if(option=="MONGO")
+        else if(option.toUpperCase()=="MONGO")
         {
             logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
 
@@ -1534,6 +1534,10 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
             });
+        }
+        else
+        {
+            callback(new Error("Invalid Storage option"),undefined);
         }
         // sprint 5
         /*else if(option=="COUCH")

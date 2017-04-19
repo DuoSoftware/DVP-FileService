@@ -385,7 +385,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         "ETag":resUpFile.UniqueId+":"+"display"+":"+resUpFile.Version
                     };
 
-                    if(option=="MONGO")
+                    if(option.toUpperCase()=="MONGO")
                     {
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -438,7 +438,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                     }
-                    else if(option=="COUCH")
+                    else if(option.toUpperCase()=="COUCH")
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -627,7 +627,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                         var UUID=resUpFile.UniqueId;
                         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
 
-                        if(option=="MONGO")
+                        if(option.toUpperCase()=="MONGO")
                         {
 
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -681,7 +681,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 
 
                         }
-                        else if(option=="COUCH")
+                        else if(option.toUpperCase()=="COUCH")
                         {
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -1549,7 +1549,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
                  });*/
 
-                if(option=="LOCAL")
+                if(option.toUpperCase()=="LOCAL")
                 {
                     console.log("File operations on LOCAL ");
                     var URL = path.join(resFile.URL);
@@ -1588,7 +1588,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 }
                 else
                 {
-                    if(option=="MONGO")
+                    if(option.toUpperCase()=="MONGO")
                     {
                         var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
                         mongodb.MongoClient.connect(uri, function(error, db)
