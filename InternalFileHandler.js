@@ -245,7 +245,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                 if (resUpFile) {
 
 
-                    if(option=="MONGO")
+                    if(option.toUpperCase()=="MONGO")
                     {
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -299,7 +299,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                     }
-                    else if(option=="COUCH")
+                    else if(option.toUpperCase()=="COUCH")
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -453,7 +453,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                 if (resUpFile) {
 
 
-                    if(option=="MONGO")
+                    if(option.toUpperCase()=="MONGO")
                     {
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -530,7 +530,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
 
                     }
-                    else if(option=="COUCH")
+                    else if(option.toUpperCase()=="COUCH")
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -738,7 +738,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                         var UUID=resUpFile.UniqueId;
                         logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
 
-                        if(option=="MONGO")
+                        if(option.toUpperCase()=="MONGO")
                         {
 
                             logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -785,7 +785,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             });
 
                         }
-                        else if(option=="COUCH")
+                        else if(option.toUpperCase()=="COUCH")
                         {
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -981,7 +981,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                     Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
                 }
 
-                if(option=="LOCAL")
+                if(option.toUpperCase()=="LOCAL")
                 {
 
                     //callback(undefined, resUpFile.UniqueId);
@@ -1027,7 +1027,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
 
                 }
-                else if(option=="MONGO")
+                else if(option.toUpperCase()=="MONGO")
                 {
                     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
                     console.log("TO MONGO >>>>>>>>> "+rand2);
@@ -1071,6 +1071,11 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
 
                     });
+                }
+                else
+                {
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Invalid storage option',reqId);
+                    callback(new Error("Invalid storage option"),undefined);
                 }
 
 
