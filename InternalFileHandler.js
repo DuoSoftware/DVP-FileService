@@ -75,7 +75,6 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 {
 
-    var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
     var thumbnailArray=[];
 
@@ -90,12 +89,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
-        var uploadReadStream = fs.createReadStream(path);
+        var uploadReadStream = fs.createReadStream(Fobj.path);
 
         if(encNeeded)
         {
             console.log("Encripting");
-            uploadReadStream=fs.createReadStream(path).pipe(cipher);
+            uploadReadStream=fs.createReadStream(path.join(Fobj.path)).pipe(cipher);
         }
 
 
@@ -103,7 +102,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
-                fs.unlink(path);
+                fs.unlink(path.join(Fobj.path));
                 console.log("Error "+error);
                 db.close();
                 callback(error,undefined);
@@ -121,17 +120,17 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                         thumbnailArray.push(function createContact(callbackThumb)
                         {
 
-                            gm(fs.createReadStream(path)).resize(size, size)
+                            gm(fs.createReadStream(path.join(Fobj.path))).resize(size, size)
                                 .stream(function (err, stdout, stderr) {
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
                                     {
-                                        fs.unlink(path);
+                                        fs.unlink(path.join(Fobj.path));
                                         console.log("Error in making thumbnail "+uuid + "_"+size);
                                         callbackThumb(error,undefined);
                                     }). on('finish', function()
                                     {
-                                        fs.unlink(path);
+                                        fs.unlink(path.join(Fobj.path));
                                         console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                         callbackThumb(undefined,"Done");
                                     });
@@ -1031,7 +1030,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                     }
 
                                     source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
-                                    fs.unlink(Fobj.path);
+                                    fs.unlink(path.join(Fobj.path));
                                     Fobj.path=path.join(newDir,rand2.toString());
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 

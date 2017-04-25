@@ -331,18 +331,18 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
-        var uploadReadStream = fs.createReadStream(path);
+        var uploadReadStream = fs.createReadStream(Fobj.path);
 
         if(encNeeded)
         {
             console.log("Encripting");
-            uploadReadStream=fs.createReadStream(path).pipe(cipher);
+            uploadReadStream=fs.createReadStream(Fobj.path).pipe(cipher);
         }
 
         uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
-                fs.unlink(path);
+                fs.unlink(path.join(Fobj.path));
                 console.log("Error "+error);
                 db.close();
                 callback(error,undefined);
@@ -379,7 +379,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
                     async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
 
-                        fs.unlink(path);
+                        fs.unlink(path.join(Fobj.path));
                         db.close();
                         callback(undefined,uuid);
 
@@ -388,7 +388,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 }
                 else
                 {
-                    fs.unlink(path);
+                    fs.unlink(path.join(Fobj.path));
                     db.close();
                     callback(undefined,uuid);
                 }
@@ -1479,7 +1479,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
                             LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                fs.unlink(Fobj.path);
+                                fs.unlink(path.join(Fobj.path));
                                 Fobj.path=path.join(newDir,rand2.toString());
                                 FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
