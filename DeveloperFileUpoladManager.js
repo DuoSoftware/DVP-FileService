@@ -316,7 +316,6 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 
 function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 {
-    var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
     var thumbnailArray=[];
 
