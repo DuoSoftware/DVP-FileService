@@ -314,7 +314,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 }
 
 
-function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
+function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 {
     var path=Fobj.path;
     var sizeArray=['75','100','125','150','200'];
@@ -332,10 +332,10 @@ function MongoUploader(uuid,Fobj,otherData,encripNeeded,reqId,callback)
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
         var uploadReadStream = fs.createReadStream(path);
-       //encripNeeded=true;
 
-       if(encripNeeded)
+        if(encNeeded)
         {
+            console.log("Encripting");
             uploadReadStream=fs.createReadStream(path).pipe(cipher);
         }
 
@@ -1406,14 +1406,14 @@ function DetachFromApplication(fileUID,Company,Tenant,callback)
 };
 
 
-function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,encripNeeded,reqId,callback)
+function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,resvID,reqId,callback)
 {
 
 
     try
     {
         var DisplayName="";
-
+        var encNeeded=false;
 
         if(Fobj.display){
 
@@ -1425,6 +1425,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             DisplayName=Fobj.name;
         }
 
+        Fobj.Category=Category;
+
         Fobj.sizeInMB=0;
 
         if(Fobj.size!=0 && Fobj.size)
@@ -1432,113 +1434,138 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
         }
 
+        DbConn.FileCategory.findOne({where:[{Category:Category}]}).then(function (resCat) {
 
-        if(option.toUpperCase()=="LOCAL")
-        {
-            var Today= new Date();
-            var date= Today.getDate();
-            var month=Today.getMonth()+1;
-            var year =Today.getFullYear();
-            var file_category=Category;
-
-            var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
-            var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
-
-            /*var pathObj=newDir.split(path.sep);
-             pathObj.forEach(function (value,index) {
-             console.log(index+":"+value);
-             });
-             */
-
-            mkdirp(newDir, function(err) {
-
-                if(err)
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
-                    callback(err,undefined);
-                }
-                else
-                {
-                    console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
-                    var source = fs.createReadStream(Fobj.path);
-                    source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
-                    RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
-
-
-
-                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                        fs.unlink(Fobj.path);
-                        Fobj.path=path.join(newDir,rand2.toString());
-                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-
-
-                            callback(err,rand2);
-                        });
-
-                    });
-
-                }
-                // path exists unless there was an error
-
-            });
-
-
-        }
-        else if(option.toUpperCase()=="MONGO")
-        {
-            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
-
-            if(resvID)
+            if(resCat)
             {
-                rand2=resvID;
-            }
+                encNeeded=resCat.Encripted;
+                if(option.toUpperCase()=="LOCAL")
+                {
+                    var Today= new Date();
+                    var date= Today.getDate();
+                    var month=Today.getMonth()+1;
+                    var year =Today.getFullYear();
+                    var file_category=Category;
 
-            console.log("TO MONGO >>>>>>>>> "+rand2);
-            var otherData =
-            {
-                fileCategory:Category,
-                company:cmp,
-                tenant:ten
-            }
-            MongoUploader(rand2,Fobj,otherData,encripNeeded,reqId,function(errMongo,resMongo)
-            {
-                if(errMongo)
-                {
-                    console.log(errMongo);
-                    callback(errMongo,undefined);
-                }
-                else
-                {
-                    console.log(resMongo);
-                    // callback(undefined,resUpFile.UniqueId);
-                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName ,resvID,reqId, function (err,res) {
+                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
+                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+
+                    /*var pathObj=newDir.split(path.sep);
+                     pathObj.forEach(function (value,index) {
+                     console.log(index+":"+value);
+                     });
+                     */
+
+                    mkdirp(newDir, function(err) {
+
                         if(err)
                         {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
                             callback(err,undefined);
-
                         }
                         else
                         {
-                            if(res)
+                            console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
+                            var source = fs.createReadStream(Fobj.path);
+                            if(encNeeded)
                             {
-                                callback(undefined,res);
+                                source=fs.createReadStream(Fobj.path).pipe(cipher);
                             }
-                            else
-                            {
-                                callback(new Error("Error in Operation "),undefined);
-                            }
+
+
+                            source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                            RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
+
+
+
+                            LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                fs.unlink(Fobj.path);
+                                Fobj.path=path.join(newDir,rand2.toString());
+                                FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+
+
+                                    callback(err,rand2);
+                                });
+
+                            });
+
                         }
+                        // path exists unless there was an error
+
+                    });
+
+
+                }
+                else if(option.toUpperCase()=="MONGO")
+                {
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
+
+                    if(resvID)
+                    {
+                        rand2=resvID;
+                    }
+
+                    console.log("TO MONGO >>>>>>>>> "+rand2);
+                    var otherData =
+                    {
+                        fileCategory:Category,
+                        company:cmp,
+                        tenant:ten
+                    }
+                    MongoUploader(rand2,Fobj,otherData,encNeeded,reqId,function(errMongo,resMongo)
+                    {
+                        if(errMongo)
+                        {
+                            console.log(errMongo);
+                            callback(errMongo,undefined);
+                        }
+                        else
+                        {
+                            console.log(resMongo);
+                            // callback(undefined,resUpFile.UniqueId);
+                            FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName ,resvID,reqId, function (err,res) {
+                                if(err)
+                                {
+                                    callback(err,undefined);
+
+                                }
+                                else
+                                {
+                                    if(res)
+                                    {
+                                        callback(undefined,res);
+                                    }
+                                    else
+                                    {
+                                        callback(new Error("Error in Operation "),undefined);
+                                    }
+                                }
+                            });
+                        }
+
+
+
                     });
                 }
+                else
+                {
+                    callback(new Error("Invalid Storage option"),undefined);
+                }
+            }
+            else
+            {
+                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  -No file category found ',reqId);
+                callback(new Error("No file category found "),undefined);
+            }
+        }).catch(function (errCat) {
+            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',reqId);
+            callback(errCat,undefined);
+        });
 
 
+        // check category encription
 
-            });
-        }
-        else
-        {
-            callback(new Error("Invalid Storage option"),undefined);
-        }
+
         // sprint 5
         /*else if(option=="COUCH")
          {

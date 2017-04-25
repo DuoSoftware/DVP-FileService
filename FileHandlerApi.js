@@ -13,6 +13,9 @@ var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var RedisPublisher=require('./RedisPublisher.js');
+const crypto = require('crypto');
+const cipher = crypto.createCipher('aes192', 'a password');
+var decrypt = crypto.createDecipher('aes192', 'a password');
 //
 
 
@@ -25,6 +28,7 @@ var app        =       express();
 var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
+
 
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
@@ -370,20 +374,29 @@ function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
 //log done...............................................................................................................
 function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 {
+    var isEncryptedFile = false;
+
     if(UUID)
     {
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
+
 
                     var resObj=
                     {
                         "Last-Modified":resUpFile.createdAt,
                         "ETag":resUpFile.UniqueId+":"+"display"+":"+resUpFile.Version
                     };
+
+                    if(resUpFile.FileCategory)
+                    {
+                        isEncryptedFile=resUpFile.FileCategory.Encripted;
+
+                    }
 
                     if(option.toUpperCase()=="MONGO")
                     {
@@ -412,8 +425,14 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 });
                                 //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                bucket.openDownloadStreamByName(UUID).
-                                    pipe(res).
+                                var source= bucket.openDownloadStreamByName(UUID);
+
+                                if(isEncryptedFile)
+                                {
+                                    source= bucket.openDownloadStreamByName(UUID).pipe(decrypt);
+                                }
+
+                                source.pipe(res).
                                     on('error', function(error) {
                                         console.log('Error !'+error);
                                         res.status(400);
@@ -443,6 +462,10 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
                         var bucket = cluster.openBucket(Cbucket);
+                        if(isEncryptedFile)
+                        {
+                            bucket = cluster.openBucket(Cbucket).pipe(decrypt);
+                        }
 
                         bucket.get(UUID, function(err, result) {
                             if (err)
@@ -459,8 +482,14 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
                                 //var source = fs.createReadStream(SourcePath);
                                 //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
+
                                 var s = streamifier.createReadStream(result.value);
-                                //console.log(s);
+
+                                if(isEncryptedFile)
+                                {
+                                    s = streamifier.createReadStream(result.value).pipe(decrypt);
+                                }
+
                                 s.pipe(res);
 
 
@@ -505,12 +534,16 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
-                            var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            var SourcePath = path.join(resUpFile.URL.toString());
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
                             var source = fs.createReadStream(SourcePath);
 
+                            if(isEncryptedFile)
+                            {
+                                source = fs.createReadStream(SourcePath).pipe(decrypt);
+                            }
                             source.pipe(res);
                             source.on('end', function (result) {
                                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
@@ -611,7 +644,6 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 {
 
     try {
-
         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Searching for Uploaded file %s',reqId,FileName);
 
         DbConn.FileUpload.max('Version',{where: [{Filename: FileName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resMax) {
@@ -619,12 +651,20 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
             {
                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Max version found for file %s',reqId,FileName);
 
-                DbConn.FileUpload.findOne({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}]}).then(function (resUpFile) {
+                DbConn.FileUpload.findOne({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                     if(resUpFile)
                     {
 
                         var UUID=resUpFile.UniqueId;
+                        var isEncryptedFile = false;
+                        if(resUpFile.FileCategory)
+                        {
+                            isEncryptedFile=resUpFile.FileCategory.Encripted;
+
+
+
+                        }
                         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
 
                         if(option.toUpperCase()=="MONGO")
@@ -655,8 +695,15 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     });
                                     //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                    bucket.openDownloadStreamByName(UUID).
-                                        pipe(res).
+                                    var source = bucket.openDownloadStreamByName(UUID);
+                                    if(isEncryptedFile)
+                                    {
+                                        source = bucket.openDownloadStreamByName(UUID).pipe(decrypt);
+                                        console.log("Encrypted file found. Decrypting......");
+
+                                    }
+
+                                    source.pipe(res).
                                         on('error', function(error) {
                                             console.log('Error !'+error);
                                             res.status(400);
@@ -701,7 +748,14 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     //var source = fs.createReadStream(SourcePath);
                                     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
                                     var s = streamifier.createReadStream(result.value);
-                                    //console.log(s);
+
+                                    if(isEncryptedFile)
+                                    {
+                                        s = streamifier.createReadStream(result.value).pipe(decrypt);
+                                        console.log("Encrypted file found. Decrypting......");
+
+                                    }
+
                                     s.pipe(res);
 
 
@@ -748,7 +802,8 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                             try {
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
-                                var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
+                                var SourcePath = path.join(resUpFile.URL.toString());
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
@@ -1367,12 +1422,27 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
 
 
 
-function PickAllFiles(Company,Tenant,reqId,callback)
+function PickAllFiles(Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1393,12 +1463,27 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
-function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat},{ApplicationId:null}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat},{ApplicationId:null}],include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1419,12 +1504,27 @@ function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callbac
 
 };
 
-function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat}],include:[{model:DbConn.FileCategory, as:"FileCategory"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat}],include:[CategoryObj]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1445,16 +1545,30 @@ function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId
 
 };
 
-function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
+function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
+        var categoryObj=
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            categoryObj.where =
+            {
+                Visible:true
+            }
+        }
+
         DbConn.FileUpload.findAll({
             where:[{CompanyId:Company},{TenantId:Tenant}],
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
-            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
+            include:[categoryObj,{model:DbConn.Application, as:"Application"}],
             order: '"updatedAt" DESC'
 
 
@@ -1690,7 +1804,7 @@ function  LoadCategories(reqId,callback)
 {
     try
     {
-        DbConn.FileCategory.findAll().then(function (resFile) {
+        DbConn.FileCategory.findAll({where:[{Visible:true}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);

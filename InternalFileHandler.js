@@ -11,7 +11,9 @@ var fs=require('fs');
 var gm = require('gm').subClass({imageMagick: true});
 var async= require('async');
 
-
+const crypto = require('crypto');
+const cipher = crypto.createCipher('aes192', 'a password');
+var decrypt = crypto.createDecipher('aes192', 'a password');
 
 
 //Sprint 5
@@ -34,8 +36,6 @@ var mkdirp = require('mkdirp');
 
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 
-const crypto = require('crypto');
-var decrypt = crypto.createDecipher('aes192', 'a password');
 
 
 
@@ -72,7 +72,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
     }
 };
 
-function MongoUploader(uuid,Fobj,otherData,reqId,callback)
+function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 {
 
     var path=Fobj.path;
@@ -90,9 +90,17 @@ function MongoUploader(uuid,Fobj,otherData,reqId,callback)
         //assert.ifError(error);
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
+        var uploadReadStream = fs.createReadStream(path);
 
-        fs.createReadStream(path).
-            pipe(bucket.openUploadStream(uuid)).
+        if(encNeeded)
+        {
+            console.log("Encripting");
+            uploadReadStream=fs.createReadStream(path).pipe(cipher);
+        }
+
+
+
+        uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
                 fs.unlink(path);
@@ -235,20 +243,20 @@ function InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result,callback )
 
 function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 {
+
     if(UUID)
     {
         try {
 
-            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
+            logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
-
 
                     if(option.toUpperCase()=="MONGO")
                     {
 
-                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
+                        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
 
 
                         try {
@@ -270,8 +278,9 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                         chunkSizeBytes: 1024
                                     });
 
+                                    var source = bucket.openDownloadStreamByName(UUID);
 
-                                    bucket.openDownloadStreamByName(UUID).pipe(res).
+                                    source.pipe(res).
                                         on('error', function (error) {
                                             console.log('Error !' + error);
                                             res.status(400);
@@ -301,7 +310,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                     }
                     else if(option.toUpperCase()=="COUCH")
                     {
-                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
+                        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
                         var bucket = cluster.openBucket(Cbucket);
 
@@ -319,13 +328,12 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
 
                                 var s = streamifier.createReadStream(result.value);
-
                                 s.pipe(res);
 
 
                                 s.on('end', function (result) {
 
-                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                    logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
                                     SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
                                     {
                                         if(errSv)
@@ -345,7 +353,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 });
                                 s.on('error', function (err) {
 
-                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                    logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
                                     console.log("ERROR");
                                     res.status(400);
                                     res.end();
@@ -358,33 +366,33 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                     }
                     else
                     {
-                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
+                        logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
                             /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
                             var SourcePath = path.join(resUpFile.URL.toString());
-                             console.log(SourcePath);
+                            console.log(SourcePath);
 
-                            logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+                            logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
-                            logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+                            logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+
                             var source = fs.createReadStream(SourcePath);
-
                             source.pipe(res);
                             source.on('end', function (result) {
-                                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                logger.debug('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
                                 res.status(200);
                                 res.end();
                             });
                             source.on('error', function (err) {
-                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
                                 res.status(400);
                                 res.end();
                             });
                         }
                         catch(ex)
                         {
-                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+                            logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
 
                             callback(ex, undefined);
                             res.status(400);
@@ -395,7 +403,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                 }
 
                 else {
-                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
+                    logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',reqId,UUID);
                     callback(new Error('No record for id : ' + UUID), undefined);
                     res.status(404);
                     res.end();
@@ -404,7 +412,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
             }).catch(function (errUpFile) {
 
-                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
+                logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',reqId,UUID,errUpFile);
                 callback(errUpFile, undefined);
                 res.status(400);
                 res.end();
@@ -415,7 +423,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
         }
         catch (ex) {
-            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,UUID);
+            logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,UUID);
             callback(new Error("No record Found for the request"), undefined);
             res.status(400);
             res.end();
@@ -423,7 +431,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
     }
     else
     {
-        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Invalid input for UUID %s',reqId,UUID);
+        logger.error('[DVP-FIleService.InternalFileService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Invalid input for UUID %s',reqId,UUID);
         callback(new Error("Invalid input for UUID"), undefined);
         res.status(404);
         res.end();
@@ -600,19 +608,19 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                             var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString(),(UUID+"_"+thumbSize).toString());
 
                             /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
-                            pathObj.forEach(function (value,index) {
-                                if(index==(pathObj.length-5))
-                                {
-                                    value=value+"_thumb"
-                                }
-                                if(index==pathObj.length-1)
-                                {
-                                    value=value+"_"+thumbSize;
-                                }
+                             pathObj.forEach(function (value,index) {
+                             if(index==(pathObj.length-5))
+                             {
+                             value=value+"_thumb"
+                             }
+                             if(index==pathObj.length-1)
+                             {
+                             value=value+"_"+thumbSize;
+                             }
 
-                                SourcePath=path.join(SourcePath,value.toString());
-                            });
-                            //var SourcePath = (SourcePath.toString()).replace('\',' / '');*/
+                             SourcePath=path.join(SourcePath,value.toString());
+                             });
+                             //var SourcePath = (SourcePath.toString()).replace('\',' / '');*/
                             console.log(SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
@@ -721,6 +729,7 @@ function FileInfoByID(res,UUID,Company,Tenant,reqId)
 function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 {
 
+
     try {
 
         logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Searching for Uploaded file %s',reqId,FileName);
@@ -730,12 +739,13 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
             {
                 logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Max version found for file %s',reqId,FileName);
 
-                DbConn.FileUpload.find({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}]}).then(function (resUpFile) {
+                DbConn.FileUpload.find({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                     if(resUpFile)
                     {
 
                         var UUID=resUpFile.UniqueId;
+
                         logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
 
                         if(option.toUpperCase()=="MONGO")
@@ -764,8 +774,10 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     var bucket = new mongodb.GridFSBucket(db, {
                                         chunkSizeBytes: 1024
                                     });
-                                    bucket.openDownloadStreamByName(UUID).
-                                        pipe(res).
+
+                                    var source= bucket.openDownloadStreamByName(UUID);
+
+                                    source.pipe(res).
                                         on('error', function(error) {
                                             console.log('Error !'+error);
                                             res.status(400);
@@ -790,14 +802,14 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
                             var bucket = cluster.openBucket(Cbucket);
-
                             bucket.get(UUID, function(err, result) {
                                 if (err)
                                 {
                                     logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Couch Error ',reqId,err);
                                     res.status(400);
                                     res.end();
-                                }else
+                                }
+                                else
                                 {
                                     console.log(resUpFile.FileStructure);
                                     res.setHeader('Content-Type', resUpFile.FileStructure);
@@ -848,8 +860,8 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                                 logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                                var source = fs.createReadStream(SourcePath);
 
+                                var source = fs.createReadStream(SourcePath);
                                 source.pipe(res);
                                 source.on('end', function (result) {
                                     logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
@@ -966,6 +978,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
     try
     {
 
+        var encNeeded=false;
 
         FindCurrentVersion(Fobj,cmp,ten,reqId,function(err,result)
         {
@@ -981,102 +994,124 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                     Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
                 }
 
-                if(option.toUpperCase()=="LOCAL")
-                {
+                DbConn.FileCategory.findOne({where:[{Category:Fobj.fCategory}]}).then(function (resCat) {
 
-                    //callback(undefined, resUpFile.UniqueId);
-
-                    var Today= new Date();
-                    var date= Today.getDate();
-                    var month=Today.getMonth()+1;
-                    var year =Today.getFullYear();
-
-                    var file_category=Fobj.fCategory;
-
-                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
-                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
-
-
-                    mkdirp(newDir, function(err) {
-
-                        if(err)
+                    if (resCat) {
+                        encNeeded = resCat.Encripted;
+                        if(option.toUpperCase()=="LOCAL")
                         {
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
-                            callback(err,undefined);
-                        }
-                        else
-                        {
-                            var source = fs.createReadStream(Fobj.path);
-                            source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
-                            fs.unlink(Fobj.path);
-                            Fobj.path=path.join(newDir,rand2.toString());
-                            RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
+
+                            //callback(undefined, resUpFile.UniqueId);
+
+                            var Today= new Date();
+                            var date= Today.getDate();
+                            var month=Today.getMonth()+1;
+                            var year =Today.getFullYear();
+
+                            var file_category=Fobj.fCategory;
+
+                            var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
+                            var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
 
 
+                            mkdirp(newDir, function(err) {
 
-                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
-                                    callback(err,rand2);
-                                });
-                            });
-
-                        }
-
-                    });
-
-
-
-                }
-                else if(option.toUpperCase()=="MONGO")
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
-                    console.log("TO MONGO >>>>>>>>> "+rand2);
-                    var otherData =
-                    {
-                        fileCategory:Fobj.fCategory,
-                        company:cmp,
-                        tenant:ten
-                    }
-                    MongoUploader(rand2,Fobj,otherData,reqId,function(errMongo,resMongo)
-                    {
-                        if(errMongo)
-                        {
-                            console.log(errMongo);
-                            callback(errMongo,undefined);
-                        }
-                        else
-                        {
-                            console.log(resMongo);
-                            // callback(undefined,resUpFile.UniqueId);
-                            InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
                                 if(err)
                                 {
+                                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Failed to lod specific location to save',reqId);
                                     callback(err,undefined);
-
                                 }
                                 else
                                 {
-                                    if(res)
+                                    var source = fs.createReadStream(Fobj.path);
+
+                                    if(encNeeded)
                                     {
-                                        callback(undefined,res);
+                                        source=fs.createReadStream(Fobj.path).pipe(cipher);
                                     }
-                                    else
-                                    {
-                                        callback(new Error("Error in Operation "),undefined);
-                                    }
+
+                                    source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                                    fs.unlink(Fobj.path);
+                                    Fobj.path=path.join(newDir,rand2.toString());
+                                    RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
+
+
+
+                                    DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+                                        InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                            callback(err,rand2);
+                                        });
+                                    });
+
                                 }
+
+                            });
+
+
+
+                        }
+                        else if(option.toUpperCase()=="MONGO")
+                        {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',reqId);
+                            console.log("TO MONGO >>>>>>>>> "+rand2);
+                            var otherData =
+                            {
+                                fileCategory:Fobj.fCategory,
+                                company:cmp,
+                                tenant:ten
+                            }
+                            MongoUploader(rand2,Fobj,otherData,encNeeded,reqId,function(errMongo,resMongo)
+                            {
+                                if(errMongo)
+                                {
+                                    console.log(errMongo);
+                                    callback(errMongo,undefined);
+                                }
+                                else
+                                {
+                                    console.log(resMongo);
+                                    // callback(undefined,resUpFile.UniqueId);
+                                    InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                        if(err)
+                                        {
+                                            callback(err,undefined);
+
+                                        }
+                                        else
+                                        {
+                                            if(res)
+                                            {
+                                                callback(undefined,res);
+                                            }
+                                            else
+                                            {
+                                                callback(new Error("Error in Operation "),undefined);
+                                            }
+                                        }
+                                    });
+                                }
+
+
+
                             });
                         }
+                        else
+                        {
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Invalid storage option',reqId);
+                            callback(new Error("Invalid storage option"),undefined);
+                        }
+                    }
+                    else{
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - No file category found',reqId);
+                        callback(new Error('No file category found'),undefined);
+                    }
+                }).catch(function (errCat) {
+                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in searching file category',reqId);
+                    callback(errCat,undefined);
+                });
 
 
 
-                    });
-                }
-                else
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Invalid storage option',reqId);
-                    callback(new Error("Invalid storage option"),undefined);
-                }
 
 
             }

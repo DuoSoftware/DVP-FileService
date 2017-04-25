@@ -31,7 +31,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"mongo",
+  "Option":"Local",
   "Collection":"fs.files",
 
 
