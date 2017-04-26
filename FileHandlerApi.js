@@ -410,10 +410,10 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
-                            console.log(uri);
                             console.log("Error1 "+error);
                             if(error)
                             {
+                                console.log("Mongo Error");
                                 res.status(400);
                                 db.close();
                                 res.end();
@@ -543,6 +543,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             if(isEncryptedFile)
                             {
                                 source = fs.createReadStream(SourcePath).pipe(decrypt);
+                                console.log("Encripted file found");
                             }
                             source.pipe(res);
                             source.on('end', function (result) {
