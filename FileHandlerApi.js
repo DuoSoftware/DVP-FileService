@@ -429,24 +429,44 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                                 if(isEncryptedFile)
                                 {
-                                    source= bucket.openDownloadStreamByName(UUID).pipe(decrypt);
+                                    console.log("Encrypted file found");
+
+                                    source.pipe(decrypt).pipe(res).
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
+                                }
+                                else
+                                {
+                                    source.pipe(res).
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
                                 }
 
-                                source.pipe(res).
-                                    on('error', function(error) {
-                                        console.log('Error !'+error);
-                                        res.status(400);
-                                        db.close();
-                                        res.end();
-                                        //callback(error,undefined);
-                                    }).
-                                    on('finish', function() {
-                                        console.log('done!');
-                                        res.status(200);
-                                        db.close();
-                                        res.end();
-                                        //process.exit(0);
-                                    });
+
                             }
                             //console.log("db "+JSON.stringify(db));
                             //assert.ifError(error);
@@ -462,10 +482,6 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
                         var bucket = cluster.openBucket(Cbucket);
-                        if(isEncryptedFile)
-                        {
-                            bucket = cluster.openBucket(Cbucket).pipe(decrypt);
-                        }
 
                         bucket.get(UUID, function(err, result) {
                             if (err)
@@ -487,37 +503,60 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                                 if(isEncryptedFile)
                                 {
-                                    s = streamifier.createReadStream(result.value).pipe(decrypt);
+                                    s.pipe(decrypt).pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                            SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                            {
+                                                if(errSv)
+                                                {
+                                                    callback(errSv,undefined);
+                                                }
+                                                else
+                                                {
+                                                    callback(undefined,resSv);
+                                                }
+                                            });
+
+
+                                            console.log("ENDED");
+                                            res.status(200);
+                                            res.end();
+                                        }).on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                            console.log("ERROR");
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+                                else
+                                {
+                                    s.on('end', function (result) {
+                                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        {
+                                            if(errSv)
+                                            {
+                                                callback(errSv,undefined);
+                                            }
+                                            else
+                                            {
+                                                callback(undefined,resSv);
+                                            }
+                                        });
+
+
+                                        console.log("ENDED");
+                                        res.status(200);
+                                        res.end();
+                                    }).on('error', function (err) {
+                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                        console.log("ERROR");
+                                        res.status(400);
+                                        res.end();
+                                    });
                                 }
 
-                                s.pipe(res);
-
-
-                                s.on('end', function (result) {
-                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
-                                    SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                                    {
-                                        if(errSv)
-                                        {
-                                            callback(errSv,undefined);
-                                        }
-                                        else
-                                        {
-                                            callback(undefined,resSv);
-                                        }
-                                    });
-
-
-                                    console.log("ENDED");
-                                    res.status(200);
-                                    res.end();
-                                });
-                                s.on('error', function (err) {
-                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                                    console.log("ERROR");
-                                    res.status(400);
-                                    res.end();
-                                });
 
                             }
 
@@ -528,6 +567,8 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                         });
+
+
                     }
                     else
                     {
@@ -538,24 +579,36 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                            var source = fs.createReadStream(SourcePath);
 
+                            var source = fs.createReadStream(SourcePath);
                             if(isEncryptedFile)
                             {
-                                source = fs.createReadStream(SourcePath).pipe(decrypt);
                                 console.log("Encripted file found");
+                                source.pipe(decrypt).pipe(res).on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.status(200);
+                                    res.end();
+                                }).on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                });
+
+
                             }
-                            source.pipe(res);
-                            source.on('end', function (result) {
-                                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                res.status(200);
-                                res.end();
-                            });
-                            source.on('error', function (err) {
-                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                res.status(400);
-                                res.end();
-                            });
+                            else
+                            {
+                                source.pipe(res).on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.status(200);
+                                    res.end();
+                                }).on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                });
+                            }
+
                         }
                         catch(ex)
                         {
@@ -696,29 +749,47 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     });
                                     //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                    var source = bucket.openDownloadStreamByName(UUID);
+                                    var source = bucket.openDownloadStream(UUID);
                                     if(isEncryptedFile)
                                     {
-                                        source = bucket.openDownloadStreamByName(UUID).pipe(decrypt);
+
                                         console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(decrypt).pipe(res).
+                                            on('error', function(error) {
+                                                console.log('Error !'+error);
+                                                res.status(400);
+                                                db.close();
+                                                res.end();
+                                                //callback(error,undefined);
+                                            }).
+                                            on('finish', function() {
+                                                console.log('done!');
+                                                res.status(200);
+                                                db.close();
+                                                res.end();
+                                                //process.exit(0);
+                                            });
+                                    }
+                                    else
+                                    {
+                                        source.pipe(res).
+                                            on('error', function(error) {
+                                                console.log('Error !'+error);
+                                                res.status(400);
+                                                db.close();
+                                                res.end();
+                                                //callback(error,undefined);
+                                            }).
+                                            on('finish', function() {
+                                                console.log('done!');
+                                                res.status(200);
+                                                db.close();
+                                                res.end();
+                                                //process.exit(0);
+                                            });
 
                                     }
 
-                                    source.pipe(res).
-                                        on('error', function(error) {
-                                            console.log('Error !'+error);
-                                            res.status(400);
-                                            db.close();
-                                            res.end();
-                                            //callback(error,undefined);
-                                        }).
-                                        on('finish', function() {
-                                            console.log('done!');
-                                            res.status(200);
-                                            db.close();
-                                            res.end();
-                                            //process.exit(0);
-                                        });
                                 }
                                 //console.log("db "+JSON.stringify(db));
                                 //assert.ifError(error);
@@ -748,45 +819,78 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
                                     //var source = fs.createReadStream(SourcePath);
                                     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
-                                    var s = streamifier.createReadStream(result.value);
 
+                                    var source =streamifier.createReadStream(result.value);
                                     if(isEncryptedFile)
                                     {
-                                        s = streamifier.createReadStream(result.value).pipe(decrypt);
                                         console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(decrypt).pipe(res)
+                                            .on('end', function (result) {
+                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                                SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                                {
+                                                    if(errSv)
+                                                    {
+                                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
+                                                        // callback(errSv,undefined);
+                                                    }
+                                                    else
+                                                    {
+                                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
+                                                        //callback(undefined,resSv);
+                                                    }
+                                                });
+
+
+                                                console.log("ENDED");
+                                                res.status(200);
+                                                res.end();
+                                            })
+                                            .on('error', function (err) {
+                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                                console.log("ERROR");
+                                                res.status(400);
+                                                res.end();
+                                            });
+
+
+                                    }
+                                    else
+                                    {
+                                        console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(res)
+                                            .on('end', function (result) {
+                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                                SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                                {
+                                                    if(errSv)
+                                                    {
+                                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
+                                                        // callback(errSv,undefined);
+                                                    }
+                                                    else
+                                                    {
+                                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
+                                                        //callback(undefined,resSv);
+                                                    }
+                                                });
+
+
+                                                console.log("ENDED");
+                                                res.status(200);
+                                                res.end();
+                                            })
+                                            .on('error', function (err) {
+                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                                console.log("ERROR");
+                                                res.status(400);
+                                                res.end();
+                                            });
+
 
                                     }
 
-                                    s.pipe(res);
 
-
-                                    s.on('end', function (result) {
-                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
-                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                                        {
-                                            if(errSv)
-                                            {
-                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
-                                                // callback(errSv,undefined);
-                                            }
-                                            else
-                                            {
-                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
-                                                //callback(undefined,resSv);
-                                            }
-                                        });
-
-
-                                        console.log("ENDED");
-                                        res.status(200);
-                                        res.end();
-                                    });
-                                    s.on('error', function (err) {
-                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                                        console.log("ERROR");
-                                        res.status(400);
-                                        res.end();
-                                    });
 
                                 }
 
@@ -808,19 +912,38 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                                var source = fs.createReadStream(SourcePath);
 
-                                source.pipe(res);
-                                source.on('end', function (result) {
-                                    logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                    res.status(200);
-                                    res.end();
-                                });
-                                source.on('error', function (err) {
-                                    logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                    res.status(400);
-                                    res.end();
-                                });
+                                var source = fs.createReadStream(SourcePath);
+                                if(isEncryptedFile)
+                                {
+                                    source.pipe(decrypt).pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                            res.status(200);
+                                            res.end();
+                                        })
+                                        .on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+                                else
+                                {
+                                    source.pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                            res.status(200);
+                                            res.end();
+                                        })
+                                        .on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+
+
                             }
                             catch(ex)
                             {
