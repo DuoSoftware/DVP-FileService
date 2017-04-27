@@ -324,7 +324,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
     var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
     mongodb.MongoClient.connect(uri, function(error, db)
     {
-        console.log(uri);
+
         console.log("Error1 "+error);
         //console.log("db "+JSON.stringify(db));
         //assert.ifError(error);
@@ -360,7 +360,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
 
 
-                            gm(fs.createReadStream(path)).resize(size, size).quality(50)
+                            gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
                                 .stream(function (err, stdout, stderr) {
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
