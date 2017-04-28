@@ -429,7 +429,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                                 if(isEncryptedFile)
                                 {
-                                    console.log("Encrypted file found");
+                                    console.log("Encrypted file found, Decrypting");
 
                                     source.pipe(decrypt).pipe(res).
                                         on('error', function(error) {

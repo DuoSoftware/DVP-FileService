@@ -94,7 +94,59 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         if(encNeeded)
         {
             console.log("Encripting");
-            uploadReadStream=fs.createReadStream(path.join(Fobj.path)).pipe(cipher);
+            uploadReadStream.pipe(cipher).pipe(bucket.openUploadStream(uuid)).
+                on('error', function(error) {
+                    // assert.ifError(error);
+                    fs.unlink(path.join(Fobj.path));
+                    console.log("Error "+error);
+                    db.close();
+                    callback(error,undefined);
+                }).
+                on('finish', function() {
+                    console.log('done!');
+
+                    RedisPublisher.updateFileStorageRecord(otherData.fileCategory,Fobj.sizeInMB,otherData.company,otherData.tenant);
+
+                    if(fileStruct=="image")
+                    {
+                        sizeArray.forEach(function (size) {
+
+
+                            thumbnailArray.push(function createContact(callbackThumb)
+                            {
+
+                                gm(fs.createReadStream(path.join(Fobj.path))).resize(size, size)
+                                    .stream(function (err, stdout, stderr) {
+                                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                        stdout.pipe(writeStream).on('error', function(error)
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
+                                            console.log("Error in making thumbnail "+uuid + "_"+size);
+                                            callbackThumb(error,undefined);
+                                        }). on('finish', function()
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
+                                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                            callbackThumb(undefined,"Done");
+                                        });
+                                    });
+                            });
+                        });
+
+                        async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+
+                            db.close();
+                            callback(undefined,uuid);
+
+
+                        });
+                    }
+                    else
+                    {
+                        db.close();
+                        callback(undefined,uuid);
+                    }
+                });
         }
 
 
