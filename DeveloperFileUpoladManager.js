@@ -332,11 +332,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
         console.log(Fobj.path);
         var uploadReadStream = fs.createReadStream(Fobj.path);
+        var bucketUploadStream=bucket.openUploadStream(uuid);
 
         if(encNeeded)
         {
             console.log("Encripting");
-            uploadReadStream.pipe(cipher).pipe(bucket.openUploadStream(uuid)).
+            uploadReadStream.pipe(cipher).pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
                     fs.unlink(path.join(Fobj.path));
@@ -395,7 +396,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         }
         else
         {
-            uploadReadStream.pipe(bucket.openUploadStream(uuid)).
+            uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
                     fs.unlink(path.join(Fobj.path));
