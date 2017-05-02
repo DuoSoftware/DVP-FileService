@@ -337,62 +337,72 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         if(encNeeded)
         {
             console.log("Encripting");
-            uploadReadStream.pipe(cipher).pipe(bucketUploadStream).
-                on('error', function(error) {
+            uploadReadStream.pipe(cipher).on('error', function (error) {
+                console.log("Encripting error");
+                fs.unlink(path.join(Fobj.path));
+                db.close();
+                callback(error,undefined);
+            }).on('finish', function (result) {
+
+                fs.createReadStream(result).pipe(bucketUploadStream).on('error', function(error) {
                     // assert.ifError(error);
                     fs.unlink(path.join(Fobj.path));
-                    console.log("Error "+error);
+                    console.log("Error in Encripted stream uploading to DB "+error);
                     db.close();
                     callback(error,undefined);
                 }).
-                on('finish', function() {
-                    console.log('uploaded to Mongo!');
-                    RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
+                    on('finish', function() {
+                        console.log('uploaded to Mongo!');
+                        RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
 
-                    if(fileStruct=="image")
-                    {
-                        sizeArray.forEach(function (size) {
-
-
-                            thumbnailArray.push(function createContact(callbackThumb)
-                            {
+                        if(fileStruct=="image")
+                        {
+                            sizeArray.forEach(function (size) {
 
 
+                                thumbnailArray.push(function createContact(callbackThumb)
+                                {
 
-                                gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
-                                    .stream(function (err, stdout, stderr) {
-                                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
-                                        stdout.pipe(writeStream).on('error', function(error)
-                                        {
-                                            console.log("Error in making thumbnail "+uuid + "_"+size);
-                                            callbackThumb(error,undefined);
-                                        }). on('finish', function()
-                                        {
-                                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
-                                            callbackThumb(undefined,"Thumbnails created ");
+
+
+                                    gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
+                                        .stream(function (err, stdout, stderr) {
+                                            var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                            stdout.pipe(writeStream).on('error', function(error)
+                                            {
+                                                console.log("Error in making thumbnail "+uuid + "_"+size);
+                                                callbackThumb(error,undefined);
+                                            }). on('finish', function()
+                                            {
+                                                console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                                callbackThumb(undefined,"Thumbnails created ");
+                                            });
                                         });
-                                    });
+                                });
                             });
-                        });
 
-                        async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+                            async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
 
+                                fs.unlink(path.join(Fobj.path));
+                                db.close();
+                                callback(undefined,uuid);
+
+
+                            });
+                        }
+                        else
+                        {
                             fs.unlink(path.join(Fobj.path));
                             db.close();
                             callback(undefined,uuid);
+                        }
 
 
-                        });
-                    }
-                    else
-                    {
-                        fs.unlink(path.join(Fobj.path));
-                        db.close();
-                        callback(undefined,uuid);
-                    }
+                    });
+
+            });
 
 
-                });
         }
         else
         {
