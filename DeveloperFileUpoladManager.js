@@ -372,8 +372,9 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                                             {
                                                 console.log("Error in making thumbnail "+uuid + "_"+size);
                                                 callbackThumb(error,undefined);
-                                            }). on('finish', function()
+                                            }). on('finish', function(thumb)
                                             {
+
                                                 console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                                 callbackThumb(undefined,"Thumbnails created ");
                                             });
@@ -382,7 +383,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                             });
 
                             async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
-
+                                console.log(Fobj.path);
                                 fs.unlink(path.join(Fobj.path));
                                 db.close();
                                 callback(undefined,uuid);

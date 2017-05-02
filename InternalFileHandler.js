@@ -554,6 +554,9 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                                      res.end();
                                      });*/
                                     // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
+
+
+
                                     var thumbName=UUID+"_"+thumbSize.toString();
                                     console.log(thumbName);
 
