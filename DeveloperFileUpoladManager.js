@@ -421,95 +421,30 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
                     if(fileStruct=="image")
                     {
+                        sizeArray.forEach(function (size) {
 
+                            thumbnailArray.push(function createContact(callbackThumb)
+                            {
 
-
-                        thumbnailArray.push(function createContact(callbackThumb)
-                        {
-
-                            gm(fs.createReadStream(Fobj.path)).resize(75, 75).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+75);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+75);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+75+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
+                                gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
+                                    .stream(function (err, stdout, stderr) {
+                                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                        stdout.pipe(writeStream).on('error', function(error)
+                                        {
+                                            console.log("Error in making thumbnail "+uuid + "_"+size);
+                                            callbackThumb(error,undefined);
+                                        }). on('finish', function()
+                                        {
+                                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                            callbackThumb(undefined,"Thumbnails created ");
+                                        });
                                     });
-                                });
-                            gm(fs.createReadStream(Fobj.path)).resize(100, 100).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+100);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+100);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+100+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
-                                    });
-                                });
-                            gm(fs.createReadStream(Fobj.path)).resize(125, 125).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+125);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+125);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+125+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
-                                    });
-                                });
-                            gm(fs.createReadStream(Fobj.path)).resize(150, 150).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+150);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+150);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+150+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
-                                    });
-                                });
-                            gm(fs.createReadStream(Fobj.path)).resize(175, 175).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+175);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+175);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+175+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
-                                    });
-                                });
-                            gm(fs.createReadStream(Fobj.path)).resize(200, 200).quality(50)
-                                .stream(function (err, stdout, stderr) {
-                                    var writeStream = ThumbBucket.openUploadStream(uuid + "_"+200);
-                                    stdout.pipe(writeStream).on('error', function(error)
-                                    {
-                                        console.log("Error in making thumbnail "+uuid + "_"+200);
-                                        callbackThumb(error,undefined);
-                                    }). on('finish', function()
-                                    {
-                                        console.log("Making thumbnail "+uuid + "_"+200+" Success");
-                                        callbackThumb(undefined,"Thumbnails created ");
-                                    });
-                                });
-
+                            });
                         });
 
+                        async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
 
-                        async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+
                             console.log("End of Thumbnail making");
                             fs.unlink(path.join(Fobj.path));
                             db.close();
