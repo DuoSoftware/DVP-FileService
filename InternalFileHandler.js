@@ -10,10 +10,14 @@ var streamifier = require('streamifier');
 var fs=require('fs');
 var gm = require('gm').subClass({imageMagick: true});
 var async= require('async');
+var util = require('util');
 
 const crypto = require('crypto');
-const cipher = crypto.createCipher('aes192', 'a password');
-var decrypt = crypto.createDecipher('aes192', 'a password');
+var crptoAlgo = config.Crypto.algo;
+var crptoPwd = config.Crypto.password;
+
+
+
 
 
 //Sprint 5
@@ -26,10 +30,14 @@ var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var RedisPublisher=require('./RedisPublisher.js');
 
+var mongodb= require('mongodb');
+var mongoip = config.Mongo.ip;
+var mongoport=config.Mongo.port;
+var mongodbase=config.Mongo.dbname;
+var mongopass=config.Mongo.password;
+var mongouser=config.Mongo.user;
+var mongoreplicaset=config.Mongo.replicaset;
 
-var mongodb = require('mongodb');
-var Server = require('mongodb').Server,
-    Code = require('mongodb').Code;
 
 var path= require('path');
 var mkdirp = require('mkdirp');
@@ -37,7 +45,23 @@ var mkdirp = require('mkdirp');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 
 
+var uri = '';
+if(util.isArray(mongoip)){
 
+    mongoip.forEach(function(item){
+        uri += util.format('%s:%d,',item,mongoport)
+    });
+
+    uri = uri.substring(0, uri.length - 1);
+    uri = util.format('mongodb://%s:%s@%s/%s',mongouser,mongopass,uri,mongodbase);
+
+    if(mongoreplicaset){
+        uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
+    }
+}else{
+
+    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase)
+}
 
 function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 {
@@ -80,7 +104,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
     var fileStruct=Fobj.type.split("/")[0];
 
-    var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+    /*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
     mongodb.MongoClient.connect(uri, function(error, db)
     {
         console.log(uri);
@@ -94,9 +118,11 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         if(encNeeded)
         {
             console.log("Encripting");
+            const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
             uploadReadStream.pipe(cipher).pipe(bucket.openUploadStream(uuid)).
                 on('error', function(error) {
                     // assert.ifError(error);
+                    cipher.end();
                     fs.unlink(path.join(Fobj.path));
                     console.log("Error "+error);
                     db.close();
@@ -104,7 +130,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 }).
                 on('finish', function() {
                     console.log('done!');
-
+                    cipher.end();
                     RedisPublisher.updateFileStorageRecord(otherData.fileCategory,Fobj.sizeInMB,otherData.company,otherData.tenant);
 
                     if(fileStruct=="image")
@@ -314,7 +340,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             var extArr = resUpFile.FileStructure.split('/');
                             var extension = extArr[1];
 
-                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;
+                            /*var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
@@ -522,7 +548,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                             var extArr = resUpFile.FileStructure.split('/');
                             var extension = extArr[1];
 
-                            var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;
+                            /*var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
@@ -810,7 +836,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+                            /*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
@@ -1077,25 +1103,60 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                 }
                                 else
                                 {
-                                    var source = fs.createReadStream(Fobj.path);
 
+                                    const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
                                     if(encNeeded)
                                     {
-                                        source=fs.createReadStream(Fobj.path).pipe(cipher);
+
+                                        fs.createReadStream(Fobj.path).pipe(cipher).pipe(fs.createWriteStream(path.join(newDir,rand2.toString()))).on('error', function (error) {
+
+                                            console.log("Error in ecripting and storing file");
+                                            cipher.end();
+                                            fs.unlink(path.join(Fobj.path));
+
+                                        }).on('finish', function () {
+                                            cipher.end();
+                                            console.log("File Encrypted and Stored successfully");
+                                            fs.unlink(path.join(Fobj.path));
+                                            Fobj.path=path.join(newDir,rand2.toString());
+                                            RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
+
+
+
+                                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+                                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                                    callback(err,rand2);
+                                                });
+                                            });
+
+                                        });
+
+                                    }
+                                    else
+                                    {
+                                        fs.createReadStream(Fobj.path).pipe(fs.createWriteStream(path.join(newDir,rand2.toString()))).on('error', function (error) {
+
+                                            console.log("Error in storing file");
+                                            fs.unlink(path.join(Fobj.path));
+
+                                        }).on('finish', function () {
+
+                                            console.log("File Stored successfully");
+                                            fs.unlink(path.join(Fobj.path));
+                                            Fobj.path=path.join(newDir,rand2.toString());
+                                            RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
+
+
+
+                                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+                                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                                    callback(err,rand2);
+                                                });
+                                            });
+
+                                        });
                                     }
 
-                                    source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
-                                    fs.unlink(path.join(Fobj.path));
-                                    Fobj.path=path.join(newDir,rand2.toString());
-                                    RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
-
-
-
-                                    DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                        InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
-                                            callback(err,rand2);
-                                        });
-                                    });
 
                                 }
 

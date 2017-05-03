@@ -42,7 +42,8 @@ module.exports = {
         "port":"SYS_MONGO_PORT",
         "dbname":"SYS_MONGO_DB",
         "password":"SYS_MONGO_PASSWORD",
-        "user":"SYS_MONGO_USER"
+        "user":"SYS_MONGO_USER",
+        "replicaset" :"SYS_MONGO_REPLICASETNAME"
     },
 
     "Couch":
@@ -52,6 +53,11 @@ module.exports = {
         "bucket":"SYS_COUCH_BUCKET",
         "user":"SYS_COUCH_USER",
         "password":"SYS_COUCH_PASSWORD"
+    },
+    "Crypto":
+    {
+        "algo":"CRYPTO_ALGO",
+        "password":"CRYPTO_PASSWORD"
     },
     "BasePath":"SYS_FILE_BASEPATH"
 };

@@ -35,7 +35,8 @@
     "restify": "^3.0.3",
     "restify-jwt": "^0.4.0",
     "sequelize": "^3.22.0",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "util": "^0.10.3"
   },
   "devDependencies": {},
   "scripts": {

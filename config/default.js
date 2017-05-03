@@ -31,7 +31,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"mongo",
+  "Option":"local",
   "Collection":"fs.files",
 
 
@@ -51,6 +51,11 @@ module.exports = {
     "bucket":"default",
     "user":"duo",
     "password":"DuoS123"
+  },
+  "Crypto":
+  {
+    "algo":"aes192",
+    "password":"dialog"
   },
   "BasePath":"/usr/local/src/upload/"
 };

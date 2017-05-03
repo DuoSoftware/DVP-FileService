@@ -36,7 +36,7 @@ var mongodb = require('mongodb');
 
 var moment= require('moment');
 var easyimg = require('easyimage');
-
+var util = require('util');
 
 
 
@@ -54,9 +54,12 @@ var Db = require('mongodb').Db,
 
 
 
-var MIP = config.Mongo.ip;
-var MPORT=config.Mongo.port;
-var MDB=config.Mongo.dbname;
+var mongoip = config.Mongo.ip;
+var mongoport=config.Mongo.port;
+var mongodbase=config.Mongo.dbname;
+var mongopass=config.Mongo.password;
+var mongouser=config.Mongo.user;
+var mongoreplicaset=config.Mongo.replicaset;
 
 
 var config = require('config');
@@ -66,6 +69,31 @@ var hpath=config.Host.hostpath;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("fhandler");
+
+var crptoAlgo = config.Crypto.algo;
+var crptoPwd = config.Crypto.password;
+
+
+
+var uri = '';
+if(util.isArray(mongoip)){
+
+    mongoip.forEach(function(item){
+        uri += util.format('%s:%d,',item,mongoport)
+    });
+
+    uri = uri.substring(0, uri.length - 1);
+    uri = util.format('mongodb://%s:%s@%s/%s',mongouser,mongopass,uri,mongodbase);
+
+    if(mongoreplicaset){
+        uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
+    }
+}else{
+
+    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase)
+}
+
+
 
 
 
@@ -407,7 +435,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         var extArr=resUpFile.FileStructure.split('/');
                         var extension=extArr[1];
 
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+
 
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
@@ -431,7 +459,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 if(isEncryptedFile)
                                 {
                                     console.log("Encrypted file found, Decrypting");
-                                    var decrypt = crypto.createDecipher('aes192', 'a password');
+                                    var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                     source.pipe(decrypt).pipe(res).
                                         on('error', function(error) {
                                             console.log('Error !'+error);
@@ -587,6 +615,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                             if(isEncryptedFile)
                             {
                                 console.log("Encripted file found");
+                                var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                 source.pipe(decrypt).pipe(res).on('end', function (result) {
                                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
                                     res.status(200);
@@ -732,7 +761,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+                           /* var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
@@ -755,7 +784,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     var source = bucket.openDownloadStream(UUID);
                                     if(isEncryptedFile)
                                     {
-                                        var decrypt = crypto.createDecipher('aes192', 'a password');
+                                        var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                         console.log("Encrypted file found. Decrypting......");
                                         source.pipe(decrypt).pipe(res).
                                             on('error', function(error) {
@@ -921,7 +950,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 var source = fs.createReadStream(SourcePath);
                                 if(isEncryptedFile)
                                 {
-                                    var decrypt = crypto.createDecipher('aes192', 'a password');
+                                    var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                     source.pipe(decrypt).pipe(res)
                                         .on('end', function (result) {
                                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
@@ -1836,7 +1865,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 {
                     if(option.toUpperCase()=="MONGO")
                     {
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+                        /*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
                             if(error)
