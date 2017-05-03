@@ -14,8 +14,8 @@ var CHip=config.Couch.ip;
 var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
-const cipher = crypto.createCipher('aes192', 'a password');
-var decrypt = crypto.createDecipher('aes192', 'a password');
+
+
 //
 
 
@@ -66,6 +66,7 @@ var hpath=config.Host.hostpath;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("fhandler");
+
 
 
 
@@ -430,10 +431,11 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 if(isEncryptedFile)
                                 {
                                     console.log("Encrypted file found, Decrypting");
-
+                                    var decrypt = crypto.createDecipher('aes192', 'a password');
                                     source.pipe(decrypt).pipe(res).
                                         on('error', function(error) {
                                             console.log('Error !'+error);
+                                            decrypt.end();
                                             res.status(400);
                                             db.close();
                                             res.end();
@@ -441,6 +443,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                         }).
                                         on('finish', function() {
                                             console.log('done!');
+                                            decrypt.end();
                                             res.status(200);
                                             db.close();
                                             res.end();
@@ -752,11 +755,12 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     var source = bucket.openDownloadStream(UUID);
                                     if(isEncryptedFile)
                                     {
-
+                                        var decrypt = crypto.createDecipher('aes192', 'a password');
                                         console.log("Encrypted file found. Decrypting......");
                                         source.pipe(decrypt).pipe(res).
                                             on('error', function(error) {
                                                 console.log('Error !'+error);
+                                                decrypt.end();
                                                 res.status(400);
                                                 db.close();
                                                 res.end();
@@ -764,6 +768,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                             }).
                                             on('finish', function() {
                                                 console.log('done!');
+                                                decrypt.end();
                                                 res.status(200);
                                                 db.close();
                                                 res.end();
@@ -916,14 +921,17 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                 var source = fs.createReadStream(SourcePath);
                                 if(isEncryptedFile)
                                 {
+                                    var decrypt = crypto.createDecipher('aes192', 'a password');
                                     source.pipe(decrypt).pipe(res)
                                         .on('end', function (result) {
                                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                            decrypt.end();
                                             res.status(200);
                                             res.end();
                                         })
                                         .on('error', function (err) {
                                             logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            decrypt.end();
                                             res.status(400);
                                             res.end();
                                         });

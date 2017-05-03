@@ -50,8 +50,8 @@ var path=require('path');
 var mkdirp = require('mkdirp');
 
 const crypto = require('crypto');
-const cipher = crypto.createCipher('aes192', 'a password');
-var decrypt = crypto.createDecipher('aes192', 'a password');
+
+
 
 
 
@@ -331,85 +331,77 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
         console.log(Fobj.path);
-
+        var uploadReadStream = fs.createReadStream(Fobj.path);
+        var bucketUploadStream=bucket.openUploadStream(uuid);
 
         if(encNeeded)
         {
-            var uploadReadStream = fs.createReadStream(Fobj.path);
-            var bucketUploadStream=bucket.openUploadStream(uuid);
+            const cipher = crypto.createCipher('aes192', 'a password');
             console.log("Encripting");
-            uploadReadStream.pipe(cipher).on('error', function (error) {
-                console.log("Encripting error");
+            uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
+                // assert.ifError(error);
                 fs.unlink(path.join(Fobj.path));
+                cipher.end();
+                console.log("Error in Encripted stream uploading to DB "+error);
                 db.close();
+
                 callback(error,undefined);
-            }).on('finish', function (result) {
+            }).
+                on('finish', function() {
+                    console.log('uploaded to Mongo!');
+                    cipher.end();
+                    RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
 
-                fs.createReadStream(result).pipe(bucketUploadStream).on('error', function(error) {
-                    // assert.ifError(error);
-                    fs.unlink(path.join(Fobj.path));
-                    console.log("Error in Encripted stream uploading to DB "+error);
-                    db.close();
-                    callback(error,undefined);
-                }).
-                    on('finish', function() {
-                        console.log('uploaded to Mongo!');
-                        RedisPublisher.updateFileStorageRecord(otherData.fileCategory, Fobj.sizeInMB,otherData.company,otherData.tenant);
-
-                        if(fileStruct=="image")
-                        {
-                            sizeArray.forEach(function (size) {
+                    if(fileStruct=="image")
+                    {
+                        sizeArray.forEach(function (size) {
 
 
-                                thumbnailArray.push(function createContact(callbackThumb)
-                                {
+                            thumbnailArray.push(function createContact(callbackThumb)
+                            {
 
 
 
-                                    gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
-                                        .stream(function (err, stdout, stderr) {
-                                            var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
-                                            stdout.pipe(writeStream).on('error', function(error)
-                                            {
-                                                console.log("Error in making thumbnail "+uuid + "_"+size);
-                                                callbackThumb(error,undefined);
-                                            }). on('finish', function(thumb)
-                                            {
+                                gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
+                                    .stream(function (err, stdout, stderr) {
+                                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                                        stdout.pipe(writeStream).on('error', function(error)
+                                        {
+                                            console.log("Error in making thumbnail "+uuid + "_"+size);
+                                            callbackThumb(error,undefined);
+                                        }). on('finish', function(thumb)
+                                        {
 
-                                                console.log("Making thumbnail "+uuid + "_"+size+" Success");
-                                                callbackThumb(undefined,"Thumbnails created ");
-                                            });
+                                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                                            callbackThumb(undefined,"Thumbnails created ");
                                         });
-                                });
+                                    });
                             });
+                        });
 
-                            async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
-                                console.log(Fobj.path);
-                                fs.unlink(path.join(Fobj.path));
-                                db.close();
-                                callback(undefined,uuid);
-
-
-                            });
-                        }
-                        else
-                        {
+                        async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
+                            console.log(Fobj.path);
                             fs.unlink(path.join(Fobj.path));
                             db.close();
                             callback(undefined,uuid);
-                        }
 
 
-                    });
+                        });
+                    }
+                    else
+                    {
+                        fs.unlink(path.join(Fobj.path));
+                        db.close();
+                        callback(undefined,uuid);
+                    }
 
-            });
+
+                });
 
 
         }
         else
         {
-            var uploadReadStream = fs.createReadStream(Fobj.path);
-            var bucketUploadStream=bucket.openUploadStream(uuid);
             uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
@@ -1539,14 +1531,18 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                         else
                         {
                             console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
+                            const cipher = crypto.createCipher('aes192', 'a password');
                             var source = fs.createReadStream(Fobj.path);
                             if(encNeeded)
                             {
+
                                 source=fs.createReadStream(Fobj.path).pipe(cipher);
                             }
 
 
+
                             source.pipe(fs.createWriteStream(path.join(newDir,rand2.toString())));
+                            cipher.end();
                             RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
 
