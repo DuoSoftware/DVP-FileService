@@ -133,7 +133,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                             });
                         });
 
-                        async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+                        async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
 
                             db.close();
                             callback(undefined,uuid);
@@ -190,7 +190,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                         });
                     });
 
-                    async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+                    async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
 
                         db.close();
                         callback(undefined,uuid);

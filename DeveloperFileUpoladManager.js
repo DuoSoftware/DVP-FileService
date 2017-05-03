@@ -285,7 +285,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
                         });
                     });
 
-                    async.parallel(thumbnailArray, function (errThumbMake, resThumbMake) {
+                    async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
 
                         callback(undefined, uuid);
 
@@ -331,11 +331,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         var bucket = new mongodb.GridFSBucket(db);
         var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
         console.log(Fobj.path);
-        var uploadReadStream = fs.createReadStream(Fobj.path);
-        var bucketUploadStream=bucket.openUploadStream(uuid);
+
 
         if(encNeeded)
         {
+            var uploadReadStream = fs.createReadStream(Fobj.path);
+            var bucketUploadStream=bucket.openUploadStream(uuid);
             console.log("Encripting");
             uploadReadStream.pipe(cipher).on('error', function (error) {
                 console.log("Encripting error");
@@ -382,7 +383,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                                 });
                             });
 
-                            async.parallel(thumbnailArray, function (errThumbMake,resThumbMake) {
+                            async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
                                 console.log(Fobj.path);
                                 fs.unlink(path.join(Fobj.path));
                                 db.close();
@@ -407,6 +408,8 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
         }
         else
         {
+            var uploadReadStream = fs.createReadStream(Fobj.path);
+            var bucketUploadStream=bucket.openUploadStream(uuid);
             uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
