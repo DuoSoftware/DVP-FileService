@@ -3396,7 +3396,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileStorage/Category/:fileCateg
 
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/FileStorage',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/TotalUsedStorage',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 { var reqId='';
     try {
 
@@ -3411,7 +3411,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileStorage',jwt({secret: secre
 
 
 
-        logger.debug('[DVP-FIleService.getAllFileStorageRecords] - [%s] - [HTTP] - Request received - ',reqId);
+        logger.debug('[DVP-FIleService.getTotalFileStorageDetails] - [%s] - [HTTP] - Request received - ',reqId);
 
         if(!req.user.company || !req.user.tenant)
         {
@@ -3427,7 +3427,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileStorage',jwt({secret: secre
 
 
 
-        RedisPublisher.getAllFileStorageRecords(Company,Tenant, function (errData,resData) {
+        RedisPublisher.getTotalFileStorageDetails(Company,Tenant, function (errData,resData) {
 
             if(errData)
             {
