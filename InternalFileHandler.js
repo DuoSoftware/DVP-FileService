@@ -46,6 +46,7 @@ var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 
 
 var uri = '';
+mongoip = mongoip.split(',')
 if(util.isArray(mongoip)){
 
     mongoip.forEach(function(item){
