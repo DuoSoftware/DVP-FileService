@@ -88,10 +88,12 @@ if(util.isArray(mongoip)){
 
     if(mongoreplicaset){
         uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
+        console.log("URI ...   "+uri);
     }
 }else{
 
-    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase)
+    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
+    console.log("URI ...   "+uri);
 }
 
 
