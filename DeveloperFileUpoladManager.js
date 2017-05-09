@@ -59,6 +59,7 @@ var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 
 var uri = '';
+mongoip = mongoip.split(',')
 if(util.isArray(mongoip)){
 
     mongoip.forEach(function(item){
