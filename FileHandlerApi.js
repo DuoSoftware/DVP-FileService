@@ -7,11 +7,11 @@ var config = require('config');
 var sequelize = require('sequelize');
 
 //Sprint 5
-var couchbase = require('couchbase');
+//var couchbase = require('couchbase');
 var streamifier = require('streamifier');
 var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
-var cluster = new couchbase.Cluster("couchbase://"+CHip);
+//var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
 
@@ -784,7 +784,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     });
                                     //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                    var source = bucket.openDownloadStream(UUID);
+                                    var source = bucket.openDownloadStreamByName(UUID);
                                     if(isEncryptedFile)
                                     {
                                         var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);

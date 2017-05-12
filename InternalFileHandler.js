@@ -22,11 +22,11 @@ var crptoPwd = config.Crypto.password;
 
 //Sprint 5
 
-var couchbase = require('couchbase');
+//var couchbase = require('couchbase');
 var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 
-var cluster = new couchbase.Cluster("couchbase://"+CHip);
+//var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var RedisPublisher=require('./RedisPublisher.js');
 

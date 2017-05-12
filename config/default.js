@@ -31,7 +31,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"local",
+  "Option":"mongo",
   "Collection":"fs.files",
 
 
@@ -41,8 +41,7 @@ module.exports = {
     "port":"27017",
     "dbname":"dvpdb",
     "password":"DuoS123",
-    "user":"duo",
-     "replicaset" :"104.236.231.11"
+    "user":"duo"
   },
 
   "Couch":
