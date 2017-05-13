@@ -25,7 +25,8 @@ function DeveloperVoiceRecordingDownload(req,callback) {
                     console.log("................................... Record Found ................................ ");
                     try {
                         res.setHeader('Content-Type', UploadRecObject.FileStructure);
-                        var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
+                        var SourcePath = path.join(resUpFile.URL.toString());
+                        console.log(SourcePath);
 
                         var source = fs.createReadStream(SourcePath);
 
@@ -159,7 +160,8 @@ function DeveloperVoiceAppClipsDownload(req,callback) {
                     console.log("................................... Record Found ................................ ");
                     try {
                         res.setHeader('Content-Type', UploadRecObject.FileStructure);
-                        var SourcePath = (UploadRecObject.URL.toString()).replace('\',' / '');
+                        var SourcePath = path.join(resUpFile.URL.toString());
+                        console.log(SourcePath);
 
                         var source = fs.createReadStream(SourcePath);
 
