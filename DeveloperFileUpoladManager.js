@@ -286,8 +286,8 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
         if (fileStruct == "image") {
             mkdirp(thumbDir, function (err) {
                 if (!err) {
-                    var readStream=fs.createReadStream(path.join(Fobj.path));
-                    console.log(path.join(Fobj.path));
+                    var readStream=fs.createReadStream(path.join(Fobj.tempPath));
+                    console.log(path.join(Fobj.tempPath));
 
 
                     sizeArray.forEach(function (size) {
@@ -1528,6 +1528,11 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
         }
 
+        if(Fobj.path)
+        {
+            Fobj.tempPath=Fobj.path;
+        }
+
         DbConn.FileCategory.findOne({where:[{Category:Category}]}).then(function (resCat) {
 
             if(resCat)
@@ -1576,21 +1581,33 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     cipher.end();
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
+
+                                    Fobj.path=path.join(newDir,rand2.toString());
                                     FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
-                                        callback(err,rand2);
+                                       // callback(err,rand2);
+
+                                        if(err)
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
+                                            callback(err,rand2);
+                                        }
+                                        else
+                                        {
+                                            LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                                fs.unlink(path.join(Fobj.path));
+                                                callback(err,rand2);
+
+                                            });
+                                        }
+
+
+
+
+
                                     });
 
-                                    /*LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                        fs.unlink(path.join(Fobj.path));
-                                        Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
-
-                                            callback(err,rand2);
-                                        });
-
-                                    });*/
 
                                 });
                             }
@@ -1617,17 +1634,24 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
                                     FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-                                        callback(err,rand2);
+
+                                        if(err)
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
+                                            callback(err,rand2);
+                                        }
+                                        else
+                                        {
+                                            LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                             fs.unlink(path.join(Fobj.path));
+                                                callback(err,rand2);
+
+                                             });
+                                        }
+
                                     });
 
-                                    /*LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                        fs.unlink(path.join(Fobj.path));
-                                        Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-                                            callback(err,rand2);
-                                        });
 
-                                    });*/
 
 
                                 });

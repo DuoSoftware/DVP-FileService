@@ -1077,6 +1077,10 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                 {
                     Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
                 }
+                if(Fobj.path)
+                {
+                    Fobj.tempPath=Fobj.path;
+                }
 
                 DbConn.FileCategory.findOne({where:[{Category:Fobj.fCategory}]}).then(function (resCat) {
 
@@ -1121,17 +1125,28 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                         }).on('finish', function () {
                                             cipher.end();
                                             console.log("File Encrypted and Stored successfully");
-                                            fs.unlink(path.join(Fobj.path));
+
                                             Fobj.path=path.join(newDir,rand2.toString());
                                             RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
-
-
-                                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                            InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                                if(err)
+                                                {
+                                                    fs.unlink(path.join(Fobj.path));
                                                     callback(err,rand2);
-                                                });
+                                                }
+                                                else
+                                                {
+                                                    DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+                                                        fs.unlink(path.join(Fobj.path));
+                                                        callback(err,rand2);
+                                                    });
+
+                                                }
+
                                             });
+
+
 
                                         });
 
@@ -1146,17 +1161,30 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                         }).on('finish', function () {
 
                                             console.log("File Stored successfully");
-                                            fs.unlink(path.join(Fobj.path));
+
                                             Fobj.path=path.join(newDir,rand2.toString());
                                             RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
+                                            InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
 
-
-                                            DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                                InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
+                                                if(err)
+                                                {
+                                                    fs.unlink(path.join(Fobj.path));
                                                     callback(err,rand2);
-                                                });
+                                                }
+                                                else
+                                                {
+                                                    DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
+
+                                                        fs.unlink(path.join(Fobj.path));
+                                                        callback(err,rand2);
+                                                    });
+
+                                                }
+
                                             });
+
+
 
                                         });
                                     }
