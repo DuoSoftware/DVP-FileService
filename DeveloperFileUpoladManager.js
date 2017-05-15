@@ -286,7 +286,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
         if (fileStruct == "image") {
             mkdirp(thumbDir, function (err) {
                 if (!err) {
-                    var readStream=fs.createReadStream(path.join(Fobj.tempPath));
+                    //var readStream=fs.createReadStream(path.join(Fobj.tempPath));
                     console.log(path.join(Fobj.tempPath));
 
 
@@ -295,6 +295,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 
                         thumbnailArray.push(function createContact(callbackThumb) {
 
+                            var readStream=fs.createReadStream(path.join(Fobj.tempPath));
                             var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
 
 
@@ -338,6 +339,52 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
         console.log("Error in operation of localy stored thumbnail creation of " + uuid + "_100");
         callback(e, uuid);
     }
+
+
+   //.............................................................................
+
+
+    /*if(fileStruct=="image")
+    {
+        sizeArray.forEach(function (size) {
+
+            thumbnailArray.push(function createContact(callbackThumb)
+            {
+
+                gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
+                    .stream(function (err, stdout, stderr) {
+                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                        stdout.pipe(writeStream).on('error', function(error)
+                        {
+                            console.log("Error in making thumbnail "+uuid + "_"+size);
+                            callbackThumb(error,undefined);
+                        }). on('finish', function()
+                        {
+                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                            callbackThumb(undefined,"Thumbnails created ");
+                        });
+                    });
+            });
+        });
+
+        async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
+
+
+            console.log("End of Thumbnail making");
+            fs.unlink(path.join(Fobj.path));
+            db.close();
+            callback(undefined,uuid);
+
+
+        });
+    }
+    else
+    {
+        fs.unlink(path.join(Fobj.path));
+        db.close();
+        callback(undefined,uuid);
+    }*/
+
 
 
 }
@@ -409,8 +456,8 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                         });
 
                         async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
-                            console.log(Fobj.path);
-                            fs.unlink(path.join(Fobj.path));
+                            console.log(Fobj.tempPath);
+                            fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -419,7 +466,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.path));
+                        fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
@@ -434,7 +481,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
             uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
-                    fs.unlink(path.join(Fobj.path));
+                    fs.unlink(path.join(Fobj.tempPath));
                     console.log("Error "+error);
                     db.close();
                     callback(error,undefined);
@@ -470,7 +517,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
 
                             console.log("End of Thumbnail making");
-                            fs.unlink(path.join(Fobj.path));
+                            fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -479,7 +526,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.path));
+                        fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
@@ -1583,6 +1630,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
                                     Fobj.path=path.join(newDir,rand2.toString());
+
                                     FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
                                        // callback(err,rand2);
@@ -1594,8 +1642,9 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                         }
                                         else
                                         {
+                                            console.log("File record added");
                                             LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                                fs.unlink(path.join(Fobj.path));
+                                                fs.unlink(path.join(Fobj.tempPath));
                                                 callback(err,rand2);
 
                                             });
@@ -1630,6 +1679,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                                 }).on('finish', function () {
                                     console.log("File stored");
+                                    Fobj.path=path.join(newDir,rand2.toString());
 
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
@@ -1642,8 +1692,9 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                         }
                                         else
                                         {
+                                            console.log("File record added");
                                             LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                             fs.unlink(path.join(Fobj.path));
+                                             fs.unlink(path.join(Fobj.tempPath));
                                                 callback(err,rand2);
 
                                              });
@@ -1878,6 +1929,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
 function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplayname,resvID,reqId,callback ) {
     var result = 0;
 
+    console.log("File saving to "+Fobj.path);
 
     if (resvID) {
         // reserved file and no similar files found

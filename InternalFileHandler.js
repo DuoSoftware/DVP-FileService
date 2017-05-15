@@ -1132,13 +1132,13 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                             InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
                                                 if(err)
                                                 {
-                                                    fs.unlink(path.join(Fobj.path));
+                                                    fs.unlink(path.join(Fobj.tempPath));
                                                     callback(err,rand2);
                                                 }
                                                 else
                                                 {
                                                     DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                                        fs.unlink(path.join(Fobj.path));
+                                                        fs.unlink(path.join(Fobj.tempPath));
                                                         callback(err,rand2);
                                                     });
 
@@ -1169,14 +1169,14 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
                                                 if(err)
                                                 {
-                                                    fs.unlink(path.join(Fobj.path));
+                                                    fs.unlink(path.join(Fobj.tempPath));
                                                     callback(err,rand2);
                                                 }
                                                 else
                                                 {
                                                     DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
 
-                                                        fs.unlink(path.join(Fobj.path));
+                                                        fs.unlink(path.join(Fobj.tempPath));
                                                         callback(err,rand2);
                                                     });
 
