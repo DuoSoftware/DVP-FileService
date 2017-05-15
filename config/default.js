@@ -51,11 +51,12 @@ module.exports = {
     "bucket":"default",
     "user":"duo",
     "password":"DuoS123"
+
   },
   "Crypto":
   {
     "algo":"aes192",
     "password":"dialog"
   },
-  "BasePath":"./upload"
+  "BasePath":"/usr/local/src/upload/"
 };

@@ -1575,7 +1575,13 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     console.log("File  encrypted and stored");
                                     cipher.end();
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
-                                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+
+                                        callback(err,rand2);
+                                    });
+
+                                    /*LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
                                         fs.unlink(path.join(Fobj.path));
                                         Fobj.path=path.join(newDir,rand2.toString());
                                         FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
@@ -1584,7 +1590,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                             callback(err,rand2);
                                         });
 
-                                    });
+                                    });*/
 
                                 });
                             }
@@ -1610,19 +1616,21 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+                                        callback(err,rand2);
+                                    });
 
-
-                                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                    /*LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
                                         fs.unlink(path.join(Fobj.path));
                                         Fobj.path=path.join(newDir,rand2.toString());
                                         FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
                                             callback(err,rand2);
                                         });
 
-                                    });
+                                    });*/
 
 
-                                });;
+                                });
                             }
 
 
