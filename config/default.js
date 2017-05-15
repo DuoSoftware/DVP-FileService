@@ -31,7 +31,7 @@ module.exports = {
     "logfilepath": ""
   },
 
-  "Option":"mongo",
+  "Option":"local",
   "Collection":"fs.files",
 
 
@@ -57,5 +57,5 @@ module.exports = {
     "algo":"aes192",
     "password":"dialog"
   },
-  "BasePath":"/usr/local/src/upload/"
+  "BasePath":"./upload"
 };

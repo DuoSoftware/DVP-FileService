@@ -1535,6 +1535,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                 encNeeded=resCat.Encripted;
                 if(option.toUpperCase()=="LOCAL")
                 {
+                    console.log("Uploading to "+option.toUpperCase());
                     var Today= new Date();
                     var date= Today.getDate();
                     var month=Today.getMonth()+1;
@@ -1577,12 +1578,13 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
                                         fs.unlink(path.join(Fobj.path));
                                         Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
 
-                                            callback(err,rand2);
-                                        });
+                                    });
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
+
+                                        callback(err,rand2);
                                     });
 
                                 });
@@ -1605,7 +1607,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
                                 }).on('finish', function () {
-                                    console.log("File  encrypted and stored");
+                                    console.log("File stored");
 
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
@@ -1614,12 +1616,13 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
                                         fs.unlink(path.join(Fobj.path));
                                         Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
 
-                                            callback(err,rand2);
-                                        });
+                                    });
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
+
+                                        callback(err,rand2);
                                     });
 
                                 });;

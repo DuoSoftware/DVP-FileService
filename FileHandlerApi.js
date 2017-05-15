@@ -941,6 +941,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                         }
                         else
                         {
+
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                             try {
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
