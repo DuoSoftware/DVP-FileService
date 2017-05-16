@@ -79,6 +79,8 @@ var uri = '';
 mongoip = mongoip.split(',');
 if(util.isArray(mongoip)){
 
+     if(mongoip.length > 1){    
+         
     mongoip.forEach(function(item){
         uri += util.format('%s:%d,',item,mongoport)
     });
@@ -90,13 +92,18 @@ if(util.isArray(mongoip)){
         uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
         console.log("URI ...   "+uri);
     }
+     }
+    else
+    {
+         uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip[0],mongoport,mongodbase);
+    }
 }else{
 
     uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
-    console.log("URI ...   "+uri);
+    
 }
 
-
+console.log("URI ...   "+uri);
 
 
 
