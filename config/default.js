@@ -25,19 +25,19 @@ module.exports = {
   "Host":
   {
     "domain": "127.0.0.1",
-    "port": "5645",
+    "port": "5646",
     "version":"1.0.0.0",
     "hostpath":"./config",
     "logfilepath": ""
   },
 
-  "Option":"MONGO",
+  "Option":"local",
   "Collection":"fs.files",
 
 
   "Mongo":
   {
-    "ip":"45.55.142.207",
+    "ip":"104.236.231.11",
     "port":"27017",
     "dbname":"dvpdb",
     "password":"DuoS123",
@@ -51,5 +51,12 @@ module.exports = {
     "bucket":"default",
     "user":"duo",
     "password":"DuoS123"
-  }
+
+  },
+  "Crypto":
+  {
+    "algo":"aes192",
+    "password":"dialog"
+  },
+  "BasePath":"/usr/local/src/upload/"
 };

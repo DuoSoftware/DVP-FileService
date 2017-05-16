@@ -7,11 +7,15 @@ var config = require('config');
 var sequelize = require('sequelize');
 
 //Sprint 5
-var couchbase = require('couchbase');
+//var couchbase = require('couchbase');
 var streamifier = require('streamifier');
 var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
-var cluster = new couchbase.Cluster("couchbase://"+CHip);
+//var cluster = new couchbase.Cluster("couchbase://"+CHip);
+var RedisPublisher=require('./RedisPublisher.js');
+const crypto = require('crypto');
+
+
 //
 
 
@@ -25,13 +29,14 @@ var done       =       false;
 var fs=require('fs');
 var log4js=require('log4js');
 
+
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 var mongodb = require('mongodb');
 
 var moment= require('moment');
 var easyimg = require('easyimage');
-
+var util = require('util');
 
 
 
@@ -49,9 +54,12 @@ var Db = require('mongodb').Db,
 
 
 
-var MIP = config.Mongo.ip;
-var MPORT=config.Mongo.port;
-var MDB=config.Mongo.dbname;
+var mongoip = config.Mongo.ip;
+var mongoport=config.Mongo.port;
+var mongodbase=config.Mongo.dbname;
+var mongopass=config.Mongo.password;
+var mongouser=config.Mongo.user;
+var mongoreplicaset=config.Mongo.replicaset;
 
 
 var config = require('config');
@@ -61,6 +69,42 @@ var hpath=config.Host.hostpath;
 
 log4js.configure(config.Host.logfilepath, { cwd: hpath });
 var log = log4js.getLogger("fhandler");
+
+var crptoAlgo = config.Crypto.algo;
+var crptoPwd = config.Crypto.password;
+
+
+
+var uri = '';
+mongoip = mongoip.split(',');
+if(util.isArray(mongoip)){
+
+     if(mongoip.length > 1){    
+         
+    mongoip.forEach(function(item){
+        uri += util.format('%s:%d,',item,mongoport)
+    });
+
+    uri = uri.substring(0, uri.length - 1);
+    uri = util.format('mongodb://%s:%s@%s/%s',mongouser,mongopass,uri,mongodbase);
+
+    if(mongoreplicaset){
+        uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
+        console.log("URI ...   "+uri);
+    }
+     }
+    else
+    {
+         uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip[0],mongoport,mongodbase);
+    }
+}else{
+
+    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
+    
+}
+
+console.log("URI ...   "+uri);
+
 
 
 
@@ -369,14 +413,17 @@ function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback)
 //log done...............................................................................................................
 function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 {
+    var isEncryptedFile = false;
+
     if(UUID)
     {
         try {
 
             logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Searching for Uploaded file %s',reqId,UUID);
-            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resUpFile) {
+            DbConn.FileUpload.find({where: [{UniqueId: UUID},{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                 if (resUpFile) {
+
 
                     var resObj=
                     {
@@ -384,7 +431,13 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         "ETag":resUpFile.UniqueId+":"+"display"+":"+resUpFile.Version
                     };
 
-                    if(option=="MONGO")
+                    if(resUpFile.FileCategory)
+                    {
+                        isEncryptedFile=resUpFile.FileCategory.Encripted;
+
+                    }
+
+                    if(option.toUpperCase()=="MONGO")
                     {
 
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -392,14 +445,14 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                         var extArr=resUpFile.FileStructure.split('/');
                         var extension=extArr[1];
 
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+
 
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
-                            console.log(uri);
                             console.log("Error1 "+error);
                             if(error)
                             {
+                                console.log("Mongo Error");
                                 res.status(400);
                                 db.close();
                                 res.end();
@@ -411,22 +464,50 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 });
                                 //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                bucket.openDownloadStreamByName(UUID).
-                                    pipe(res).
-                                    on('error', function(error) {
-                                        console.log('Error !'+error);
-                                        res.status(400);
-                                        db.close();
-                                        res.end();
-                                        //callback(error,undefined);
-                                    }).
-                                    on('finish', function() {
-                                        console.log('done!');
-                                        res.status(200);
-                                        db.close();
-                                        res.end();
-                                        //process.exit(0);
-                                    });
+                                var source= bucket.openDownloadStreamByName(UUID);
+
+                                if(isEncryptedFile)
+                                {
+                                    console.log("Encrypted file found, Decrypting");
+                                    var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
+                                    source.pipe(decrypt).pipe(res).
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            decrypt.end();
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            decrypt.end();
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
+                                }
+                                else
+                                {
+                                    source.pipe(res).
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
+                                }
+
+
                             }
                             //console.log("db "+JSON.stringify(db));
                             //assert.ifError(error);
@@ -437,7 +518,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                     }
-                    else if(option=="COUCH")
+                    else if(option.toUpperCase()=="COUCH")
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -458,36 +539,65 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
                                 //var source = fs.createReadStream(SourcePath);
                                 //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
+
                                 var s = streamifier.createReadStream(result.value);
-                                //console.log(s);
-                                s.pipe(res);
+
+                                if(isEncryptedFile)
+                                {
+                                    s.pipe(decrypt).pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                            SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                            {
+                                                if(errSv)
+                                                {
+                                                    callback(errSv,undefined);
+                                                }
+                                                else
+                                                {
+                                                    callback(undefined,resSv);
+                                                }
+                                            });
 
 
-                                s.on('end', function (result) {
-                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
-                                    SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                                    {
-                                        if(errSv)
+                                            console.log("ENDED");
+                                            res.status(200);
+                                            res.end();
+                                        }).on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                            console.log("ERROR");
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+                                else
+                                {
+                                    s.on('end', function (result) {
+                                        logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
                                         {
-                                            callback(errSv,undefined);
-                                        }
-                                        else
-                                        {
-                                            callback(undefined,resSv);
-                                        }
+                                            if(errSv)
+                                            {
+                                                callback(errSv,undefined);
+                                            }
+                                            else
+                                            {
+                                                callback(undefined,resSv);
+                                            }
+                                        });
+
+
+                                        console.log("ENDED");
+                                        res.status(200);
+                                        res.end();
+                                    }).on('error', function (err) {
+                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                        console.log("ERROR");
+                                        res.status(400);
+                                        res.end();
                                     });
+                                }
 
-
-                                    console.log("ENDED");
-                                    res.status(200);
-                                    res.end();
-                                });
-                                s.on('error', function (err) {
-                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                                    console.log("ERROR");
-                                    res.status(400);
-                                    res.end();
-                                });
 
                             }
 
@@ -498,29 +608,49 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                         });
+
+
                     }
                     else
                     {
                         logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                         try {
                             res.setHeader('Content-Type', resUpFile.FileStructure);
-                            var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                            var SourcePath = path.join(resUpFile.URL.toString());
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                             logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                            var source = fs.createReadStream(SourcePath);
 
-                            source.pipe(res);
-                            source.on('end', function (result) {
-                                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                res.status(200);
-                                res.end();
-                            });
-                            source.on('error', function (err) {
-                                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                res.status(400);
-                                res.end();
-                            });
+                            var source = fs.createReadStream(SourcePath);
+                            if(isEncryptedFile)
+                            {
+                                console.log("Encripted file found");
+                                var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
+                                source.pipe(decrypt).pipe(res).on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.status(200);
+                                    res.end();
+                                }).on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                });
+
+
+                            }
+                            else
+                            {
+                                source.pipe(res).on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.status(200);
+                                    res.end();
+                                }).on('error', function (err) {
+                                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                });
+                            }
+
                         }
                         catch(ex)
                         {
@@ -610,7 +740,6 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 {
 
     try {
-
         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Searching for Uploaded file %s',reqId,FileName);
 
         DbConn.FileUpload.max('Version',{where: [{Filename: FileName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resMax) {
@@ -618,15 +747,23 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
             {
                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Max version found for file %s',reqId,FileName);
 
-                DbConn.FileUpload.findOne({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}]}).then(function (resUpFile) {
+                DbConn.FileUpload.findOne({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
 
                     if(resUpFile)
                     {
 
                         var UUID=resUpFile.UniqueId;
+                        var isEncryptedFile = false;
+                        if(resUpFile.FileCategory)
+                        {
+                            isEncryptedFile=resUpFile.FileCategory.Encripted;
+
+
+
+                        }
                         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
 
-                        if(option=="MONGO")
+                        if(option.toUpperCase()=="MONGO")
                         {
 
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
@@ -634,7 +771,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                            var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+                           /* var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
@@ -654,22 +791,49 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     });
                                     //res.setHeader('Content-Type', resUpFile.FileStructure);
 
-                                    bucket.openDownloadStreamByName(UUID).
-                                        pipe(res).
-                                        on('error', function(error) {
-                                            console.log('Error !'+error);
-                                            res.status(400);
-                                            db.close();
-                                            res.end();
-                                            //callback(error,undefined);
-                                        }).
-                                        on('finish', function() {
-                                            console.log('done!');
-                                            res.status(200);
-                                            db.close();
-                                            res.end();
-                                            //process.exit(0);
-                                        });
+                                    var source = bucket.openDownloadStreamByName(UUID);
+                                    if(isEncryptedFile)
+                                    {
+                                        var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
+                                        console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(decrypt).pipe(res).
+                                            on('error', function(error) {
+                                                console.log('Error !'+error);
+                                                decrypt.end();
+                                                res.status(400);
+                                                db.close();
+                                                res.end();
+                                                //callback(error,undefined);
+                                            }).
+                                            on('finish', function() {
+                                                console.log('done!');
+                                                decrypt.end();
+                                                res.status(200);
+                                                db.close();
+                                                res.end();
+                                                //process.exit(0);
+                                            });
+                                    }
+                                    else
+                                    {
+                                        source.pipe(res).
+                                            on('error', function(error) {
+                                                console.log('Error !'+error);
+                                                res.status(400);
+                                                db.close();
+                                                res.end();
+                                                //callback(error,undefined);
+                                            }).
+                                            on('finish', function() {
+                                                console.log('done!');
+                                                res.status(200);
+                                                db.close();
+                                                res.end();
+                                                //process.exit(0);
+                                            });
+
+                                    }
+
                                 }
                                 //console.log("db "+JSON.stringify(db));
                                 //assert.ifError(error);
@@ -680,7 +844,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 
 
                         }
-                        else if(option=="COUCH")
+                        else if(option.toUpperCase()=="COUCH")
                         {
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
 
@@ -699,38 +863,78 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
                                     //var source = fs.createReadStream(SourcePath);
                                     //var dest = fs.createWriteStream('C:/Users/pawan/Desktop/ddd.mp3');
-                                    var s = streamifier.createReadStream(result.value);
-                                    //console.log(s);
-                                    s.pipe(res);
+
+                                    var source =streamifier.createReadStream(result.value);
+                                    if(isEncryptedFile)
+                                    {
+                                        console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(decrypt).pipe(res)
+                                            .on('end', function (result) {
+                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                                SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                                {
+                                                    if(errSv)
+                                                    {
+                                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
+                                                        // callback(errSv,undefined);
+                                                    }
+                                                    else
+                                                    {
+                                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
+                                                        //callback(undefined,resSv);
+                                                    }
+                                                });
 
 
-                                    s.on('end', function (result) {
-                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
-                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                                        {
-                                            if(errSv)
-                                            {
-                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
-                                                // callback(errSv,undefined);
-                                            }
-                                            else
-                                            {
-                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
-                                                //callback(undefined,resSv);
-                                            }
-                                        });
+                                                console.log("ENDED");
+                                                res.status(200);
+                                                res.end();
+                                            })
+                                            .on('error', function (err) {
+                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                                console.log("ERROR");
+                                                res.status(400);
+                                                res.end();
+                                            });
 
 
-                                        console.log("ENDED");
-                                        res.status(200);
-                                        res.end();
-                                    });
-                                    s.on('error', function (err) {
-                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                                        console.log("ERROR");
-                                        res.status(400);
-                                        res.end();
-                                    });
+                                    }
+                                    else
+                                    {
+                                        console.log("Encrypted file found. Decrypting......");
+                                        source.pipe(res)
+                                            .on('end', function (result) {
+                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                                SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                                {
+                                                    if(errSv)
+                                                    {
+                                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
+                                                        // callback(errSv,undefined);
+                                                    }
+                                                    else
+                                                    {
+                                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
+                                                        //callback(undefined,resSv);
+                                                    }
+                                                });
+
+
+                                                console.log("ENDED");
+                                                res.status(200);
+                                                res.end();
+                                            })
+                                            .on('error', function (err) {
+                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                                console.log("ERROR");
+                                                res.status(400);
+                                                res.end();
+                                            });
+
+
+                                    }
+
+
 
                                 }
 
@@ -744,26 +948,50 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                         }
                         else
                         {
+
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
                             try {
                                 res.setHeader('Content-Type', resUpFile.FileStructure);
-                                var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
+                                /*var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');*/
+                                var SourcePath = path.join(resUpFile.URL.toString());
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
 
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-                                var source = fs.createReadStream(SourcePath);
 
-                                source.pipe(res);
-                                source.on('end', function (result) {
-                                    logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                                    res.status(200);
-                                    res.end();
-                                });
-                                source.on('error', function (err) {
-                                    logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                                    res.status(400);
-                                    res.end();
-                                });
+                                var source = fs.createReadStream(SourcePath);
+                                if(isEncryptedFile)
+                                {
+                                    var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
+                                    source.pipe(decrypt).pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                            decrypt.end();
+                                            res.status(200);
+                                            res.end();
+                                        })
+                                        .on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            decrypt.end();
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+                                else
+                                {
+                                    source.pipe(res)
+                                        .on('end', function (result) {
+                                            logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                            res.status(200);
+                                            res.end();
+                                        })
+                                        .on('error', function (err) {
+                                            logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                            res.status(400);
+                                            res.end();
+                                        });
+                                }
+
+
                             }
                             catch(ex)
                             {
@@ -1366,12 +1594,27 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
 
 
 
-function PickAllFiles(Company,Tenant,reqId,callback)
+function PickAllFiles(Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1392,12 +1635,27 @@ function PickAllFiles(Company,Tenant,reqId,callback)
 
 }
 
-function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat},{ApplicationId:null}],include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat},{ApplicationId:null}],include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1418,12 +1676,27 @@ function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callbac
 
 };
 
-function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId,callback)
+function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
-        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat}],include:[{model:DbConn.FileCategory, as:"FileCategory"}]}).then(function (resFile) {
+        var CategoryObj =
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            CategoryObj.where=
+            {
+                Visible:isVisibleCat
+            }
+
+        }
+
+        DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant},{ObjCategory:fileCategory},{FileStructure:fileFormat}],include:[CategoryObj]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1444,16 +1717,30 @@ function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,reqId
 
 };
 
-function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,reqId,callback)
+function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,isVisibleCat,reqId,callback)
 {
 
     try
     {
+        var categoryObj=
+        {
+            model:DbConn.FileCategory,
+            as:"FileCategory"
+        }
+
+        if(isVisibleCat)
+        {
+            categoryObj.where =
+            {
+                Visible:true
+            }
+        }
+
         DbConn.FileUpload.findAll({
             where:[{CompanyId:Company},{TenantId:Tenant}],
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
-            include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
+            include:[categoryObj,{model:DbConn.Application, as:"Application"}],
             order: '"updatedAt" DESC'
 
 
@@ -1523,7 +1810,10 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
             }
             else
             {
-
+                var Today= new Date();
+                var date= Today.getDate();
+                var month=Today.getMonth()+1;
+                var year =Today.getFullYear();
 
                 //console.log(URL);
                 /* fs.unlink(URL,function(err){
@@ -1545,10 +1835,10 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
                  });*/
 
-                if(option=="LOCAL")
+                if(option.toUpperCase()=="LOCAL")
                 {
-                    var URL= resFile.URL.replace(/\\/g, "/");
-                    console.log("Local");
+                    console.log("File operations on LOCAL ");
+                    var URL = path.join(resFile.URL);
                     fs.unlink(URL,function(err){
                         if(err)
                         {
@@ -1557,6 +1847,20 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                         }
                         else
                         {
+                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+
+                            if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                            {
+                                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString(),month.toString(),date.toString());
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                            }
+
+
+
 
                             resFile.destroy().then(function (resDel) {
                                 callback(undefined,resDel);
@@ -1570,9 +1874,9 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 }
                 else
                 {
-                    if(option=="MONGO")
+                    if(option.toUpperCase()=="MONGO")
                     {
-                        var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;
+                        /*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
                             if(error)
@@ -1595,6 +1899,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                                         }
                                         else
                                         {
+                                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
                                             resFile.destroy().then(function (resDel) {
                                                 console.log("Record destroy success");
                                                 db.close();
@@ -1634,11 +1939,66 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
 
 }
 
+function  SaveNewCategory(categoryData,reqId,callback)
+{
+
+    try {
+        var CatObject = DbConn.FileCategory
+            .build(
+            {
+                Category: categoryData.Category,
+                Owner: "user",
+                Visible: categoryData.Visible,
+                Encripted: categoryData.Encripted
+
+
+            }
+        )
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [FILECATEGORY] - Exception occurred while creating file category',reqId,ex);
+        callback(ex, undefined);
+    }
+
+    CatObject.save().then(function (resSave) {
+
+        logger.info('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Save new file category succeeded %s',reqId,resSave);
+        callback(undefined, resSave);
+
+    }).catch(function (errSave) {
+        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Error occurred while saving file category %s',reqId,JSON.stringify(CatObject),errSave);
+        callback(errSave, undefined);
+    });
+}
+
 function  LoadCategories(reqId,callback)
 {
     try
     {
-        DbConn.FileCategory.findAll().then(function (resFile) {
+        DbConn.FileCategory.findAll({where:[{Visible:true}]}).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+function  UpdateCategory(catID,reqId,callback)
+{
+    try
+    {
+        DbConn.FileCategory.findAndUpdate({where:[{id:CatID}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1799,6 +2159,7 @@ module.exports.AllFilesWithCategoryAndDateRange = AllFilesWithCategoryAndDateRan
 module.exports.FilesWithCategoryId = FilesWithCategoryId;
 module.exports.FilesWithCategoryAndDateRange = FilesWithCategoryAndDateRange;
 module.exports.PickAttachmentMetaDataByName = PickAttachmentMetaDataByName;
+module.exports.SaveNewCategory = SaveNewCategory;
 
 
 
