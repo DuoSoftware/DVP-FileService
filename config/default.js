@@ -58,5 +58,5 @@ module.exports = {
     "algo":"aes192",
     "password":"dialog"
   },
-  "BasePath":"/usr/local/src/upload/"
+  "BasePath":"./upload"
 };

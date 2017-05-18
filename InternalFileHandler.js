@@ -689,7 +689,7 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                             var file_category=resUpFile.ObjCategory;
                             //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
 
-                            var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString(),(UUID+"_"+thumbSize).toString());
+                            var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString(),(UUID+"_"+thumbSize).toString());
 
                             /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
                              pathObj.forEach(function (value,index) {
@@ -1098,8 +1098,8 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
                             var file_category=Fobj.fCategory;
 
-                            var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
-                            var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+                            var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString()+"-"+month.toString()+"-"+date.toString());
+                            var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
 
 
                             mkdirp(newDir, function(err) {

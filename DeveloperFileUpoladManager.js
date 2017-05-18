@@ -1594,8 +1594,8 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                     var year =Today.getFullYear();
                     var file_category=Category;
 
-                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
-                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString()+"-"+month.toString()+"-"+date.toString());
+                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
 
                     /*var pathObj=newDir.split(path.sep);
                      pathObj.forEach(function (value,index) {
