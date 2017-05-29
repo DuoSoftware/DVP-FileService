@@ -246,23 +246,23 @@ function SaveUploadFileDetails(cmp,ten,req,rand2,reqId,callback)
                 logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload file record is inserting %s',reqId);
                 var NewUploadObj = DbConn.FileUpload
                     .build(
-                    {
-                        UniqueId: rand2,
-                        FileStructure: req.type,
-                        ObjClass: 'body.ObjClass',
-                        ObjType: 'body.ObjType',
-                        ObjCategory: 'body.ObjCategory',
-                        URL: req.path,
-                        UploadTimestamp: Date.now(),
-                        Filename: DisplayName,
-                        Version:req.Version,
-                        DisplayName:req.name ,
-                        CompanyId:cmp,
-                        TenantId: ten
+                        {
+                            UniqueId: rand2,
+                            FileStructure: req.type,
+                            ObjClass: 'body.ObjClass',
+                            ObjType: 'body.ObjType',
+                            ObjCategory: 'body.ObjCategory',
+                            URL: req.path,
+                            UploadTimestamp: Date.now(),
+                            Filename: DisplayName,
+                            Version:req.Version,
+                            DisplayName:req.name ,
+                            CompanyId:cmp,
+                            TenantId: ten
 
 
-                    }
-                );
+                        }
+                    );
                 NewUploadObj.save().then(function (resFileSave) {
 
                     logger.info('[DVP-FIleService.UploadFile.SaveUploadFileDetails] - [%s] - [PGSQL] - New upload record added successfully %s',reqId,JSON.stringify(NewUploadObj));
@@ -419,10 +419,10 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
 
                     var resObj=
-                    {
-                        "Last-Modified":resUpFile.createdAt,
-                        "ETag":resUpFile.UniqueId+":"+"display"+":"+resUpFile.Version
-                    };
+                        {
+                            "Last-Modified":resUpFile.createdAt,
+                            "ETag":resUpFile.UniqueId+":"+"display"+":"+resUpFile.Version
+                        };
 
                     if(resUpFile.FileCategory)
                     {
@@ -464,40 +464,40 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                     console.log("Encrypted file found, Decrypting");
                                     var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                     source.pipe(decrypt).pipe(res).
-                                        on('error', function(error) {
-                                            console.log('Error !'+error);
-                                            decrypt.end();
-                                            res.status(400);
-                                            db.close();
-                                            res.end();
-                                            //callback(error,undefined);
-                                        }).
-                                        on('finish', function() {
-                                            console.log('done!');
-                                            decrypt.end();
-                                            res.status(200);
-                                            db.close();
-                                            res.end();
-                                            //process.exit(0);
-                                        });
+                                    on('error', function(error) {
+                                        console.log('Error !'+error);
+                                        decrypt.end();
+                                        res.status(400);
+                                        db.close();
+                                        res.end();
+                                        //callback(error,undefined);
+                                    }).
+                                    on('finish', function() {
+                                        console.log('done!');
+                                        decrypt.end();
+                                        res.status(200);
+                                        db.close();
+                                        res.end();
+                                        //process.exit(0);
+                                    });
                                 }
                                 else
                                 {
                                     source.pipe(res).
-                                        on('error', function(error) {
-                                            console.log('Error !'+error);
-                                            res.status(400);
-                                            db.close();
-                                            res.end();
-                                            //callback(error,undefined);
-                                        }).
-                                        on('finish', function() {
-                                            console.log('done!');
-                                            res.status(200);
-                                            db.close();
-                                            res.end();
-                                            //process.exit(0);
-                                        });
+                                    on('error', function(error) {
+                                        console.log('Error !'+error);
+                                        res.status(400);
+                                        db.close();
+                                        res.end();
+                                        //callback(error,undefined);
+                                    }).
+                                    on('finish', function() {
+                                        console.log('done!');
+                                        res.status(200);
+                                        db.close();
+                                        res.end();
+                                        //process.exit(0);
+                                    });
                                 }
 
 
@@ -557,11 +557,11 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                             res.status(200);
                                             res.end();
                                         }).on('error', function (err) {
-                                            logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                                            console.log("ERROR");
-                                            res.status(400);
-                                            res.end();
-                                        });
+                                        logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                        console.log("ERROR");
+                                        res.status(400);
+                                        res.end();
+                                    });
                                 }
                                 else
                                 {
@@ -764,7 +764,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             var extArr=resUpFile.FileStructure.split('/');
                             var extension=extArr[1];
 
-                           /* var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
+                            /* var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
 
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
@@ -790,40 +790,40 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                         var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                         console.log("Encrypted file found. Decrypting......");
                                         source.pipe(decrypt).pipe(res).
-                                            on('error', function(error) {
-                                                console.log('Error !'+error);
-                                                decrypt.end();
-                                                res.status(400);
-                                                db.close();
-                                                res.end();
-                                                //callback(error,undefined);
-                                            }).
-                                            on('finish', function() {
-                                                console.log('done!');
-                                                decrypt.end();
-                                                res.status(200);
-                                                db.close();
-                                                res.end();
-                                                //process.exit(0);
-                                            });
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            decrypt.end();
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            decrypt.end();
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
                                     }
                                     else
                                     {
                                         source.pipe(res).
-                                            on('error', function(error) {
-                                                console.log('Error !'+error);
-                                                res.status(400);
-                                                db.close();
-                                                res.end();
-                                                //callback(error,undefined);
-                                            }).
-                                            on('finish', function() {
-                                                console.log('done!');
-                                                res.status(200);
-                                                db.close();
-                                                res.end();
-                                                //process.exit(0);
-                                            });
+                                        on('error', function(error) {
+                                            console.log('Error !'+error);
+                                            res.status(400);
+                                            db.close();
+                                            res.end();
+                                            //callback(error,undefined);
+                                        }).
+                                        on('finish', function() {
+                                            console.log('done!');
+                                            res.status(200);
+                                            db.close();
+                                            res.end();
+                                            //process.exit(0);
+                                        });
 
                                     }
 
@@ -1129,9 +1129,9 @@ function PickVoiceClipByName(FileName,AppID,TenantId,CompanyId,reqId,callback)
                                     }
 
                                 }).catch(function (errFile) {
-                                    logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errFile);
-                                    callback(errFile,undefined);
-                                });
+                                logger.error('[DVP-FIleService.PickVoiceClipByName] - [%s] - [PGSQL] - Error occurred while searching for Application %s  ',reqId,AppID,errFile);
+                                callback(errFile,undefined);
+                            });
 
 
 
@@ -1188,9 +1188,9 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback)
                 }
 
             }).catch(function (errMax) {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FileName,errMax);
-                callback(errMax,undefined);
-            });
+            logger.error('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] - Error occurred while searching for current version of %s',reqId,FileName,errMax);
+            callback(errMax,undefined);
+        });
 
 
 
@@ -1210,19 +1210,19 @@ function SaveDownloadDetails(req,reqId,callback)
     try {
         var AppObject = DbConn.FileDownload
             .build(
-            {
-                DownloadId: req.UniqueId,
-                ObjClass: req.ObjClass,
-                ObjType: req.ObjType,
-                ObjCategory: req.ObjCategory,
-                DownloadTimestamp: Date.now(),
-                Filename: req.Filename,
-                CompanyId: req.CompanyId,
-                TenantId: req.TenantId
+                {
+                    DownloadId: req.UniqueId,
+                    ObjClass: req.ObjClass,
+                    ObjType: req.ObjType,
+                    ObjCategory: req.ObjCategory,
+                    DownloadTimestamp: Date.now(),
+                    Filename: req.Filename,
+                    CompanyId: req.CompanyId,
+                    TenantId: req.TenantId
 
 
-            }
-        )
+                }
+            )
     }
     catch(ex)
     {
@@ -1357,8 +1357,8 @@ function AllVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company,
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -1386,8 +1386,8 @@ function AllFilesWithCategory(Category,Company,Tenant,reqId,callback) {
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -1415,8 +1415,8 @@ function FilesWithCategoryId(CategoryID,Company,Tenant,reqId,callback) {
                         callback(undefined,result);
                     }
                 }).catch(function (err) {
-                    callback(err, undefined);
-                });
+                callback(err, undefined);
+            });
         }
         else
         {
@@ -1431,8 +1431,8 @@ function FilesWithCategoryId(CategoryID,Company,Tenant,reqId,callback) {
                         callback(undefined,result);
                     }
                 }).catch(function (err) {
-                    callback(err, undefined);
-                });
+                callback(err, undefined);
+            });
         }
 
 
@@ -1496,8 +1496,8 @@ function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDa
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -1537,8 +1537,8 @@ function AllFilesWithCategoryAndDateRange(Category,Company,Tenant,startDate,endD
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -1571,8 +1571,8 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -1593,21 +1593,75 @@ function PickAllFiles(Company,Tenant,isVisibleCat,reqId,callback)
     try
     {
         var CategoryObj =
-        {
-            model:DbConn.FileCategory,
-            as:"FileCategory"
-        }
+            {
+                model:DbConn.FileCategory,
+                as:"FileCategory"
+            }
 
         if(isVisibleCat)
         {
             CategoryObj.where=
-            {
-                Visible:isVisibleCat
-            }
+                {
+                    Visible:isVisibleCat
+                }
 
         }
 
         DbConn.FileUpload.findAll({where:[{CompanyId:Company},{TenantId:Tenant}],include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+
+
+            callback(undefined,resFile);
+
+
+        }).catch(function (errFile) {
+            callback(errFile,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+
+}
+
+function PickFilesByCategoryList(rowCount,pageNo,Company,Tenant,req,reqId,callback)
+{
+
+    var categoryList = req.body.categoryList;
+    try
+    {
+        var CategoryObj =
+            {
+                model:DbConn.FileCategory,
+                as:"FileCategory"
+            }
+
+
+
+
+        var conditionObj = {
+            CompanyId:Company,
+            TenantId:Tenant,
+            $or:[]
+        };
+
+        categoryList.forEach(function (item) {
+           conditionObj.$or.push({ObjCategory:item})
+        });
+
+
+
+
+        DbConn.FileUpload.findAll({
+
+            where:conditionObj,
+            offset:((pageNo - 1) * rowCount),
+            limit: rowCount
+            ,include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -1634,17 +1688,17 @@ function PickSpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVisibleCat,
     try
     {
         var CategoryObj =
-        {
-            model:DbConn.FileCategory,
-            as:"FileCategory"
-        }
+            {
+                model:DbConn.FileCategory,
+                as:"FileCategory"
+            }
 
         if(isVisibleCat)
         {
             CategoryObj.where=
-            {
-                Visible:isVisibleCat
-            }
+                {
+                    Visible:isVisibleCat
+                }
 
         }
 
@@ -1675,17 +1729,17 @@ function PickCategorySpecifiedFiles(fileCategory,fileFormat,Company,Tenant,isVis
     try
     {
         var CategoryObj =
-        {
-            model:DbConn.FileCategory,
-            as:"FileCategory"
-        }
+            {
+                model:DbConn.FileCategory,
+                as:"FileCategory"
+            }
 
         if(isVisibleCat)
         {
             CategoryObj.where=
-            {
-                Visible:isVisibleCat
-            }
+                {
+                    Visible:isVisibleCat
+                }
 
         }
 
@@ -1716,17 +1770,17 @@ function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,isVisibleCat,reqI
     try
     {
         var categoryObj=
-        {
-            model:DbConn.FileCategory,
-            as:"FileCategory"
-        }
+            {
+                model:DbConn.FileCategory,
+                as:"FileCategory"
+            }
 
         if(isVisibleCat)
         {
             categoryObj.where =
-            {
-                Visible:true
-            }
+                {
+                    Visible:true
+                }
         }
 
         DbConn.FileUpload.findAll({
@@ -1938,15 +1992,15 @@ function  SaveNewCategory(categoryData,reqId,callback)
     try {
         var CatObject = DbConn.FileCategory
             .build(
-            {
-                Category: categoryData.Category,
-                Owner: "user",
-                Visible: categoryData.Visible,
-                Encripted: categoryData.Encripted
+                {
+                    Category: categoryData.Category,
+                    Owner: "user",
+                    Visible: categoryData.Visible,
+                    Encripted: categoryData.Encripted
 
 
-            }
-        )
+                }
+            )
     }
     catch(ex)
     {
@@ -2023,8 +2077,8 @@ function PickVoiceRecordingsOfSessionAndTypes(SessID,Class,Type,Category,Company
                     callback(undefined,result);
                 }
             }).catch(function (err) {
-                callback(err, undefined);
-            });
+            callback(err, undefined);
+        });
 
     }
 
@@ -2153,6 +2207,7 @@ module.exports.FilesWithCategoryId = FilesWithCategoryId;
 module.exports.FilesWithCategoryAndDateRange = FilesWithCategoryAndDateRange;
 module.exports.PickAttachmentMetaDataByName = PickAttachmentMetaDataByName;
 module.exports.SaveNewCategory = SaveNewCategory;
+module.exports.PickFilesByCategoryList = PickFilesByCategoryList;
 
 
 
