@@ -112,18 +112,24 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
     mongodb.MongoClient.connect(uri, function(error, db)
     {
         console.log(uri);
-        console.log("Error1 "+error);
-        //console.log("db "+JSON.stringify(db));
-        //assert.ifError(error);
-        var bucket = new mongodb.GridFSBucket(db);
-        var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
-        var uploadReadStream = fs.createReadStream(Fobj.path);
 
-        if(encNeeded)
+
+        if(error)
         {
-            console.log("Encripting");
-            const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
-            uploadReadStream.pipe(cipher).pipe(bucket.openUploadStream(uuid)).
+            console.log("Mongo connection error "+error);
+            callback(error,undefined);
+        }
+        else
+        {
+            var bucket = new mongodb.GridFSBucket(db);
+            var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
+            var uploadReadStream = fs.createReadStream(Fobj.path);
+
+            if(encNeeded)
+            {
+                console.log("Encripting");
+                const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
+                uploadReadStream.pipe(cipher).pipe(bucket.openUploadStream(uuid)).
                 on('error', function(error) {
                     // assert.ifError(error);
                     cipher.end();
@@ -133,7 +139,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     callback(error,undefined);
                 }).
                 on('finish', function() {
-                    console.log('done!');
+                    console.log('done! Piping succeeded');
                     cipher.end();
                     RedisPublisher.updateFileStorageRecord(otherData.fileCategory,Fobj.sizeInMB,otherData.company,otherData.tenant);
 
@@ -177,11 +183,11 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                         callback(undefined,uuid);
                     }
                 });
-        }
+            }
 
 
 
-        uploadReadStream.pipe(bucket.openUploadStream(uuid)).
+            uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
                 fs.unlink(path.join(Fobj.path));
@@ -190,7 +196,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 callback(error,undefined);
             }).
             on('finish', function() {
-                console.log('done!');
+                console.log('done! Piping Succeeded');
 
                 RedisPublisher.updateFileStorageRecord(otherData.fileCategory,Fobj.sizeInMB,otherData.company,otherData.tenant);
 
@@ -234,6 +240,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     callback(undefined,uuid);
                 }
             });
+        }
+
+
+        //console.log("db "+JSON.stringify(db));
+        //assert.ifError(error);
+
 
     });
 
@@ -348,10 +360,15 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
-                                console.log("Error1 " + error);
+
                                 if (error) {
+                                    console.log("Mongo connection Error " + error);
                                     res.status(400);
-                                    db.close();
+                                    if(db)
+                                    {
+                                        db.close();
+                                    }
+
                                     res.end();
                                 }
                                 else {
@@ -556,10 +573,15 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
 
                             mongodb.MongoClient.connect(uri, function (error, db) {
                                 console.log(uri);
-                                console.log("Error1 " + error);
+
                                 if (error) {
+                                    console.log("Mongo connection error " + error);
                                     res.status(400);
-                                    db.close();
+                                    if(db)
+                                    {
+                                        db.close();
+                                    }
+
                                     res.end();
                                 }
                                 else {
@@ -590,20 +612,21 @@ function DownloadThumbnailByID(res,UUID,option,Company,Tenant,thumbSize,reqId,ca
                                     var thumbName=UUID+"_"+thumbSize.toString();
                                     console.log(thumbName);
 
+                                    console.log("Piping Started");
+
                                     ThumbBucket.openDownloadStreamByName(thumbName).
                                         pipe(res).
                                         on(
                                         'error',
                                         function(error) {
-                                            console.log('Error !'+error);
+                                            console.log('Error in piping !'+error);
                                             res.status(400);
                                             db.close();
                                             res.end();
 
                                         }).
-                                        on('finish', function
-                                            () {
-                                            console.log('done!');
+                                        on('finish', function () {
+                                            console.log('done! Piping Succeeded');
                                             res.status(200);
                                             db.close();
                                             res.end();
@@ -845,12 +868,16 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
                                 console.log(uri);
-                                console.log("Error1 "+error);
+
                                 if(error)
                                 {
-                                    logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint ',reqId);
+                                    logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint '+error,reqId);
                                     res.status(400);
-                                    db.close();
+                                    if(db)
+                                    {
+                                        db.close();
+                                    }
+
                                     res.end();
                                 }
                                 else
@@ -861,16 +888,18 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 
                                     var source= bucket.openDownloadStreamByName(UUID);
 
+                                    console.log('Piping started');
+
                                     source.pipe(res).
                                         on('error', function(error) {
-                                            console.log('Error !'+error);
+                                            console.log('Error in piping '+error);
                                             res.status(400);
                                             db.close();
                                             res.end();
                                             //callback(error,undefined);
                                         }).
                                         on('finish', function() {
-                                            console.log('done!');
+                                            console.log('done! Piping succeeded');
                                             res.status(200);
                                             db.close();
                                             res.end();

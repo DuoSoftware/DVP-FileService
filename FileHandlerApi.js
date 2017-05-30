@@ -442,10 +442,11 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
 
                         mongodb.MongoClient.connect(uri, function(error, db)
                         {
-                            console.log("Error1 "+error);
+
+
                             if(error)
                             {
-                                console.log("Mongo Error");
+                                console.log("Mongo Error ",error);
                                 res.status(400);
                                 db.close();
                                 res.end();
@@ -465,7 +466,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                     var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                     source.pipe(decrypt).pipe(res).
                                     on('error', function(error) {
-                                        console.log('Error !'+error);
+                                        console.log('Error in piping!'+error);
                                         decrypt.end();
                                         res.status(400);
                                         db.close();
@@ -473,7 +474,7 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                         //callback(error,undefined);
                                     }).
                                     on('finish', function() {
-                                        console.log('done!');
+                                        console.log('done! Piping succeeded');
                                         decrypt.end();
                                         res.status(200);
                                         db.close();
@@ -483,16 +484,17 @@ function DownloadFileByID(res,UUID,display,option,Company,Tenant,reqId,callback)
                                 }
                                 else
                                 {
+                                    console.log("File is not encrypted, Piping started");
                                     source.pipe(res).
                                     on('error', function(error) {
-                                        console.log('Error !'+error);
+                                        console.log('Error ! Piping Error'+error);
                                         res.status(400);
                                         db.close();
                                         res.end();
                                         //callback(error,undefined);
                                     }).
                                     on('finish', function() {
-                                        console.log('done!');
+                                        console.log('done! Piping succeeded');
                                         res.status(200);
                                         db.close();
                                         res.end();
@@ -769,10 +771,9 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                             mongodb.MongoClient.connect(uri, function(error, db)
                             {
                                 console.log(uri);
-                                console.log("Error1 "+error);
                                 if(error)
                                 {
-                                    logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint ',reqId);
+                                    logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint '+error,reqId);
                                     res.status(400);
                                     db.close();
                                     res.end();
@@ -787,6 +788,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     var source = bucket.openDownloadStreamByName(UUID);
                                     if(isEncryptedFile)
                                     {
+                                        console.log("Encrypted file found, Decrypting");
                                         var decrypt = crypto.createDecipher(crptoAlgo, crptoPwd);
                                         console.log("Encrypted file found. Decrypting......");
                                         source.pipe(decrypt).pipe(res).
@@ -799,7 +801,7 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                             //callback(error,undefined);
                                         }).
                                         on('finish', function() {
-                                            console.log('done!');
+                                            console.log('done! piping succeeded');
                                             decrypt.end();
                                             res.status(200);
                                             db.close();
@@ -809,16 +811,17 @@ function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
                                     }
                                     else
                                     {
+                                        console.log("File is not Encrypted, Piping Started");
                                         source.pipe(res).
                                         on('error', function(error) {
-                                            console.log('Error !'+error);
+                                            console.log('Error in Piping!'+error);
                                             res.status(400);
                                             db.close();
                                             res.end();
                                             //callback(error,undefined);
                                         }).
                                         on('finish', function() {
-                                            console.log('done!');
+                                            console.log('done! Piping Succeeded');
                                             res.status(200);
                                             db.close();
                                             res.end();

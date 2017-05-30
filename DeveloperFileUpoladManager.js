@@ -401,28 +401,32 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
     mongodb.MongoClient.connect(uri, function(error, db)
     {
 
-        console.log("Error1 "+error);
-        //console.log("db "+JSON.stringify(db));
-        //assert.ifError(error);
-        var bucket = new mongodb.GridFSBucket(db);
-        var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
-        console.log(Fobj.path);
-        var uploadReadStream = fs.createReadStream(Fobj.path);
-        var bucketUploadStream=bucket.openUploadStream(uuid);
-
-        if(encNeeded)
+        if(error)
         {
-            const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
-            console.log("Encripting");
-            uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
-                // assert.ifError(error);
-                fs.unlink(path.join(Fobj.path));
-                cipher.end();
-                console.log("Error in Encripted stream uploading to DB "+error);
-                db.close();
+            console.log("Mongo connection error "+error);
+            callback(error,undefined);
+        }
+        else
+        {
+            var bucket = new mongodb.GridFSBucket(db);
+            var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
+            console.log(Fobj.path);
+            var uploadReadStream = fs.createReadStream(Fobj.path);
+            var bucketUploadStream=bucket.openUploadStream(uuid);
 
-                callback(error,undefined);
-            }).
+            if(encNeeded)
+            {
+                const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
+                console.log("Encripting");
+                uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
+                    // assert.ifError(error);
+                    fs.unlink(path.join(Fobj.path));
+                    cipher.end();
+                    console.log("Error in Encripted stream uploading to DB "+error);
+                    db.close();
+
+                    callback(error,undefined);
+                }).
                 on('finish', function() {
                     console.log('uploaded to Mongo!');
                     cipher.end();
@@ -475,10 +479,10 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 });
 
 
-        }
-        else
-        {
-            uploadReadStream.pipe(bucketUploadStream).
+            }
+            else
+            {
+                uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
                     fs.unlink(path.join(Fobj.tempPath));
@@ -533,7 +537,11 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
 
                 });
+            }
         }
+        //console.log("db "+JSON.stringify(db));
+        //assert.ifError(error);
+
 
 
 
