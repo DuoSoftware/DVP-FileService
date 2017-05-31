@@ -833,6 +833,206 @@ function FileInfoByID(res,UUID,Company,Tenant,reqId)
 
 };
 
+
+function DownloadLatestFileByIDToLocal(res,FileName,option,Company,Tenant,reqId)
+{
+
+
+    try {
+
+        logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Searching for Uploaded file %s',reqId,FileName);
+
+        DbConn.FileUpload.max('Version',{where: [{Filename: FileName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resMax) {
+            if(resMax)
+            {
+                logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Max version found for file %s',reqId,FileName);
+
+                DbConn.FileUpload.find({where:[{CompanyId:Company},{TenantId:Tenant},{Filename: FileName},{Version:resMax}],include:[{model:DbConn.FileCategory , as:"FileCategory"}]}).then(function (resUpFile) {
+
+                    if(resUpFile)
+                    {
+
+                        var UUID=resUpFile.UniqueId;
+
+                        logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',reqId,FileName,UUID);
+
+                        if(option.toUpperCase()=="MONGO")
+                        {
+
+                            logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
+
+                            var extArr=resUpFile.FileStructure.split('/');
+                            var extension=extArr[1];
+
+                            /*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*/
+
+                            mongodb.MongoClient.connect(uri, function(error, db)
+                            {
+                                console.log(uri);
+
+                                if(error)
+                                {
+                                    logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [MONGO] - Error Connecting Mongo cleint '+error,reqId);
+                                    res.status(400);
+                                    if(db)
+                                    {
+                                        db.close();
+                                    }
+
+                                    res.end();
+                                }
+                                else
+                                {
+                                    var bucket = new mongodb.GridFSBucket(db, {
+                                        chunkSizeBytes: 1024
+                                    });
+
+                                    var source= bucket.openDownloadStreamByName(UUID);
+
+                                    console.log('Piping started');
+
+                                    var rstream = fs.createReadStream('UUID');
+
+                                    source.pipe(rstream).
+                                    on('error', function(error) {
+                                        console.log('Error in piping '+error);
+                                        res.status(400);
+                                        db.close();
+                                        res.end();
+                                        //callback(error,undefined);
+                                    }).
+                                    on('finish', function() {
+                                        console.log('done! Piping succeeded');
+                                        res.status(200);
+                                        db.close();
+                                        res.end();
+                                        //process.exit(0);
+                                    });
+                                }
+
+                            });
+
+                        }
+                        else if(option.toUpperCase()=="COUCH")
+                        {
+                            logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
+
+                            var bucket = cluster.openBucket(Cbucket);
+                            bucket.get(UUID, function(err, result) {
+                                if (err)
+                                {
+                                    logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Couch Error ',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                }
+                                else
+                                {
+                                    console.log(resUpFile.FileStructure);
+                                    res.setHeader('Content-Type', resUpFile.FileStructure);
+                                    var s = streamifier.createReadStream(result.value);
+                                    s.pipe(res);
+
+
+                                    s.on('end', function (result) {
+                                        logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
+                                        SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
+                                        {
+                                            if(errSv)
+                                            {
+                                                logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Recording downloaded file details',reqId,errSv);
+
+                                            }
+                                            else
+                                            {
+                                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Recording downloaded file details succeeded ',reqId);
+
+                                            }
+                                        });
+
+
+                                        console.log("ENDED");
+                                        res.status(200);
+                                        res.end();
+                                    });
+                                    s.on('error', function (err) {
+                                        logger.error('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
+                                        console.log("ERROR");
+                                        res.status(400);
+                                        res.end();
+                                    });
+
+                                }
+
+
+                            });
+                        }
+                        else
+                        {
+                            logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
+                            try {
+                                res.setHeader('Content-Type', resUpFile.FileStructure);
+                                var SourcePath = path.join(resUpFile.URL.toString());
+                                console.log(SourcePath);
+                                logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
+
+                                logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
+
+                                var source = fs.createReadStream(SourcePath);
+                                source.pipe(res);
+                                source.on('end', function (result) {
+                                    logger.debug('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
+                                    res.status(200);
+                                    res.end();
+                                });
+                                source.on('error', function (err) {
+                                    logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
+                                    res.status(400);
+                                    res.end();
+                                });
+                            }
+                            catch(ex)
+                            {
+                                logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
+                                res.status(400);
+                                res.end();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - No such file found',reqId,FileName);
+                        res.status(404);
+                        res.end();
+                    }
+
+                }).catch(function (errFile) {
+                    logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Error in file searching',reqId,errFile);
+                    res.status(400);
+                    res.end();
+                });
+            }
+            else
+            {
+                logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Max not found',reqId);
+                res.status(404);
+                res.end();
+            }
+        }).catch(function (errMax) {
+            logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - Error in Max',reqId,errMax);
+            res.status(400);
+            res.end();
+        });
+
+    }
+    catch (ex) {
+        logger.error('[DVP-FIleService.InternalFileService.DownloadLatestFileByID] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',reqId,FileName);
+        res.status(400);
+        res.end();
+    }
+
+
+};
+
 function DownloadLatestFileByID(res,FileName,option,Company,Tenant,reqId)
 {
 
@@ -1314,3 +1514,4 @@ module.exports.DownloadLatestFileByID = DownloadLatestFileByID;
 module.exports.LatestFileInfoByID = LatestFileInfoByID;
 module.exports.InternalUploadFiles = InternalUploadFiles;
 module.exports.DownloadThumbnailByID = DownloadThumbnailByID;
+module.exports.DownloadLatestFileByIDToLocal = DownloadLatestFileByIDToLocal;

@@ -2903,6 +2903,44 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 
 });
 
+
+RestServer.get('/DVP/API/'+version+'/InternalFileServiceLocal/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
+{
+    var reqId='';
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        //logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.DownloadLatestFileByIDToLocal(res,req.params.filename,option,Company,Tenant,reqId);
+
+
+    }
+    catch(ex)
+    {
+        // logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.status(404);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 RestServer.head('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
 {
     var reqId='';
