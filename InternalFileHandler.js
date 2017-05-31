@@ -891,9 +891,9 @@ function DownloadLatestFileByIDToLocal(res,FileName,option,Company,Tenant,reqId)
 
                                     console.log('Piping started');
 
-                                    var rstream = fs.createReadStream('UUID');
+                                    //var rstream = fs.createReadStream('UUID');
 
-                                    source.pipe(rstream).
+                                    source.pipe(process.stdout).
                                     on('error', function(error) {
                                         console.log('Error in piping '+error);
                                         res.status(400);
