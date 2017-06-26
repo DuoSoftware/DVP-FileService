@@ -286,8 +286,8 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
         if (fileStruct == "image") {
             mkdirp(thumbDir, function (err) {
                 if (!err) {
-                    var readStream=fs.createReadStream(path.join(Fobj.path));
-                    console.log(path.join(Fobj.path));
+                    //var readStream=fs.createReadStream(path.join(Fobj.tempPath));
+                    console.log(path.join(Fobj.tempPath));
 
 
                     sizeArray.forEach(function (size) {
@@ -295,6 +295,7 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
 
                         thumbnailArray.push(function createContact(callbackThumb) {
 
+                            var readStream=fs.createReadStream(path.join(Fobj.tempPath));
                             var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
 
 
@@ -340,6 +341,52 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,callback)
     }
 
 
+   //.............................................................................
+
+
+    /*if(fileStruct=="image")
+    {
+        sizeArray.forEach(function (size) {
+
+            thumbnailArray.push(function createContact(callbackThumb)
+            {
+
+                gm(fs.createReadStream(Fobj.path)).resize(size, size).quality(50)
+                    .stream(function (err, stdout, stderr) {
+                        var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
+                        stdout.pipe(writeStream).on('error', function(error)
+                        {
+                            console.log("Error in making thumbnail "+uuid + "_"+size);
+                            callbackThumb(error,undefined);
+                        }). on('finish', function()
+                        {
+                            console.log("Making thumbnail "+uuid + "_"+size+" Success");
+                            callbackThumb(undefined,"Thumbnails created ");
+                        });
+                    });
+            });
+        });
+
+        async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
+
+
+            console.log("End of Thumbnail making");
+            fs.unlink(path.join(Fobj.path));
+            db.close();
+            callback(undefined,uuid);
+
+
+        });
+    }
+    else
+    {
+        fs.unlink(path.join(Fobj.path));
+        db.close();
+        callback(undefined,uuid);
+    }*/
+
+
+
 }
 
 
@@ -354,28 +401,32 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
     mongodb.MongoClient.connect(uri, function(error, db)
     {
 
-        console.log("Error1 "+error);
-        //console.log("db "+JSON.stringify(db));
-        //assert.ifError(error);
-        var bucket = new mongodb.GridFSBucket(db);
-        var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
-        console.log(Fobj.path);
-        var uploadReadStream = fs.createReadStream(Fobj.path);
-        var bucketUploadStream=bucket.openUploadStream(uuid);
-
-        if(encNeeded)
+        if(error)
         {
-            const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
-            console.log("Encripting");
-            uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
-                // assert.ifError(error);
-                fs.unlink(path.join(Fobj.path));
-                cipher.end();
-                console.log("Error in Encripted stream uploading to DB "+error);
-                db.close();
+            console.log("Mongo connection error "+error);
+            callback(error,undefined);
+        }
+        else
+        {
+            var bucket = new mongodb.GridFSBucket(db);
+            var ThumbBucket = new mongodb.GridFSBucket(db,{ bucketName: 'thumbnails' });
+            console.log(Fobj.path);
+            var uploadReadStream = fs.createReadStream(Fobj.path);
+            var bucketUploadStream=bucket.openUploadStream(uuid);
 
-                callback(error,undefined);
-            }).
+            if(encNeeded)
+            {
+                const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
+                console.log("Encripting");
+                uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
+                    // assert.ifError(error);
+                    fs.unlink(path.join(Fobj.path));
+                    cipher.end();
+                    console.log("Error in Encripted stream uploading to DB "+error);
+                    db.close();
+
+                    callback(error,undefined);
+                }).
                 on('finish', function() {
                     console.log('uploaded to Mongo!');
                     cipher.end();
@@ -409,8 +460,8 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                         });
 
                         async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
-                            console.log(Fobj.path);
-                            fs.unlink(path.join(Fobj.path));
+                            console.log(Fobj.tempPath);
+                            fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -419,7 +470,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.path));
+                        fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
@@ -428,13 +479,13 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 });
 
 
-        }
-        else
-        {
-            uploadReadStream.pipe(bucketUploadStream).
+            }
+            else
+            {
+                uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
-                    fs.unlink(path.join(Fobj.path));
+                    fs.unlink(path.join(Fobj.tempPath));
                     console.log("Error "+error);
                     db.close();
                     callback(error,undefined);
@@ -470,7 +521,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
 
                             console.log("End of Thumbnail making");
-                            fs.unlink(path.join(Fobj.path));
+                            fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -479,14 +530,18 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.path));
+                        fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
 
 
                 });
+            }
         }
+        //console.log("db "+JSON.stringify(db));
+        //assert.ifError(error);
+
 
 
 
@@ -1528,6 +1583,11 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
             Fobj.sizeInMB = Math.floor(Fobj.size/(1024*1024));
         }
 
+        if(Fobj.path)
+        {
+            Fobj.tempPath=Fobj.path;
+        }
+
         DbConn.FileCategory.findOne({where:[{Category:Category}]}).then(function (resCat) {
 
             if(resCat)
@@ -1535,14 +1595,15 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                 encNeeded=resCat.Encripted;
                 if(option.toUpperCase()=="LOCAL")
                 {
+                    console.log("Uploading to "+option.toUpperCase());
                     var Today= new Date();
                     var date= Today.getDate();
                     var month=Today.getMonth()+1;
                     var year =Today.getFullYear();
                     var file_category=Category;
 
-                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString(),month.toString(),date.toString());
-                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString(),month.toString(),date.toString());
+                    var newDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category,year.toString()+"-"+month.toString()+"-"+date.toString());
+                    var thumbDir = path.join(config.BasePath,"Company_"+cmp.toString()+"_Tenant_"+ten.toString(),file_category+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
 
                     /*var pathObj=newDir.split(path.sep);
                      pathObj.forEach(function (value,index) {
@@ -1574,16 +1635,36 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                                     console.log("File  encrypted and stored");
                                     cipher.end();
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
-                                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                        fs.unlink(path.join(Fobj.path));
-                                        Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
 
+                                    Fobj.path=path.join(newDir,rand2.toString());
+
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
+
+                                       // callback(err,rand2);
+
+                                        if(err)
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
                                             callback(err,rand2);
-                                        });
+                                        }
+                                        else
+                                        {
+                                            console.log("File record added");
+                                            LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                                fs.unlink(path.join(Fobj.tempPath));
+                                                callback(err,rand2);
+
+                                            });
+                                        }
+
+
+
+
 
                                     });
+
+
 
                                 });
                             }
@@ -1605,24 +1686,34 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
 
                                 }).on('finish', function () {
-                                    console.log("File  encrypted and stored");
+                                    console.log("File stored");
+                                    Fobj.path=path.join(newDir,rand2.toString());
 
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
 
+                                    FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
-
-                                    LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                        fs.unlink(path.join(Fobj.path));
-                                        Fobj.path=path.join(newDir,rand2.toString());
-                                        FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
-
-
+                                        if(err)
+                                        {
+                                            fs.unlink(path.join(Fobj.path));
                                             callback(err,rand2);
-                                        });
+                                        }
+                                        else
+                                        {
+                                            console.log("File record added");
+                                            LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
+                                             fs.unlink(path.join(Fobj.tempPath));
+                                                callback(err,rand2);
+
+                                             });
+                                        }
 
                                     });
 
-                                });;
+
+
+
+                                });
                             }
 
 
@@ -1846,6 +1937,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
 function FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,desplayname,resvID,reqId,callback ) {
     var result = 0;
 
+    console.log("File saving to "+Fobj.path);
 
     if (resvID) {
         // reserved file and no similar files found

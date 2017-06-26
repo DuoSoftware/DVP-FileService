@@ -1674,6 +1674,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',jwt({secret: secret.Secr
         }
         else
         {
+
             console.log("Picking all files");
             FileHandler.PickAllFiles(Company,Tenant,isVisibleCat,reqId,function(err,resz)
             {
@@ -1693,6 +1694,77 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files',jwt({secret: secret.Secr
 
             });
         }
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - [HTTP] - Exception occurred when starting PickAllFiles service',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+RestServer.post('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    console.log("hitt");
+    var reqId='';
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+
+
+        logger.debug('[DVP-FIleService.PickFilesByCategoryList] - [%s] - [HTTP] - Request received - ',reqId);
+
+
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.PickFilesByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+
+
+
+
+            console.log("Picking all files");
+            FileHandler.PickFilesByCategoryList(req.params.rowCount,req.params.pageNo,Company,Tenant,req,reqId,function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.PickAllFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+            });
+
 
 
 
@@ -2149,6 +2221,8 @@ RestServer.put('/DVP/API/'+version+'/FileService/FileCategory/:CategoryID',jwt({
 
 });
 
+
+
 RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
@@ -2377,6 +2451,117 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:Categor
     return next();
 
 });
+
+RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+    req.readable=true;
+
+    var startDateTime='';
+    var endDateTime='';
+
+
+    if (req.query)
+    {
+
+        if(JSON.parse(req.query[0]).startDateTime)
+        {
+            startDateTime=JSON.parse(req.query[0]).startDateTime;
+        }
+        if(JSON.parse(req.query[1]).endDateTime)
+        {
+            endDateTime=JSON.parse(req.query[1]).endDateTime;
+        }
+
+    }
+
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - [HTTP] - Request received - Inputs - Ref ID : %s  Class - %s Type - %s Category - %s',reqId,req.params.SessionID,req.params.Class,req.params.Type,req.params.Category);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+        var Company=req.user.company;
+        var Tenant=req.user.tenant;
+
+        if(!(startDateTime && endDateTime))
+        {
+            FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+        }
+        else
+        {
+
+            FileHandler.FilesWithCategoryListAndDateRange(req,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+
+        }
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - [HTTP] - Exception occurred when starting infoByCategoryList service - Inputs - File Category : %s ',reqId,req.params.Category);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 RestServer.get('/DVP/API/'+version+'/FileService/FilesInfo/Category/:CategoryID/:rowCount/:pageNo',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
@@ -2703,6 +2888,44 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 
 
         InternalFileHandler.DownloadLatestFileByID(res,req.params.filename,option,Company,Tenant,reqId);
+
+
+    }
+    catch(ex)
+    {
+        // logger.error('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Error in Request - Inputs - File ID : %s ',reqId,req.params.id,ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.status(404);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
+RestServer.get('/DVP/API/'+version+'/InternalFileServiceLocal/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
+{
+    var reqId='';
+
+    try {
+
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+        //logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+        var Company=req.params.company;
+        var Tenant=req.params.tenant;
+
+
+        InternalFileHandler.DownloadLatestFileByIDToLocal(res,req.params.filename,option,Company,Tenant,reqId);
 
 
     }
