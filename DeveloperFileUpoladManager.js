@@ -420,7 +420,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 console.log("Encripting");
                 uploadReadStream.pipe(cipher).pipe(bucketUploadStream).on('error', function(error) {
                     // assert.ifError(error);
-                    fs.unlink(path.join(Fobj.path));
+                    //fs.unlink(path.join(Fobj.path));
                     cipher.end();
                     console.log("Error in Encripted stream uploading to DB "+error);
                     db.close();
@@ -461,7 +461,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
                         async.series(thumbnailArray, function (errThumbMake,resThumbMake) {
                             console.log(Fobj.tempPath);
-                            fs.unlink(path.join(Fobj.tempPath));
+                            //fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -470,7 +470,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.tempPath));
+                        //fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
@@ -485,7 +485,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 uploadReadStream.pipe(bucketUploadStream).
                 on('error', function(error) {
                     // assert.ifError(error);
-                    fs.unlink(path.join(Fobj.tempPath));
+                    //fs.unlink(path.join(Fobj.tempPath));
                     console.log("Error "+error);
                     db.close();
                     callback(error,undefined);
@@ -521,7 +521,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
 
 
                             console.log("End of Thumbnail making");
-                            fs.unlink(path.join(Fobj.tempPath));
+                            //fs.unlink(path.join(Fobj.tempPath));
                             db.close();
                             callback(undefined,uuid);
 
@@ -530,7 +530,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                     }
                     else
                     {
-                        fs.unlink(path.join(Fobj.tempPath));
+                        //fs.unlink(path.join(Fobj.tempPath));
                         db.close();
                         callback(undefined,uuid);
                     }
@@ -1620,7 +1620,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
                         }
                         else
                         {
-                            console.log("uplaoding path : "+path.join(newDir,rand2.toString()));
+                            console.log("Uploading path : "+path.join(newDir,rand2.toString()));
                             const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
 
                             if(encNeeded)
@@ -1645,14 +1645,14 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                                         if(err)
                                         {
-                                            fs.unlink(path.join(Fobj.path));
+                                            //fs.unlink(path.join(Fobj.path));
                                             callback(err,rand2);
                                         }
                                         else
                                         {
                                             console.log("File record added");
                                             LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                                fs.unlink(path.join(Fobj.tempPath));
+                                                //fs.unlink(path.join(Fobj.tempPath));
                                                 callback(err,rand2);
 
                                             });
@@ -1674,7 +1674,7 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                                     RedisPublisher.updateFileStorageRecord(file_category,Fobj.sizeInMB,cmp,ten);
                                     LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                        fs.unlink(path.join(Fobj.path));
+                                        //fs.unlink(path.join(Fobj.path));
                                         Fobj.path=path.join(newDir,rand2.toString());
                                         FileUploadDataRecorder(Fobj,rand2,cmp,ten,ref,Clz,Type,Category,DisplayName,resvID,reqId, function (err,res) {
 
@@ -1695,15 +1695,16 @@ function DeveloperUploadFiles(Fobj,rand2,cmp,ten,ref,option,Clz,Type,Category,re
 
                                         if(err)
                                         {
-                                            fs.unlink(path.join(Fobj.path));
+                                            //fs.unlink(path.join(Fobj.path));
                                             callback(err,rand2);
                                         }
                                         else
                                         {
                                             console.log("File record added");
                                             LocalThumbnailMaker(rand2,Fobj,Category,thumbDir, function (errThumb,resThumb) {
-                                             fs.unlink(path.join(Fobj.tempPath));
-                                                callback(err,rand2);
+                                                callback(errThumb,resThumb);
+                                             //fs.unlink(path.join(Fobj.tempPath));
+
 
                                              });
                                         }
