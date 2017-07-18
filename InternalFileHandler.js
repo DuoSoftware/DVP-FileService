@@ -133,7 +133,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                 on('error', function(error) {
                     // assert.ifError(error);
                     cipher.end();
-                    fs.unlink(path.join(Fobj.path));
+                   // fs.unlink(path.join(Fobj.path));
                     console.log("Error "+error);
                     db.close();
                     callback(error,undefined);
@@ -156,12 +156,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                                         var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                         stdout.pipe(writeStream).on('error', function(error)
                                         {
-                                            fs.unlink(path.join(Fobj.path));
+                                           // fs.unlink(path.join(Fobj.path));
                                             console.log("Error in making thumbnail "+uuid + "_"+size);
                                             callbackThumb(error,undefined);
                                         }). on('finish', function()
                                         {
-                                            fs.unlink(path.join(Fobj.path));
+                                            //fs.unlink(path.join(Fobj.path));
                                             console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                             callbackThumb(undefined,"Done");
                                         });
@@ -190,7 +190,7 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
             uploadReadStream.pipe(bucket.openUploadStream(uuid)).
             on('error', function(error) {
                 // assert.ifError(error);
-                fs.unlink(path.join(Fobj.path));
+               // fs.unlink(path.join(Fobj.path));
                 console.log("Error "+error);
                 db.close();
                 callback(error,undefined);
@@ -213,12 +213,12 @@ function MongoUploader(uuid,Fobj,otherData,encNeeded,reqId,callback)
                                     var writeStream = ThumbBucket.openUploadStream(uuid + "_"+size);
                                     stdout.pipe(writeStream).on('error', function(error)
                                     {
-                                        fs.unlink(path.join(Fobj.path));
+                                      //  fs.unlink(path.join(Fobj.path));
                                         console.log("Error in making thumbnail "+uuid + "_"+size);
                                         callbackThumb(error,undefined);
                                     }). on('finish', function()
                                     {
-                                        fs.unlink(path.join(Fobj.path));
+                                        //fs.unlink(path.join(Fobj.path));
                                         console.log("Making thumbnail "+uuid + "_"+size+" Success");
                                         callbackThumb(undefined,"Done");
                                     });
@@ -1349,7 +1349,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
                                             console.log("Error in ecripting and storing file");
                                             cipher.end();
-                                            fs.unlink(path.join(Fobj.path));
+                                            //fs.unlink(path.join(Fobj.path));
 
                                         }).on('finish', function () {
                                             cipher.end();
@@ -1361,13 +1361,13 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                             InternalFileUploadDataRecorder(Fobj,rand2,cmp,ten,result, function (err,res) {
                                                 if(err)
                                                 {
-                                                    fs.unlink(path.join(Fobj.tempPath));
+                                                    //fs.unlink(path.join(Fobj.tempPath));
                                                     callback(err,rand2);
                                                 }
                                                 else
                                                 {
                                                     DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
-                                                        fs.unlink(path.join(Fobj.tempPath));
+                                                        //fs.unlink(path.join(Fobj.tempPath));
                                                         callback(err,rand2);
                                                     });
 
@@ -1385,7 +1385,7 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
                                         fs.createReadStream(Fobj.path).pipe(fs.createWriteStream(path.join(newDir,rand2.toString()))).on('error', function (error) {
 
                                             console.log("Error in storing file");
-                                            fs.unlink(path.join(Fobj.path));
+                                            //fs.unlink(path.join(Fobj.path));
 
                                         }).on('finish', function () {
 
@@ -1398,14 +1398,14 @@ function InternalUploadFiles(Fobj,rand2,cmp,ten,option,BodyObj,reqId,callback)
 
                                                 if(err)
                                                 {
-                                                    fs.unlink(path.join(Fobj.tempPath));
+                                                    //fs.unlink(path.join(Fobj.tempPath));
                                                     callback(err,rand2);
                                                 }
                                                 else
                                                 {
                                                     DeveloperFileUpoladManager.LocalThumbnailMaker(rand2,Fobj,file_category,thumbDir, function (errThumb,resThumb) {
 
-                                                        fs.unlink(path.join(Fobj.tempPath));
+                                                        //fs.unlink(path.join(Fobj.tempPath));
                                                         callback(err,rand2);
                                                     });
 

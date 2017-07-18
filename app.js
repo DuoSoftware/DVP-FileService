@@ -13,6 +13,8 @@ var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
 var uuid = require('node-uuid');
+var fs=require('fs');
+var path = require('path');
 
 //var jwt = require('restify-jwt');
 //var secret = require('dvp-common/Authentication/Secret.js');
@@ -392,6 +394,10 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var resvID="";
     var encripNeeded=false;
 
+    var upldFileKey = Object.keys(req.files)[0];
+    var attachedFile = req.files[upldFileKey];
+    var tempPath = req.files[upldFileKey].path;
+
     if(req.body.class)
     {
         Clz=req.body.class;
@@ -481,7 +487,19 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
 
         DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,resvID,reqId,function (errz, respg) {
 
+            fs.unlink(path.join(attachedFile.tempPath),function (errUnlink) {
 
+                if(errUnlink)
+                {
+                    console.log("Error status Removing Temp file",errUnlink);
+                }
+                else
+                {
+                    console.log("Temp file removed successfully");
+                }
+
+
+            });
             if(errz)
             {
                 var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
@@ -529,6 +547,32 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        var unlinkPath="";
+
+        if(attachedFile.tempPath)
+        {
+            unlinkPath=attachedFile.tempPath;
+        }
+        else
+        {
+            unlinkPath=tempPath;
+        }
+
+
+        fs.unlink(path.join(unlinkPath),function (errUnlink) {
+
+            if(errUnlink)
+            {
+                console.log("Error status Removing Temp file",errUnlink);
+            }
+            else
+            {
+                console.log("Temp file removed successfully");
+            }
+
+
+        });
+
         res.end(jsonString);
     }
     return next();
@@ -3006,6 +3050,10 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
     var BodyObj="";
     var DisplayName="";
 
+    var upFileKey = Object.keys(req.files)[0];
+    var addedFile = req.files[upFileKey];
+    var tempPath = req.files[upFileKey].path;
+
 
     req.readable=true;
 
@@ -3172,6 +3220,20 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         //DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
         InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
         {
+            fs.unlink(path.join(addedFile.tempPath),function (errUnlink) {
+
+                if(errUnlink)
+                {
+                    console.log("Error status Removing Temp file",errUnlink);
+                }
+                else
+                {
+                    console.log("Temp file removed successfully");
+                }
+
+
+            });
+
             if(errz)
             {
                 var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
@@ -3201,16 +3263,47 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
                 });
             }
 
+
         });
 
     }
     catch(ex)
     {
         var x = JSON.parse(req);
+        var unlinkPath="";
         console.log(JSON.stringify(x));
         logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+
+
+        if(addedFile.tempPath)
+        {
+            unlinkPath=addedFile.tempPath;
+        }
+        else
+        {
+            unlinkPath=tempPath;
+        }
+
+
+        fs.unlink(path.join(unlinkPath),function (errUnlink) {
+
+            if(errUnlink)
+            {
+                console.log("Error status Removing Temp file",errUnlink);
+            }
+            else
+            {
+                console.log("Temp file removed successfully");
+            }
+
+
+        });
+
+
         res.end(JSON.stringify(x));
     }
     return next();
@@ -3247,6 +3340,11 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
 
 
     req.readable=true;
+
+
+    var upFileKey = Object.keys(req.files)[0];
+    var addedFile = req.files[upFileKey];
+    var tempPath = req.files[upFileKey];
 
 
     if (req.params)
@@ -3459,6 +3557,19 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
 
         {
+            fs.unlink(path.join(addedFile.tempPath),function (errUnlink) {
+
+                if(errUnlink)
+                {
+                    console.log("Error status Removing Temp file",errUnlink);
+                }
+                else
+                {
+                    console.log("Temp file removed successfully");
+                }
+
+
+            });
             if(errz)
             {
                 var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
@@ -3497,9 +3608,33 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
     {
         var x = JSON.parse(req);
         console.log(JSON.stringify(x));
+        var unlinkPath="";
         logger.error('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        if(addedFile.tempPath)
+        {
+            unlinkPath=addedFile.tempPath;
+        }
+        else
+        {
+            unlinkPath=tempPath;
+        }
+
+
+        fs.unlink(path.join(unlinkPath),function (errUnlink) {
+
+            if(errUnlink)
+            {
+                console.log("Error status Removing Temp file",errUnlink);
+            }
+            else
+            {
+                console.log("Temp file removed successfully");
+            }
+
+
+        });
         res.end(JSON.stringify(x));
     }
     return next();

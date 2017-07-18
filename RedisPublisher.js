@@ -2,7 +2,7 @@
  * Created by pawan on 3/26/2015.
  */
 
-var redis=require('redis');
+var redis=require('ioredis');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 
@@ -12,15 +12,86 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 
-var port = config.Redis.port || 3000;
-var ip = config.Redis.ip;
-var password = config.Redis.password;
+var redisip = config.Redis.ip;
+var redisport = config.Redis.port;
+var redispass = config.Redis.password;
+var redismode = config.Redis.mode;
+var redisdb = config.Redis.db;
 
 
-var client = redis.createClient(port,ip);
-client.auth(password, function (error) {
-    console.log("Redis Auth Error " + error);
-});
+
+var redisSetting =  {
+    port:redisport,
+    host:redisip,
+    family: 4,
+    password: redispass,
+    db: redisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
+
+        return true;
+    }
+};
+
+if(redismode == 'sentinel'){
+
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+        var sentinelHosts = config.Redis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.Redis.sentinels.port})
+
+            })
+
+            redisSetting = {
+                sentinels:sentinelConnections,
+                name: config.Redis.sentinels.name,
+                password: redispass
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var client = undefined;
+
+if(redismode != "cluster") {
+    client = new redis(redisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        redisSetting = [];
+        redisHosts.forEach(function(item){
+            redisSetting.push({
+                host: item,
+                port: redisport,
+                family: 4,
+                password: redispass});
+        });
+
+        var client = new redis.Cluster([redisSetting]);
+
+    }else{
+
+        client = new redis(redisSetting);
+    }
+
+
+}
+
 
 client.on("error", function (err) {
     console.log("Error " + err);
@@ -34,9 +105,7 @@ client.on("error", function (err) {
 function RedisPublish(SID,AID,reqId,callback)
 {
 
-if(client.connected)
-{
-    logger.info('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is Online',reqId);
+ logger.info('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is Online',reqId);
 
 
             try{
@@ -62,23 +131,12 @@ if(client.connected)
 
 
 }
-    else
-{
-    logger.error('[DVP-FIleService.UploadFile.RedisPublisher] - [%s] - [REDIS] - Redis client is not available ',reqId);
-    callback(new Error('Redis Client is not available'),undefined);
-}
-
-
-}
 
 //log done...............................................................................................................
 function SharedServerRedisUpdate(SID,AID,reqId)
 {
     logger.debug('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] - [REDIS] -[FS] - Shared type server selection method starts  - SERVERS - %s - Application - %s ',reqId,JSON.stringify(SID),AID);
-    if(client.connected) {
-        logger.info('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] - [REDIS] -[FS] - Redis Server is online  ');
-
-try {
+   try {
     SID.forEach(function (entry) {
         client.publish("CSCOMMAND:" + entry.id + ":downloadfile", AID, function (err, reply) {
             if (err) {
@@ -96,12 +154,6 @@ try {
         {
             logger.error('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] -[REDIS] - [FS] - Exception  occurred in sever list publishing ',reqId,ex);
         }
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.SharedServerRedisUpdate] - [%s] -[REDIS] - [FS] - Redis server is Offline ');
-    }
-
 }
 
 function RedisGet()
@@ -114,8 +166,7 @@ function RedisGet()
 
 function incrementTotalFileStorage(fileSize,company,tenant)
 {
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:TOTAL";
+    var fileKey = tenant+":"+company+":STORAGE:TOTAL";
         client.get(fileKey, function (errKey,resKey) {
             if(errKey)
             {
@@ -155,17 +206,11 @@ function incrementTotalFileStorage(fileSize,company,tenant)
                 }
             }
         })
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.updateTotalFileStorage] - [%s] -[REDIS] - [FS] - Redis connection failed');
-    }
 }
 function decrementTotalFileStorage(fileSize,company,tenant)
 {
     console.log("Trying to update total storage details");
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:TOTAL";
+    var fileKey = tenant+":"+company+":STORAGE:TOTAL";
 
             client.decrby(fileKey,fileSize, function (errKey,resKey) {
                 if(errKey)
@@ -190,20 +235,12 @@ function decrementTotalFileStorage(fileSize,company,tenant)
                 }
             })
 
-
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.decrementTotalFileStorage] - [%s] -[REDIS] - [FS] - Redis connection failed');
-
-    }
 }
 
 
 function updateFileStorageRecord(fileCategory,fileSize,company,tenant)
 {
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+    var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
         client.get(fileKey, function (errKey,resKey) {
             if(errKey)
             {
@@ -245,19 +282,13 @@ function updateFileStorageRecord(fileCategory,fileSize,company,tenant)
                 }
             }
         })
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Redis connection failed');
-    }
 }
 
 
 
 function getFileStorageRecordByCategory(fileCategory,company,tenant,callback)
 {
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+     var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
         client.get(fileKey, function (errKey,resKey) {
             if(errKey)
             {
@@ -279,17 +310,10 @@ function getFileStorageRecordByCategory(fileCategory,company,tenant,callback)
                 }
             }
         })
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.updateFileStorageRecord] - [%s] -[REDIS] - [FS] - Redis connection failed');
-        callback(new Error("Redis client connection failed"),undefined);
-    }
 }
 function getTotalFileStorageDetails(company,tenant,callback)
 {
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:TOTAL";
+    var fileKey = tenant+":"+company+":STORAGE:TOTAL";
         client.get(fileKey, function (errKey,resKey) {
             if(errKey)
             {
@@ -312,17 +336,10 @@ function getTotalFileStorageDetails(company,tenant,callback)
                 }
             }
         })
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.getTotalFileStorageDetails] - [%s] -[REDIS] - [FS] - Redis connection failed');
-        callback(new Error("Redis client connection failed"),undefined);
-    }
 }
 function UpdateFileStorageRecords(action,fileCategory,fileSize,company,tenant)
 {
-    if(client.connected) {
-        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+    var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
         if(action=="RELEASE")
         {
             client.decrby(fileKey,fileSize, function (errKey,resKey) {
@@ -353,13 +370,6 @@ function UpdateFileStorageRecords(action,fileCategory,fileSize,company,tenant)
             logger.error('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] - Invalid action found ');
 
         }
-
-    }
-    else
-    {
-        logger.error('[DVP-FIleService.RedisPublisher.UpdateFileStorageRecords] - [%s] -[REDIS] - [FS] - Redis connection failed');
-
-    }
 }
 
 /*function removeAllFileStorageRecords(company,tenant,callback)
