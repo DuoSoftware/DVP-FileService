@@ -3220,7 +3220,7 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         //DeveloperFileUpoladManager.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
         InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
         {
-            fs.unlink(path.join(addedFile.tempPath),function (errUnlink) {
+            fs.unlink(path.join(addedFile.path),function (errUnlink) {
 
                 if(errUnlink)
                 {
@@ -3279,9 +3279,9 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
 
 
 
-        if(addedFile.tempPath)
+        if(addedFile.path)
         {
-            unlinkPath=addedFile.tempPath;
+            unlinkPath=addedFile.path;
         }
         else
         {
@@ -3344,7 +3344,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
 
     var upFileKey = Object.keys(req.files)[0];
     var addedFile = req.files[upFileKey];
-    var tempPath = req.files[upFileKey];
+    var tempPath = req.files[upFileKey].path;
 
 
     if (req.params)
@@ -3612,9 +3612,9 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         logger.error('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-        if(addedFile.tempPath)
+        if(addedFile.path)
         {
-            unlinkPath=addedFile.tempPath;
+            unlinkPath=addedFile.path;
         }
         else
         {
