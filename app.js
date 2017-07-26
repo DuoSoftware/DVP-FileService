@@ -3559,7 +3559,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
 
         {
-            fs.unlink(path.join(addedFile.tempPath),function (errUnlink) {
+            fs.unlink(path.join(addedFile.path),function (errUnlink) {
 
                 if(errUnlink)
                 {
