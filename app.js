@@ -4051,7 +4051,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/Agent/FileUpload',jwt({secret:
     return next();
 });
 
-RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:id/:displayname',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:filename',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),function(req,res,next)
 {
     var reqId='';
 var userType="Agent";
@@ -4065,7 +4065,7 @@ var userType="Agent";
 
     }
 
-    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File Name : %s ',reqId,req.params.filename);
 
     if(!req.user.company || !req.user.tenant)
     {
@@ -4078,7 +4078,7 @@ var userType="Agent";
     var Tenant=req.user.tenant;
 
 
-    FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,userType,reqId,function(errDownFile,resDownFile)
+    FileHandler.DownloadLatestFileByID(res,req.params.filename,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
     {
         if(errDownFile)
         {
