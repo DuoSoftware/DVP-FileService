@@ -2056,39 +2056,50 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 if(option.toUpperCase()=="LOCAL")
                 {
                     console.log("File operations on LOCAL ");
-                    var URL = path.join(resFile.URL);
-                    fs.unlink(URL,function(err){
-                        if(err)
-                        {
-                            console.log(err);
-                            callback(err,undefined);
-                        }
-                        else
-                        {
-                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
-
-                            if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                    if(resFile.URL)
+                    {
+                        var URL = path.join(resFile.URL);
+                        fs.unlink(URL,function(err){
+                            if(err)
                             {
-                                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
-                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
-                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
-                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
-                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
-                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                                console.log(err);
+                                callback(err,undefined);
+                            }
+                            else
+                            {
+                                RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+
+                                if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                                {
+                                    var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
+                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                                }
+                                else
+                                {
+                                    console.log("Error in removing Thumbnails of deleted file");
+                                }
+
+
+                                resFile.destroy().then(function (resDel) {
+                                    callback(undefined,resDel);
+                                }).catch(function (errDel) {
+                                    callback(errDel,undefined);
+                                });
                             }
 
 
+                        });
+                    }
+                    else
+                    {
+                        console.log("No file path found");
+                        callback(new Error(""),undefined);
+                    }
 
-
-                            resFile.destroy().then(function (resDel) {
-                                callback(undefined,resDel);
-                            }).catch(function (errDel) {
-                                callback(errDel,undefined);
-                            });
-                        }
-
-
-                    });
                 }
                 else
                 {
