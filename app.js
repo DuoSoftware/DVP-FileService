@@ -857,6 +857,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/:name/ofApplication/:AppID
 RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
+    var userType ="Other";
 
 
     try
@@ -881,7 +882,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname'
     var Tenant=req.user.tenant;
 
 
-    FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+    FileHandler.DownloadFileByID(res,req.params.id,req.params.displayname,option,Company,Tenant,userType,reqId,function(errDownFile,resDownFile)
     {
         if(errDownFile)
         {
@@ -1544,6 +1545,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:SessionID/:Class/:Type/:
 RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class/:Type/:Category',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
+    var userType="Other";
     try {
 
         try
@@ -1578,7 +1580,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Download/:SessionID/:Class
             else
             {
 
-                FileHandler.DownloadFileByID(res,resz.UniqueId,option,reqId,function(errDownFile,resDownFile)
+                FileHandler.DownloadFileByID(res,resz.UniqueId,option,userType,reqId,function(errDownFile,resDownFile)
                 {
                     if(errDownFile)
                     {
@@ -3281,7 +3283,7 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
 
         if(addedFile.tempPath)
         {
-            unlinkPath=addedFile.tempPath;
+            unlinkPath=addedFile.path;
         }
         else
         {
@@ -3344,7 +3346,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
 
     var upFileKey = Object.keys(req.files)[0];
     var addedFile = req.files[upFileKey];
-    var tempPath = req.files[upFileKey];
+    var tempPath = req.files[upFileKey].path;
 
 
     if (req.params)
@@ -3557,7 +3559,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         InternalFileHandler.InternalUploadFiles(file,rand2,Company, Tenant,option,req,reqId,function (errz, respg)
 
         {
-            fs.unlink(path.join(addedFile.tempPath),function (errUnlink) {
+            fs.unlink(path.join(addedFile.path),function (errUnlink) {
 
                 if(errUnlink)
                 {
@@ -3612,9 +3614,9 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         logger.error('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-        if(addedFile.tempPath)
+        if(addedFile.path)
         {
-            unlinkPath=addedFile.tempPath;
+            unlinkPath=addedFile.path;
         }
         else
         {
@@ -3815,6 +3817,294 @@ RestServer.get('/DVP/API/'+version+'/FileService/TotalUsedStorage',jwt({secret: 
     return next();
 
 });
+
+
+// .................................... Agent file upload ..................................................
+
+RestServer.post('/DVP/API/'+version+'/FileService/Agent/FileUpload',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"write"}),function(req,res,next)
+{
+
+    // console.log(req);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
+    var prov=1;
+
+    var Clz='';
+    var Type='';
+    var Category="";
+    var ref="tempRef";
+    var resvID="";
+    var encripNeeded=false;
+
+    var upldFileKey = Object.keys(req.files)[0];
+    var attachedFile = req.files[upldFileKey];
+    var tempPath = req.files[upldFileKey].path;
+
+    if(req.body.class)
+    {
+        Clz=req.body.class;
+
+    }
+    if(req.body.fileCategory)
+    {
+        Category=req.body.fileCategory;
+
+    }
+    if(req.body.category)
+    {
+        Category=req.body.category;
+
+    }
+
+    if(req.body.type)
+    {
+
+        Type=req.body.type;
+    }
+    if(req.body.referenceid)
+    {
+        ref=req.body.referenceid;
+    }
+
+    if(req.body.reservedId)
+    {
+        resvID=req.body.reservedId;
+    }
+
+
+    try {
+
+        /*try
+         {
+         reqId = uuid.v1();
+         }
+         catch(ex)
+         {
+
+         }*/
+
+
+        if(Category && Category=="AGENT_GREETINGS")
+        {
+            logger.debug('[DVP-FIleService.AgentUploadFiles] - [%s] - [HTTP] - Request received - Inputs - Provision : %s Company : %s Tenant : %s',reqId,prov,Company,Tenant);
+
+            var rand2 = uuid.v4().toString();
+            var fileKey = Object.keys(req.files)[0];
+            var file = req.files[fileKey];
+            Type=file.type;
+
+            if(req.body.mediatype && req.body.filetype){
+
+                file.type = req.body.mediatype + "/" + req.body.filetype;
+            }
+
+
+            if(req.body.display){
+
+
+                file.display = req.body.display;
+            }
+
+            if(req.body.filename)
+            {
+                file.name=req.body.filename;
+            }
+
+
+            logger.info('[DVP-FIleService.AgentUploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
+
+
+            var ValObj={
+
+                "tenent":Tenant,
+                "company":Company,
+                "filename":file.name,
+                "type":file.type,
+                "id":rand2
+
+            };
+
+            var AttchVal=JSON.stringify(ValObj);
+
+
+            logger.debug('[DVP-FIleService.AgentUploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+
+            DeveloperFileUpoladManager.DeveloperUploadFiles(file,rand2,Company, Tenant,ref,option,Clz,Type,Category,resvID,reqId,function (errz, respg) {
+
+                fs.unlink(path.join(attachedFile.tempPath),function (errUnlink) {
+
+                    if(errUnlink)
+                    {
+                        console.log("Error status Removing Temp file",errUnlink);
+                    }
+                    else
+                    {
+                        console.log("Temp file removed successfully");
+                    }
+
+
+                });
+                if(errz)
+                {
+                    var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                    logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+                else{
+
+
+                    logger.debug('[DVP-FIleService.UploadFiles] - [%s] - To publishing on redis - ServerID  %s Attachment values : %s',reqId,JSON.stringify(respg),AttchVal);
+                    RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
+                            if (errRDS)
+                            {
+                                var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                                res.end(jsonString);
+
+
+
+                            }
+                            else
+                            {
+                                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+                                res.end(jsonString);
+
+                            }
+
+
+                        }
+                    );
+
+
+                }
+
+
+
+            });
+
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-FIleService.AgentUploadFiles] - [%s] - UnAuthorized file category found : %s ', reqId,Category, jsonString);
+            res.end(jsonString);
+        }
+
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+        var unlinkPath="";
+
+        if(attachedFile.tempPath)
+        {
+            unlinkPath=attachedFile.tempPath;
+        }
+        else
+        {
+            unlinkPath=tempPath;
+        }
+
+
+        fs.unlink(path.join(unlinkPath),function (errUnlink) {
+
+            if(errUnlink)
+            {
+                console.log("Error status Removing Temp file",errUnlink);
+            }
+            else
+            {
+                console.log("Temp file removed successfully");
+            }
+
+
+        });
+
+        res.end(jsonString);
+    }
+    return next();
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:filename',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+var userType="Agent";
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [HTTP] - Request received - Inputs - File Name : %s ',reqId,req.params.filename);
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
+    FileHandler.DownloadLatestFileByID(res,req.params.filename,option,Company,Tenant,reqId,function(errDownFile,resDownFile)
+    {
+        if(errDownFile)
+        {
+            var jsonString = messageFormatter.FormatMessage(errDownFile, "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resDownFile);
+            logger.debug('[DVP-FIleService.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+
+
+        }
+
+    });
+
+
+
+
+
+    return next();
+
+});
+
 
 /*RestServer.del('/DVP/API/'+version+'/FileService/FileStorage/:company/:tenant',function(req,res,next)
 { var reqId='';
