@@ -14,6 +14,7 @@ var CHip=config.Couch.ip;
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 
 //
@@ -1576,20 +1577,48 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
             });
 
 
+            if(req.params.rowCount && req.params.pageNo)
+            {
 
-            DbConn.FileUpload.findAll({where:conditionalData})
-                .then(function (result) {
-                    if(result.length==0)
-                    {
-                        callback(new Error("No record found"),undefined);
-                    }
-                    else
-                    {
-                        callback(undefined,result);
-                    }
-                }).catch(function (err) {
-                callback(err, undefined);
-            });
+
+                DbConn.FileUpload.findAll({where:[conditionalData],offset:((req.params.pageNo - 1) * req.params.rowCount),
+                    limit: req.params.rowCount,
+                    order: '"updatedAt" DESC'})
+                    .then(function (result) {
+                        if(result.length==0)
+                        {
+                            callback(new Error("No record found"),undefined);
+                        }
+                        else
+                        {
+                            callback(undefined,result);
+                        }
+                    }).catch(function (err) {
+                    callback(err, undefined);
+                });
+
+
+            }
+            else
+            {
+                DbConn.FileUpload.findAll({where:conditionalData})
+                    .then(function (result) {
+                        if(result.length==0)
+                        {
+                            callback(new Error("No record found"),undefined);
+                        }
+                        else
+                        {
+                            callback(undefined,result);
+                        }
+                    }).catch(function (err) {
+                    callback(err, undefined);
+                });
+            }
+
+
+
+
 
 
         }
@@ -1620,6 +1649,10 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
         };
 
 
+
+
+
+
         if(req.body.categoryList)
         {
 
@@ -1633,26 +1666,58 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
 
 
 
-if(req.body.categoryList.lenght>0)
-{
-    DbConn.FileUpload.findAll({where:conditionalData})
-        .then(function (result) {
-            if(result.length==0)
+        if(req.body.categoryList.length>0)
+        {
+
+            if(req.params.rowCount && req.params.pageNo)
             {
-                callback(new Error("No record found"),undefined);
+
+
+
+                DbConn.FileUpload.findAll({ where:[conditionalData],
+                    offset:((req.params.pageNo - 1) * req.params.rowCount),
+                    limit: req.params.rowCount,
+                    order: '"updatedAt" DESC'})
+                    .then(function (result) {
+                        if(result.length==0)
+                        {
+                            callback(new Error("No record found"),undefined);
+                        }
+                        else
+                        {
+                            callback(undefined,result);
+                        }
+                    }).catch(function (err) {
+                    callback(err, undefined);
+                });
+
+
             }
             else
             {
-                callback(undefined,result);
+                DbConn.FileUpload.findAll({where:conditionalData})
+                    .then(function (result) {
+                        if(result.length==0)
+                        {
+                            callback(new Error("No record found"),undefined);
+                        }
+                        else
+                        {
+                            callback(undefined,result);
+                        }
+                    }).catch(function (err) {
+                    callback(err, undefined);
+                });
             }
-        }).catch(function (err) {
-        callback(err, undefined);
-    });
-}
-else
-{
-    callback(new Error("No record found"),undefined);
-}
+
+
+
+
+        }
+        else
+        {
+            callback(new Error("No record found"),undefined);
+        }
 
 
 
@@ -2312,6 +2377,174 @@ function PickFileCountsOFCategories(catID,company,tenant,callback) {
 }
 
 
+function GetFileDetails(req, res){
+
+    logger.info("DVP-FileService.GetFileDetails Internal method ");
+    var company = parseInt(req.user.company);
+    var tenant = parseInt(req.user.tenant);
+    var jsonString;
+
+
+    if(req.query && req.query['from']&& req.query['to']) {
+        var from = req.query['from'];
+        var to = req.query['to'];
+
+        try {
+            from = new Date(from);
+            to = new Date(to);
+        }catch(ex){
+            jsonString = messageFormatter.FormatMessage(ex, "From and To dates are require", false, undefined);
+            res.end(jsonString);
+            return;
+        }
+
+        if(from > to){
+
+            jsonString = messageFormatter.FormatMessage(undefined, "From should less than To", false, undefined);
+            res.end(jsonString);
+            return;
+
+        }
+
+        var tempQuery = {company: company, tenant: tenant};
+
+        tempQuery['created_at'] = { $gte: from, $lte: to };
+
+        if(req.body){
+
+            if(req.body.tag){
+                tempQuery.isolated_tags = {$in: [req.body.tag]};
+            }
+
+            if(req.body.channel){
+                tempQuery.channel =  req.body.channel;
+            }
+
+            if(req.body.priority){
+                tempQuery.priority = req.body.priority;
+            }
+
+            if(req.body.type){
+                tempQuery.type = req.body.type;
+            }
+
+        }
+
+        var aggregator = [
+
+            {
+                $match: tempQuery,
+
+            },
+            {
+                $group: {
+                    _id: 0,
+                    count: {
+                        $sum: 1
+                    },
+                    reopen: {
+                        $sum: {
+                            $cond: ['$ticket_matrix.reopens', 1, 0]
+                        }
+                    },
+                    sla_violated: {
+                        $sum: {
+                            $cond: ['$ticket_matrix.sla_violated', 1, 0]
+                        }
+                    },
+                    first_call_resolved: {
+                        $sum: {
+                            $cond: ['$ticket_matrix.external_replies', 1, 0]
+                        }
+                    },
+                    new: {
+                        $sum: {
+                            $cond: [{$eq:["$status","new"]}, 1, 0]
+                        }
+                    },
+                    progressing: {
+                        $sum: {
+                            $cond: [{$or:[{$eq:["$status","open"]},{$eq:["$status","progressing"]}]}, 1, 0]
+                        }
+                    },closed: {
+                        $sum: {
+                            $cond: [{$eq:["$status","closed"]}, 1, 0]
+                        }
+                    },resolved: {
+                        $sum: {
+                            $cond: [{$eq:["$status","solved"]}, 1, 0]
+                        }
+                    },first_call_resolved: {
+                        $sum: {
+                            $cond: [{$eq:['$ticket_matrix.external_replies',0]}, 1, 0]
+                        }
+                    },
+                    overdue_done: {
+                        $sum: {
+                            $cond: [{$and : [{$gt: ["$ticket_matrix.solved_at", "$due_at" ]}, {$eq:["$status","closed"]}]}, 1, 0]
+                        }
+                    },
+                    overdue_working: {
+                        $sum: {
+                            $cond: [{$and : [{$gt: [ new Date(), "$due_at" ]}, {$and:[{$ne:["$status","closed"]},{$ne:["$status","solved"]}]}]}, 1, 0]
+                        }
+                    },
+                    average_response: {
+                        $avg: {
+
+                            $cond: [{$ne:["$status","new"]}, "$ticket_matrix.waited_time", null]
+
+                        }
+                    },
+                    average_resolution: {
+
+                        $avg: {
+
+                            $cond: [{$and : [{$eq:["$status","closed"]},{$eq:["$status","solved"]}]}, "$ticket_matrix.resolution_time", null]
+
+                        }
+                    }
+                }
+            },{
+                $project: {
+                    _id: 0,
+                    statistics: {
+                        total: '$count',
+                        reopen: '$reopen',
+                        sla_violated: '$sla_violated',
+                        first_call_resolved: '$first_call_resolved',
+                        average_response: '$average_response',
+                        average_resolution: '$average_resolution',
+                        overdue_done: '$overdue_done',
+                        overdue_working: '$overdue_working',
+                        new: '$new',
+                        progressing: '$progressing',
+                        closed: '$closed',
+                        resolved: '$resolved'
+                    }
+
+                }
+            }
+        ];
+
+        Ticket.aggregate( aggregator, function (err, tickets) {
+            if (err) {
+                jsonString = messageFormatter.FormatMessage(err, "Get All Tickets Failed", false, undefined);
+            } else {
+                jsonString = messageFormatter.FormatMessage(undefined, "Get All Tickets Successful", true, tickets);
+            }
+            res.end(jsonString);
+        });
+
+    }else{
+
+        jsonString = messageFormatter.FormatMessage(undefined, "From and To dates are require", false, undefined);
+        res.end(jsonString);
+    }
+
+}
+
+
 
 
 function getCategoryCount(catID,catName,i,len,res)
@@ -2392,6 +2625,7 @@ module.exports.SaveNewCategory = SaveNewCategory;
 module.exports.PickFilesByCategoryList = PickFilesByCategoryList;
 module.exports.FilesWithCategoryListAndDateRange = FilesWithCategoryListAndDateRange;
 module.exports.FilesWithCategoryList = FilesWithCategoryList;
+module.exports.GetFileDetails = GetFileDetails;
 
 
 
