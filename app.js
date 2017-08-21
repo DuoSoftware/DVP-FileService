@@ -2507,17 +2507,11 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList',jwt({
     var endDateTime='';
 
 
-    if (req.query)
+    if (req.query && req.query.startDateTime && req.query.endDateTime)
     {
 
-        if(JSON.parse(req.query[0]).startDateTime)
-        {
-            startDateTime=JSON.parse(req.query[0]).startDateTime;
-        }
-        if(JSON.parse(req.query[1]).endDateTime)
-        {
-            endDateTime=JSON.parse(req.query[1]).endDateTime;
-        }
+        startDateTime=req.query["startDateTime"];
+        endDateTime=req.query["endDateTime"];
 
     }
 
