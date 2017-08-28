@@ -2571,6 +2571,89 @@ function getCategoryCount(catID,catName,i,len,res)
 
 }
 
+
+function updateFilePath(req,res) {
+
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [HTTP] - Request received - Inputs - File ID : %s ',reqId,req.params.id);
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.debug('[DVP-APPRegistry.DownloadFile] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+    if(req.params.id && req.body.URL && req.body.Source)
+    {
+
+        try {
+            DbConn.FileUpload.findOne({where: [{UniqueId: req.params.id}, {CompanyId: Company}, {TenantId: Tenant}]}).then(function (resFile) {
+                if(resFile)
+                {
+                    resFile.updateAttributes({URL:req.body.URL,Source:req.body.Source}).then(function (resUpdate) {
+
+                        if(resUpdate)
+                        {
+                            logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - URL of File %s updated successfully ',reqId,req.params.id);
+                            var jsonString = messageFormatter.FormatMessage(undefined, "URL of File "+req.params.id+" updated successfully", true, resUpdate);
+                            res.end(jsonString);
+                        }
+                        else
+                        {
+                            logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - URL of File %s updating of failed ',reqId,req.params.id);
+                            var jsonString = messageFormatter.FormatMessage(new Error("URL updating of File "+req.params.id+" failed"), "URL updating of File "+req.params.id+" failed", false, undefined);
+                            res.end(jsonString);
+                        }
+
+
+
+                    }).catch(function (errUpdate) {
+                        logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - URL of File %s updating of failed ',reqId,req.params.id);
+                        var jsonString = messageFormatter.FormatMessage(errUpdate, "URL updating of File "+req.params.id+" failed", false, undefined);
+                        res.end(jsonString);
+                    });
+                }
+                else
+                {
+                    logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - No file record found for ID',reqId,req.params.id);
+                    var jsonString = messageFormatter.FormatMessage(new Error("No file record found for ID "+req.params.id), "No file record found for ID "+req.params.id, false, undefined);
+                    res.end(jsonString);
+                }
+            }).catch(function (errFile) {
+                logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - No File found for ID  %s  ',reqId,req.params.id);
+                var jsonString = messageFormatter.FormatMessage(errFile, "No File found for ID "+req.params.id, false, undefined);
+                res.end(jsonString);
+            });
+        } catch (e) {
+            logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - Error in operation  ',req.params.id);
+            var jsonString = messageFormatter.FormatMessage(e, "Error in operation ", false, undefined);
+            res.end(jsonString);
+        }
+    }
+    else
+    {
+
+        logger.debug('[DVP-FIleService.updateFilePath] - [%s] - [PGSQL] - Insufficient  received  ',req.params.id);
+        var jsonString = messageFormatter.FormatMessage(new Error(" Insufficient  received"), " Insufficient  received ", false, undefined);
+        res.end(jsonString);
+    }
+
+
+};
+
 function delIt(res)
 {
     fs.unlink('C:/Users/Pawan/AppData/Local/Temp/upload_b7354b32d44feda444726b0f6a7fb8e7',function(err){
@@ -2623,6 +2706,7 @@ module.exports.PickFilesByCategoryList = PickFilesByCategoryList;
 module.exports.FilesWithCategoryListAndDateRange = FilesWithCategoryListAndDateRange;
 module.exports.FilesWithCategoryList = FilesWithCategoryList;
 module.exports.GetFileDetails = GetFileDetails;
+module.exports.updateFilePath = updateFilePath;
 
 
 
