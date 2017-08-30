@@ -41,13 +41,13 @@ module.exports = {
   "Host":
   {
     "domain": "127.0.0.1",
-    "port": "5647",
+    "port": "5648",
     "version":"1.0.0.0",
     "hostpath":"./config",
     "logfilepath": ""
   },
 
-  "Option":"local",
+  "Option":"mongo",
   "Collection":"fs.files",
 
 
