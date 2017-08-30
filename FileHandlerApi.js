@@ -775,7 +775,7 @@ function DownloadLatestFileByID(res,fileObj)
                         }
                         else
                         {
-                            if(option.toUpperCase()=="MONGO")
+                            if(fileObj.option.toUpperCase()=="MONGO")
                             {
                                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',fileObj.reqId,JSON.stringify(resUpFile));
                                 MongoFileDownloader(UUID,isEncryptedFile,fileObj.method,res);
