@@ -3889,6 +3889,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileRecords/:size/:page',jwt({s
 
 });
 
+RestServer.put('/DVP/API/'+version+'/FileService/FileInfo/:id/path',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),FileHandler.updateFilePath);
+
 
 function Crossdomain(req,res,next){
 
