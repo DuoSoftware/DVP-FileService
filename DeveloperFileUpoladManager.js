@@ -657,6 +657,10 @@ function localStoreHandler(fileData,callback) {
     console.log("Uploading to LOCAL");
     var Today= new Date();
     var date= Today.getDate();
+    if(date<10)
+    {
+        date="0"+date;
+    }
     var month=Today.getMonth()+1;
     if(month<10)
     {

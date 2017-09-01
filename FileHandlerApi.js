@@ -2165,6 +2165,10 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
             {
                 var Today= new Date();
                 var date= Today.getDate();
+                if(date<10)
+                {
+                    date="0"+date;
+                }
                 var month=Today.getMonth()+1;
                 if(month<10)
                 {

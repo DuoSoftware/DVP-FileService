@@ -102,7 +102,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 };
 
 function localTubmnailDownloader(res,dataObj) {
-    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',dataObj.reqId,UUID);
+    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',dataObj.reqId,dataObj.UUID);
     try {
 
         res.setHeader('Content-Type', dataObj.FileStructure);
@@ -244,7 +244,15 @@ function DownloadThumbnailByID(res,fileObj)
 
             var Today= new Date();
             var date= Today.getDate();
+            if(date<10)
+            {
+                date="0"+date;
+            }
             var month=Today.getMonth()+1;
+            if(month<10)
+            {
+                month="0"+month;
+            }
             var year =Today.getFullYear();
 
 
