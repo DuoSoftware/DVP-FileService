@@ -658,6 +658,10 @@ function localStoreHandler(fileData,callback) {
     var Today= new Date();
     var date= Today.getDate();
     var month=Today.getMonth()+1;
+    if(month<10)
+    {
+        month="0"+month;
+    }
     var year =Today.getFullYear();
     var file_category=fileData.Fobj.Category;
 

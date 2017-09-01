@@ -102,7 +102,7 @@ function FindCurrentVersion(FObj,company,tenant,reqId,callback)
 };
 
 function localTubmnailDownloader(res,dataObj) {
-    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,UUID);
+    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',dataObj.reqId,UUID);
     try {
 
         res.setHeader('Content-Type', dataObj.FileStructure);

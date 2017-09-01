@@ -2034,41 +2034,76 @@ function PickUnassignedFilesWithPaging(Company,Tenant,reqId,callback)
 
 function LocalFileRemover(resFile,Company,Tenant,callback) {
 
-    var URL = path.join(resFile.URL);
-    fs.unlink(URL,function(err){
-        if(err)
+    try {
+        if(resFile.URL)
         {
-            console.log(err);
-            callback(err,undefined);
+
+            fs.exists(resFile.URL, function (exists) {
+
+                if(exists)
+                {
+                    var URL = path.join(resFile.URL);
+                    fs.unlink(URL,function(err){
+                        if(err)
+                        {
+                            console.log(err);
+                            callback(err,undefined);
+                        }
+                        else
+                        {
+                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+
+                            if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                            {
+                                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                            }
+                            else
+                            {
+                                console.log("Error in removing Thumbnails of deleted file");
+                            }
+
+                            resFile.destroy().then(function (resDel) {
+                                callback(undefined,resDel);
+                            }).catch(function (errDel) {
+                                callback(errDel,undefined);
+                            });
+                        }
+
+
+                    });
+                }
+                else
+                {
+                    RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+
+                    resFile.destroy().then(function (resDel) {
+                        callback(undefined,resDel);
+                    }).catch(function (errDel) {
+                        callback(errDel,undefined);
+                    });
+                }
+            });
+
+
         }
         else
         {
-            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
-
-            if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
-            {
-                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
-                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
-                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
-                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
-                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
-                fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
-            }
-            else
-            {
-                console.log("Error in removing Thumbnails of deleted file");
-            }
-
-
-            resFile.destroy().then(function (resDel) {
-                callback(undefined,resDel);
-            }).catch(function (errDel) {
-                callback(errDel,undefined);
-            });
+            console.log("No file path found");
+            callback(new Error("No file path found"),undefined);
         }
 
+    }
+    catch (e)
+    {
+        console.log("Exception in LOcal file remover");
+        callback(e,undefined);
+    }
 
-    });
 
 }
 
@@ -2131,20 +2166,21 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback)
                 var Today= new Date();
                 var date= Today.getDate();
                 var month=Today.getMonth()+1;
+                if(month<10)
+                {
+                    month="0"+month;
+                }
                 var year =Today.getFullYear();
 
 
-
-
-
-                if(resFile && resFile.URL)
+                if(resFile )
                 {
                     resFile.date=date;
                     resFile.month=month;
                     resFile.year=year;
 
 
-                    if(resFile.Source=="LOCAL")
+                    if(resFile.Source=="LOCAL" && resFile.URL)
                     {
                         LocalFileRemover(resFile,Company,Tenant,function (errDel,resDel) {
                             callback(errDel,resDel);
