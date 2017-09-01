@@ -73,6 +73,7 @@ module.exports = {
   {
     "algo":"aes192",
     "password":"dialog"
+
   },
   "BasePath":"./upload"
 };
