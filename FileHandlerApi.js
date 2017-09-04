@@ -772,7 +772,7 @@ function DownloadLatestFileByID(res,fileObj) {
                         if(fileStore=="MONGO")
                         {
                             logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - [MONGO] - Downloading from Mongo',fileObj.reqId,JSON.stringify(resUpFile));
-                            MongoFileDownloader(UUID,isEncryptedFile,fileObj.method,res);
+                            MongoFileDownloader(UUID,isEncryptedFile,fileObj.method,fileObj.reqId,res);
                         }
                         else
                         {
