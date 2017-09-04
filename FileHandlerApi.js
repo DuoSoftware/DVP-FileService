@@ -201,6 +201,7 @@ function MongoFileDownloader(UUID,isEncryptedFile,method,reqId,res) {
         }
         else
         {
+            try {
                 var bucket = new mongodb.GridFSBucket(db, {
                     chunkSizeBytes: 1024
                 });
@@ -245,6 +246,12 @@ function MongoFileDownloader(UUID,isEncryptedFile,method,reqId,res) {
 
                     });
                 }
+            } catch (e) {
+                console.log('Exception in downloading from mongo : ',e);
+                res.status(400);
+                db.close();
+                res.end();
+            }
 
 
 
