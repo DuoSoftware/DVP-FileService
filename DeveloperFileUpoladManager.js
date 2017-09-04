@@ -911,7 +911,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
                         //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
                         if (resUpFile) {
 
-                            searchFileCategory(Category,function (errCat,resCat) {
+                            searchFileCategory(Category,reqId,function (errCat,resCat) {
 
                                 if(errCat)
                                 {
