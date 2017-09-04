@@ -746,13 +746,13 @@ function mongoFileAndRecordHandler(dataObj,callback) {
 
 }
 
-function searchFileCategory(category,callback) {
+function searchFileCategory(category,reqId,callback) {
 
     try {
         if (category) {
-            DbConn.FileCategory.findOne({where: [{Category: fileObj.Category}]}).then(function (resCat) {
+            DbConn.FileCategory.findOne({where: [{Category: category}]}).then(function (resCat) {
                 if (resCat) {
-                    logger.info('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - File Category found : %s', fileObj.Category,dataObj.reqId);
+                    logger.info('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - File Category found : %s', category,reqId);
                     callback(undefined, resCat);
                 }
                 else {
@@ -760,16 +760,16 @@ function searchFileCategory(category,callback) {
                     callback(new Error("No file category record found "), undefined);
                 }
             }).catch(function (errCat) {
-                logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', fileObj.Category,dataObj.reqId);
+                logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', category,reqId);
                 callback(errCat, undefined);
             });
         }
         else {
-            logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - No category found',dataObj.reqId);
+            logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - No category found',reqId);
             callback(new Error("No file category found "), undefined);
         }
     } catch (e) {
-        logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - Exception occured',dataObj.reqId);
+        logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - Exception occured',reqId);
         callback(e, undefined);
     }
 }
@@ -814,7 +814,7 @@ function DeveloperUploadFiles(fileObj,callback)
         }
 
 
-        searchFileCategory(fileObj.Category,function (resCat,errCat) {
+        searchFileCategory(fileObj.Category,fileObj.reqId,function (resCat,errCat) {
 
             if(errCat)
             {
@@ -1040,7 +1040,7 @@ function recordFileDetails(dataObj,callback) {
 
                             if (resUpFile) {
                                 logger.info('[DVP-FIleService.recordFileDetails] - [%s] - [PGSQL] - New attachment ID %d successfully inserted', dataObj.reqId, dataObj.rand2);
-                                searchFileCategory(dataObj.Category, function (errCat, resCat) {
+                                searchFileCategory(dataObj.Category,dataObj.reqId, function (errCat, resCat) {
 
                                     if (errCat) {
                                         callback(errCat, undefined);
