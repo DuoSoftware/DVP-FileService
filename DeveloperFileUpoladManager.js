@@ -750,17 +750,20 @@ function searchFileCategory(category,reqId,callback) {
 
     try {
         if (category) {
+
+            console.log("File category : "+category );
+
             DbConn.FileCategory.findOne({where: [{Category: category}]}).then(function (resCat) {
                 if (resCat) {
-                    logger.info('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - File Category found : %s', category,reqId);
+                    logger.info('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - File Category found : %s', reqId,category);
                     callback(undefined, resCat);
                 }
                 else {
-                    logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', dataObj.reqId,fileObj.Category);
+                    logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', reqId,category);
                     callback(new Error("No file category record found "), undefined);
                 }
             }).catch(function (errCat) {
-                logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', category,reqId);
+                logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - Error in searching file Category : %s', reqId,category);
                 callback(errCat, undefined);
             });
         }
@@ -769,7 +772,7 @@ function searchFileCategory(category,reqId,callback) {
             callback(new Error("No file category found "), undefined);
         }
     } catch (e) {
-        logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - Exception occured',reqId);
+        logger.error('[DVP-FIleService.searchFileCategory] - [%s] - [HTTP] - Exception occurred',reqId);
         callback(e, undefined);
     }
 }
