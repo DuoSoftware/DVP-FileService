@@ -821,7 +821,7 @@ function DeveloperUploadFiles(fileObj,callback)
 
             if(errCat)
             {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId,errCat);
+                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId);
                 callback(errCat,undefined,fileObj.tempPath);
             }
             else
