@@ -167,7 +167,12 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
-        Type=file.type;
+
+        if(file.type)
+        {
+            Type=file.type;
+        }
+
 
         if(req.body.mediatype && req.body.filetype){
 
@@ -241,7 +246,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
 
                 });
             }
-
 
             if(errz)
             {
@@ -2575,8 +2579,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/:rowCount/:pageNo',jwt({s
 });
 
 RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
-{console.log("hit");
-
+{
     var reqId='';
     try {
 
@@ -3077,7 +3080,7 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         if(errz)
         {
             var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
-            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
+            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Error ', reqId);
             res.end(jsonString);
         }
 
