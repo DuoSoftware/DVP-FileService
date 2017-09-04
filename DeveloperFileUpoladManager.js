@@ -817,7 +817,7 @@ function DeveloperUploadFiles(fileObj,callback)
         }
 
 
-        searchFileCategory(fileObj.Category,fileObj.reqId,function (resCat,errCat) {
+        searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
 
             if(errCat)
             {
