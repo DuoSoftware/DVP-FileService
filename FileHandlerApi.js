@@ -1232,7 +1232,7 @@ function CurrentFileVersion(Company,Tenant,AppID,FileName,reqId,callback) {
                     callback(undefined,parseInt(resMax));
                 }
                 else{
-                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of % is not found and New version will be %d',reqId,FileName,1);
+                    logger.debug('[DVP-FIleService.DeveloperUploadFiles.FindCurrentVersion] - [%s] - [PGSQL] -  Version of %s is not found and New version will be %s',reqId,FileName,"1");
                     callback(undefined,0);
                 }
 
