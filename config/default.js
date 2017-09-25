@@ -41,13 +41,13 @@ module.exports = {
   "Host":
   {
     "domain": "127.0.0.1",
-    "port": "5646",
+    "port": "5648",
     "version":"1.0.0.0",
     "hostpath":"./config",
     "logfilepath": ""
   },
 
-  "Option":"local",
+  "Option":"mongo",
   "Collection":"fs.files",
 
 
@@ -73,6 +73,7 @@ module.exports = {
   {
     "algo":"aes192",
     "password":"dialog"
+
   },
   "BasePath":"./upload"
 };
