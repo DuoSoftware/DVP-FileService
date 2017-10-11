@@ -986,7 +986,8 @@ function recordFileDetails(dataObj,callback) {
                     FileStructure: dataObj.Fobj.type,
                     ObjType: dataObj.Type,
                     URL: dataObj.Fobj.path,
-                    RefId: dataObj.ref
+                    RefId: dataObj.ref,
+                    Source: dataObj.Fobj.Source
                 },
                 {
                     where: [{UniqueId: dataObj.resvID}, {Status: "PROCESSING"}]
