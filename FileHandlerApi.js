@@ -748,8 +748,6 @@ function DownloadLatestFileByID(res,fileObj) {
                         {
                             isEncryptedFile=resUpFile.FileCategory.Encripted;
 
-
-
                         }
                         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - ID found of file %s  ID : %s ',fileObj.reqId,fileObj.FileName,UUID);
 
