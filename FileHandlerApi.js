@@ -644,7 +644,6 @@ function DownloadFileByID(res,fileObj) {
                     {
                         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Unauthorized to download',fileObj.reqId);
 
-                        callback(new Error("Unauthorized to download"), undefined);
                         res.status(400);
                         res.end();
                     }
@@ -655,7 +654,6 @@ function DownloadFileByID(res,fileObj) {
 
                 else {
                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - No record found for  Uploaded file  %s',fileObj.reqId,fileObj.id);
-                    callback(new Error('No record for id : ' + fileObj.id), undefined);
                     res.status(404);
                     res.end();
 
@@ -664,7 +662,6 @@ function DownloadFileByID(res,fileObj) {
             }).catch(function (errUpFile) {
 
                 logger.error('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Error occurred while searching Uploaded file  %s',fileObj.reqId,fileObj.id,errUpFile);
-                callback(errUpFile, undefined);
                 res.status(400);
                 res.end();
 
@@ -675,7 +672,6 @@ function DownloadFileByID(res,fileObj) {
         }
         catch (ex) {
             logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred while starting File download service',fileObj.reqId,fileObj.id);
-            callback(new Error("No record Found for the request"), undefined);
             res.status(400);
             res.end();
         }
@@ -683,7 +679,6 @@ function DownloadFileByID(res,fileObj) {
     else
     {
         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - No record found for UUID %s',fileObj.reqId);
-        callback(new Error("Invalid input for UUID"), undefined);
         res.status(404);
         res.end();
     }

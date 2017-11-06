@@ -3062,10 +3062,10 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
                         if (errRDS) {
                             var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
                             logger.error('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-                                res.end(jsonString);
+                            res.end(jsonString);
 
 
-                            }
+                        }
                         else {
                             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
                             logger.debug('[DVP-FIleService.InternalFileService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
@@ -3864,6 +3864,33 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileRecords/:size/:page',jwt({s
 
 RestServer.put('/DVP/API/'+version+'/FileService/FileInfo/:id/path',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),FileHandler.updateFilePath);
 
+
+RestServer.get('DVP/API/Test',function (req,res,next) {
+
+    var person =
+        {
+            "person":[
+                {
+                    "name":"John",
+                    "age":"23"
+
+                },
+                {
+                    "name":"Sansa",
+                    "age":"18"
+                },
+                {
+                    "name":"Arya",
+                    "age":"16"
+                }
+            ]
+        }
+
+
+    res.end(JSON.stringify(person));
+    return next();
+
+});
 
 function Crossdomain(req,res,next){
 
