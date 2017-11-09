@@ -623,12 +623,12 @@ function localStoreHandler(fileData,callback) {
                     fs.createReadStream(fileData.Fobj.path).pipe(cipher)
                         .pipe(fs.createWriteStream(path.join(newDir, fileData.rand2.toString())))
                         .on('error', function (error) {
-                        cipher.end();
-                        console.log("Error in piping and encrypting");
-                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping and encrypting', fileData.reqId);
-                        callback(error, undefined);
+                            cipher.end();
+                            console.log("Error in piping and encrypting");
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping and encrypting', fileData.reqId);
+                            callback(error, undefined);
 
-                    }).on('finish', function () {
+                        }).on('finish', function () {
                         console.log("File  encrypted and stored");
                         cipher.end();
                         fileData.Fobj.path = path.join(newDir, fileData.rand2.toString());
@@ -643,20 +643,20 @@ function localStoreHandler(fileData,callback) {
                         .pipe(fs.createWriteStream(path.join(newDir, fileData.rand2.toString())))
                         .on('error', function (error) {
 
-                        console.log("Error in piping ");
-                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping', fileData.reqId);
-                        callback(error, undefined);
+                            console.log("Error in piping ");
+                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping', fileData.reqId);
+                            callback(error, undefined);
 
 
 
-                    }).on('finish', function () {
-                            console.log("File stored");
-                            fileData.Fobj.path = path.join(newDir, fileData.rand2.toString());
-                            fileData.Fobj.thumbDir = thumbDir;
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - File stored', fileData.reqId);
-                            callback(undefined, fileData.Fobj);
+                        }).on('finish', function () {
+                        console.log("File stored");
+                        fileData.Fobj.path = path.join(newDir, fileData.rand2.toString());
+                        fileData.Fobj.thumbDir = thumbDir;
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - File stored', fileData.reqId);
+                        callback(undefined, fileData.Fobj);
 
-                        });
+                    });
                 }
 
             }
@@ -979,14 +979,15 @@ function recordFileDetails(dataObj,callback) {
         var result = 0;
         console.log("File saving to " + dataObj.Fobj.path);
 
-        if (dataObj.resvID) {
+        if (dataObj.resvID && dataObj.Fobj) {
             // reserved file and no similar files found
             DbConn.FileUpload.update({
                     Status: "UPLOADED",
                     FileStructure: dataObj.Fobj.type,
                     ObjType: dataObj.Type,
                     URL: dataObj.Fobj.path,
-                    RefId: dataObj.ref
+                    RefId: dataObj.ref,
+                    Source:dataObj.Fobj.Source
                 },
                 {
                     where: [{UniqueId: dataObj.resvID}, {Status: "PROCESSING"}]
