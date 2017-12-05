@@ -771,7 +771,7 @@ function localStorageRecordHandler(dataObj, callback)
                             thumbDir:resStore.thumbDir,
                             reqId:dataObj.reqId,
                             tempPath:dataObj.tempPath,
-                            type:dataObj.type
+                            type:dataObj.Fobj.type
 
 
                         }
