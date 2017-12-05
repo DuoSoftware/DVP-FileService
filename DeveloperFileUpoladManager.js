@@ -80,12 +80,12 @@ if(util.isArray(mongoip)){
 }
 
 
-function FindCurrentVersion(fname,company,tenant,reqId,callback)
+function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 {
     try
     {
         logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,fname);
-        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
+        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant},{ObjCategory:Category}]}).then(function (resFile) {
 
             if(resFile)
             {
@@ -874,82 +874,93 @@ function DeveloperUploadFiles(fileObj,callback)
         var DisplayName="";
         fileObj.tempPath="";
 
-        if(fileObj.Fobj.display){
-
-
-            DisplayName = fileObj.Fobj.display;
-            fileObj.DisplayName=DisplayName;
-        }
-        else
+        if(fileObj.Fobj)
         {
-            DisplayName=fileObj.Fobj.name;
-            fileObj.DisplayName=DisplayName;
-        }
-
-        fileObj.Fobj.Category=fileObj.Category;
-
-        fileObj.Fobj.sizeInMB=0;
-
-        if(fileObj.Fobj.size!=0 && fileObj.Fobj.size)
-        {
-            fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
-        }
-
-        if(fileObj.Fobj.path)
-        {
-            fileObj.tempPath=fileObj.Fobj.path;
-        }
-
-        if(fileObj.resvID)
-        {
-            fileObj.rand2=fileObj.resvID;
-        }
+            if(fileObj.Fobj.display){
 
 
-        searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
-
-            if(errCat)
-            {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId);
-                callback(errCat,undefined,fileObj.tempPath);
+                DisplayName = fileObj.Fobj.display;
+                fileObj.DisplayName=DisplayName;
             }
             else
             {
-                fileObj.encNeeded=resCat.Encripted;
-
-                var fileStore="LOCAL";
-
-                if(resCat.Source)
-                {
-                    fileStore=resCat.Source;
-                }
-                else
-                {
-                    fileStore=fileObj.option.toUpperCase();
-                }
-
-
-
-                if(fileStore=="MONGO")
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
-                    console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
-                    mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                        callback(errStore,resStore,tempPath);
-                    });
-                }
-                else
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
-                    console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
-                    localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                        callback(errStore,resStore,tempPath);
-                    });
-                }
-
-
+                DisplayName=fileObj.Fobj.name;
+                fileObj.DisplayName=DisplayName;
             }
-        });
+
+            fileObj.Fobj.Category=fileObj.Category;
+
+            fileObj.Fobj.sizeInMB=0;
+
+            if(fileObj.Fobj.size!=0 && fileObj.Fobj.size)
+            {
+                fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
+            }
+
+            if(fileObj.Fobj.path)
+            {
+                fileObj.tempPath=fileObj.Fobj.path;
+            }
+
+            if(fileObj.resvID)
+            {
+                fileObj.rand2=fileObj.resvID;
+            }
+
+
+            searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
+
+                if(errCat)
+                {
+                    logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId);
+                    callback(errCat,undefined,fileObj.tempPath);
+                }
+                else
+                {
+                    fileObj.encNeeded=resCat.Encripted;
+
+                    var fileStore="LOCAL";
+
+                    if(resCat.Source)
+                    {
+                        fileStore=resCat.Source;
+                    }
+                    else
+                    {
+                        fileStore=fileObj.option.toUpperCase();
+                    }
+
+
+
+                    if(fileStore=="MONGO")
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
+                        console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
+                        mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+                    else
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
+                        console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
+                        localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+
+
+                }
+            });
+        }
+        else
+        {
+            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - No file object found ',fileObj.reqId);
+            callback(new Error("No file object found"),undefined,fileObj.tempPath);
+        }
+
+
+
 
 
     }
@@ -968,7 +979,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
     try
     {
 
-        FindCurrentVersion( fileName,cmp, ten, reqId, function (errVersion, resVersion) {
+        FindCurrentVersion( fileName,cmp, ten, reqId,Category, function (errVersion, resVersion) {
 
             if(errVersion)
             {
@@ -1097,7 +1108,7 @@ function recordFileDetails(dataObj,callback) {
             // not a reserved file
 
 
-            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId, function (errVersion, resVersion) {
+            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId,dataObj.Category, function (errVersion, resVersion) {
                 if (errVersion) {
                     callback(errVersion, undefined);
                 }
