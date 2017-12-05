@@ -267,6 +267,8 @@ function DownloadThumbnailByID(res,fileObj)
                     fileObj.date=date;
                     fileObj.month=month;
                     fileObj.year=year;
+                    fileObj.ObjCategory=resUpFile.ObjCategory;
+
 
                     var fileStore="LOCAL";
 
