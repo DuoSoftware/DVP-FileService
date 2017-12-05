@@ -123,7 +123,7 @@ function FindCurrentVersion(fname,company,tenant,reqId,callback)
 }
 
 
-function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
+/*function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
 {
     var sizeArray=['75','100','125','150','200'];
     var thumbnailArray=[];
@@ -192,7 +192,79 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
     }
 
 
+}*/
+
+function LocalThumbnailMaker(thumObj,callback)
+{
+    var sizeArray=['75','100','125','150','200'];
+    var thumbnailArray=[];
+
+    var fileStruct=thumObj.type.split("/")[0];
+
+    try {
+        if (fileStruct == "image") {
+            logger.info('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Image file found to make thumbnails ',thumObj.reqId,thumObj.uuid);
+            mkdirp(thumObj.thumbDir, function (err) {
+
+                if(err)
+                {
+                    logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Error occurred in making directory for thumbnails of %s ',reqId,uuid);
+                    callback(err, thumObj.uuid);
+                }
+                else
+                {
+                    console.log(path.join(thumObj.tempPath));
+
+
+                    sizeArray.forEach(function (size) {
+
+
+                        thumbnailArray.push(function createContact(callbackThumb) {
+
+                            var readStream=fs.createReadStream(path.join(thumObj.tempPath));
+                            var writeStream = fs.createWriteStream(path.join(thumObj.thumbDir, thumObj.uuid.toString() + "_" + size.toString()));
+
+
+                            gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
+                            {
+                                stdout.pipe(writeStream).on('error', function (error) {
+                                    console.log("Error in making thumbnail " + thumObj.uuid + "_" + size);
+                                    callbackThumb(error, undefined);
+                                }).on('finish', function () {
+                                    console.log("Making thumbnail " + thumObj.uuid + "_" + size + " Success");
+                                    callbackThumb(undefined, "Done");
+                                });
+                            });
+
+
+
+                        });
+                    });
+
+                    async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
+
+                        callback(undefined, thumObj.uuid);
+
+
+                    });
+                }
+
+            });
+
+        }
+        else
+        {
+            callback(undefined, thumObj.uuid);
+        }
+    } catch (e) {
+
+        logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Exception in operation of local thumbnail creation of %s ',thumObj.reqId,thumObj.uuid);
+        callback(e, thumObj.uuid);
+    }
+
+
 }
+
 
 
 function MongoFileUploader(dataObj,callback)
@@ -691,7 +763,24 @@ function localStorageRecordHandler(dataObj, callback)
                     }
                     else {
                         console.log("File record added");
-                        LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
+
+                        var thumObj = {
+                            uuid:dataObj.rand2,
+                            resStore:resStore,
+                            Category:dataObj.Category,
+                            thumbDir:resStore.thumbDir,
+                            reqId:dataObj.reqId,
+                            tempPath:dataObj.tempPath,
+                            type:dataObj.type
+
+
+                        }
+
+                       /* LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
+
+                            callback(errThumb, dataObj.rand2, dataObj.tempPath);
+
+                        });*/LocalThumbnailMaker(thumObj, function (errThumb, resThumb) {
 
                             callback(errThumb, dataObj.rand2, dataObj.tempPath);
 
