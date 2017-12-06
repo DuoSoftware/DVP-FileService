@@ -2731,6 +2731,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 {
     var reqId='';
     var userType ="Other";
+    var category="";
 
     try {
 
