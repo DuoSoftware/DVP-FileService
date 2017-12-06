@@ -683,6 +683,7 @@ RestServer.head('/DVP/API/'+version+'/FileService/File/Download/:id/:displayname
 RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
     var reqId='';
+    var category="";
 
     try {
 
@@ -704,6 +705,13 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',
             res.status(404);
             res.end(jsonString);
         }
+        if (req.query && req.query.category)
+        {
+
+            category=req.query.category;
+
+        }
+
 
         var Company=req.user.company;
         var Tenant=req.user.tenant;
@@ -715,7 +723,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/DownloadLatest/:filename',
                 Company:Company,
                 Tenant:Tenant,
                 method:"DEFAULT",
-                reqId:reqId
+                reqId:reqId,
+                category:category
 
 
             }
@@ -2734,6 +2743,13 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 
         }
 
+        if (req.query && req.query.category)
+        {
+
+            category=req.query.category;
+
+        }
+
 
         var Company=req.params.company;
         var Tenant=req.params.tenant;
@@ -2745,7 +2761,8 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
                 Company:Company,
                 Tenant:Tenant,
                 method:"DEFAULT",
-                reqId:reqId
+                reqId:reqId,
+                category:category
 
 
             }
@@ -2771,6 +2788,7 @@ RestServer.get('/DVP/API/'+version+'/InternalFileService/File/DownloadLatest/:te
 RestServer.get('/DVP/API/'+version+'/InternalFileServiceLocal/File/DownloadLatest/:tenant/:company/:filename',function(req,res,next)
 {
     var reqId='';
+    var category="";
 
     try {
 
@@ -2788,6 +2806,13 @@ RestServer.get('/DVP/API/'+version+'/InternalFileServiceLocal/File/DownloadLates
         var Company=req.params.company;
         var Tenant=req.params.tenant;
 
+        if (req.query && req.query.category)
+        {
+
+            category=req.query.category;
+
+        }
+
 
         var fileObj =
             {
@@ -2796,7 +2821,8 @@ RestServer.get('/DVP/API/'+version+'/InternalFileServiceLocal/File/DownloadLates
                 Company:Company,
                 Tenant:Tenant,
                 method:"DEFAULT",
-                reqId:reqId
+                reqId:reqId,
+                category:category
 
 
             }
@@ -3760,6 +3786,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:filename',j
 {
     var reqId='';
     var userType="Agent";
+    var category="";
 
     try
     {
@@ -3779,8 +3806,16 @@ RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:filename',j
             res.end(jsonString);
         }
 
+        if (req.query && req.query.category)
+        {
+
+            category=req.query.category;
+
+        }
+
         var Company = req.user.company;
         var Tenant = req.user.tenant;
+
 
         var fileObj =
             {
@@ -3790,7 +3825,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/Agent/FileDownload/:filename',j
                 Tenant: Tenant,
                 userType: userType,
                 reqId: reqId,
-                method: "DEFAULT"
+                method: "DEFAULT",
+                category:category
             }
 
 

@@ -80,12 +80,12 @@ if(util.isArray(mongoip)){
 }
 
 
-function FindCurrentVersion(fname,company,tenant,reqId,callback)
+function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 {
     try
     {
         logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,fname);
-        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
+        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant},{ObjCategory:Category}]}).then(function (resFile) {
 
             if(resFile)
             {
@@ -979,7 +979,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
     try
     {
 
-        FindCurrentVersion( fileName,cmp, ten, reqId, function (errVersion, resVersion) {
+        FindCurrentVersion( fileName,cmp, ten, reqId,Category, function (errVersion, resVersion) {
 
             if(errVersion)
             {
@@ -1108,7 +1108,7 @@ function recordFileDetails(dataObj,callback) {
             // not a reserved file
 
 
-            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId, function (errVersion, resVersion) {
+            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId,dataObj.Category, function (errVersion, resVersion) {
                 if (errVersion) {
                     callback(errVersion, undefined);
                 }

@@ -469,7 +469,21 @@ function DownloadLatestFileByID(res,fileObj) {
     try {
         logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Searching for Uploaded file %s',fileObj.reqId,fileObj.FileName);
 
-        DbConn.FileUpload.max('Version',{where: [{Filename: fileObj.FileName},{CompanyId:fileObj.Company},{TenantId:fileObj.Tenant}]}).then(function (resMax) {
+        var conditionalData = {
+            Filename: fileObj.FileName,
+            CompanyId:fileObj.Company,
+            TenantId:fileObj.Tenant
+
+        };
+
+
+        if(fileObj.category)
+        {
+            conditionalData.ObjCategory=fileObj.category
+        }
+
+
+        DbConn.FileUpload.max('Version',{where: [conditionalData]}).then(function (resMax) {
             if(resMax)
             {
                 logger.debug('[DVP-FIleService.DownloadLatestFileByID] - [%s] - Max version found for file %s',fileObj.reqId,fileObj.FileName);
