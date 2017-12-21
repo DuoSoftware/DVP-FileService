@@ -4,7 +4,7 @@ var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
 var config = require('config');
-var sequelize = require('sequelize');
+
 
 //Sprint 5
 //var couchbase = require('couchbase');
