@@ -1899,7 +1899,8 @@ function PickFileCountsOFCategories(catID,company,tenant,callback) {
         }
         else
         {
-            DbConn.FileUpload.count({where: ['"FileCategoryId" = '+ catID.toString(),{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
+            //DbConn.FileUpload.count({where: ['"FileCategoryId" = '+ catID.toString(),{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
+            DbConn.FileUpload.count({where: [{FileCategoryId: catID.toString()},{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
 
 
                 console.log(resCount+"Files found for category");
