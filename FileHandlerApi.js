@@ -1051,7 +1051,7 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
 
                 DbConn.FileUpload.findAll({where:[conditionalData],offset:((req.params.pageNo - 1) * req.params.rowCount),
                     limit: req.params.rowCount,
-                    order: '"updatedAt" DESC'})
+                    order: [['updatedAt', 'DESC']]})
                     .then(function (result) {
                         if(result.length==0)
                         {
@@ -1145,7 +1145,7 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
                 DbConn.FileUpload.findAll({ where:[conditionalData],
                     offset:((req.params.pageNo - 1) * req.params.rowCount),
                     limit: req.params.rowCount,
-                    order: '"updatedAt" DESC'})
+                    order: [['updatedAt','DESC']]})
                     .then(function (result) {
                         if(result.length==0)
                         {
@@ -1482,7 +1482,7 @@ function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,isVisibleCat,reqI
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
             include:[categoryObj,{model:DbConn.Application, as:"Application"}],
-            order: '"updatedAt" DESC'
+            order: [['updatedAt','DESC']]
 
 
         }).then(function (resFile) {
