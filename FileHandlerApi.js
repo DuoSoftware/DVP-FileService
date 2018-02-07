@@ -16,7 +16,7 @@ var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
-
+var uploadPath="/usr/local/src/fileservice/upload";
 //
 
 
@@ -1559,7 +1559,7 @@ function LocalFileRemover(resFile,Company,Tenant,callback) {
 
                             if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
                             {
-                                var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
+                                var thumbDir = path.join(uploadPath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
                                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
                                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
                                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));

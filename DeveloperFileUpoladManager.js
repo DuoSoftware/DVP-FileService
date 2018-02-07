@@ -58,6 +58,9 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 
+
+var uploadPath="/usr/local/src/fileservice/upload";
+
 var uri = '';
 mongoip = mongoip.split(',')
 if(util.isArray(mongoip)){
@@ -675,9 +678,14 @@ function localStoreHandler(fileData,callback) {
         var year = Today.getFullYear();
         var file_category = fileData.Fobj.Category;
 
-        var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
-        var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());
-        fileData.Fobj.thumbDir = thumbDir;
+       /* var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
+        var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());*/
+
+        var newDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
+        var thumbDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());
+
+
+       fileData.Fobj.thumbDir = thumbDir;
 
         mkdirp(newDir, function (err) {
 

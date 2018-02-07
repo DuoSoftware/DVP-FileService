@@ -16,7 +16,7 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
-
+var uploadPath="/usr/local/src/fileservice/upload";
 
 
 
@@ -109,7 +109,7 @@ function localTubmnailDownloader(res,dataObj) {
         var file_category=dataObj.ObjCategory;
         //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
 
-        var SourcePath = path.join(config.BasePath,"Company_"+dataObj.Company.toString()+"_Tenant_"+dataObj.Tenant.toString(),file_category+"_thumb",dataObj.year.toString()+"-"+dataObj.month.toString()+"-"+dataObj.date.toString(),(dataObj.UUID+"_"+dataObj.thumbSize).toString());
+        var SourcePath = path.join(uploadPath,"Company_"+dataObj.Company.toString()+"_Tenant_"+dataObj.Tenant.toString(),file_category+"_thumb",dataObj.year.toString()+"-"+dataObj.month.toString()+"-"+dataObj.date.toString(),(dataObj.UUID+"_"+dataObj.thumbSize).toString());
 
         /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
          pathObj.forEach(function (value,index) {
