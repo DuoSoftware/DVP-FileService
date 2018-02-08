@@ -59,7 +59,7 @@ var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 
 
-var uploadPath="/usr/local/src/fileservice/upload";
+var uploadPath="/usr/local/src/upload";
 
 var uri = '';
 mongoip = mongoip.split(',')
