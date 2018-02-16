@@ -518,7 +518,7 @@ function DownloadLatestFileByID(res,fileObj) {
                             }
 
 
-                            var fileStore="LOCAL";
+                        var fileStore="LOCAL";
 
                         if(resUpFile.Source)
                         {
@@ -1721,103 +1721,103 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback) {
 
 
 
-               /* if(option.toUpperCase()=="LOCAL")
-                {
-                    console.log("File operations on LOCAL ");
-                    if(resFile.URL)
-                    {
-                        var URL = path.join(resFile.URL);
-                        fs.unlink(URL,function(err){
-                            if(err)
-                            {
-                                console.log(err);
-                                callback(err,undefined);
-                            }
-                            else
-                            {
-                                RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+                /* if(option.toUpperCase()=="LOCAL")
+                 {
+                 console.log("File operations on LOCAL ");
+                 if(resFile.URL)
+                 {
+                 var URL = path.join(resFile.URL);
+                 fs.unlink(URL,function(err){
+                 if(err)
+                 {
+                 console.log(err);
+                 callback(err,undefined);
+                 }
+                 else
+                 {
+                 RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
 
-                                if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
-                                {
-                                    var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
-                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
-                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
-                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
-                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
-                                    fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
-                                }
-                                else
-                                {
-                                    console.log("Error in removing Thumbnails of deleted file");
-                                }
-
-
-                                resFile.destroy().then(function (resDel) {
-                                    callback(undefined,resDel);
-                                }).catch(function (errDel) {
-                                    callback(errDel,undefined);
-                                });
-                            }
+                 if(resFile.FileStructure && resFile.FileStructure.split("/")[0]=="image")
+                 {
+                 var thumbDir = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),resFile.ObjCategory+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString());
+                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_75").toString()));
+                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_100").toString()));
+                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_125").toString()));
+                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_150").toString()));
+                 fs.unlink(path.join(thumbDir,(resFile.UniqueId+"_200").toString()));
+                 }
+                 else
+                 {
+                 console.log("Error in removing Thumbnails of deleted file");
+                 }
 
 
-                        });
-                    }
-                    else
-                    {
-                        console.log("No file path found");
-                        callback(new Error(""),undefined);
-                    }
+                 resFile.destroy().then(function (resDel) {
+                 callback(undefined,resDel);
+                 }).catch(function (errDel) {
+                 callback(errDel,undefined);
+                 });
+                 }
 
-                }
-                else
-                {
-                    if(option.toUpperCase()=="MONGO")
-                    {
-                        /!*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*!/
-                        mongodb.MongoClient.connect(uri, function(error, db)
-                        {
-                            if(error)
-                            {
-                                console.log("DB Opening Error");
-                                db.close();
-                                callback(error,undefined);
-                            }
-                            else
-                            {
-                                db.collection(config.Collection).deleteOne(
-                                    { "filename": fileID },
-                                    function(err, results) {
-                                        //console.log(results);
-                                        if(err)
-                                        {
-                                            console.log("Deletion Error");
-                                            db.close();
-                                            callback(err,undefined);
-                                        }
-                                        else
-                                        {
-                                            RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
-                                            resFile.destroy().then(function (resDel) {
-                                                console.log("Record destroy success");
-                                                db.close();
-                                                callback(undefined,resDel);
-                                            }).catch(function (errDel) {
-                                                console.log("Record destroy error");
-                                                db.close();
-                                                callback(errDel,undefined);
-                                            });
-                                        }
 
-                                    }
-                                );
-                            }
-                        });
-                    }
-                    else
-                    {
-                        callback(new Error("Invalid DB Option"),undefined);
-                    }
-                }*/
+                 });
+                 }
+                 else
+                 {
+                 console.log("No file path found");
+                 callback(new Error(""),undefined);
+                 }
+
+                 }
+                 else
+                 {
+                 if(option.toUpperCase()=="MONGO")
+                 {
+                 /!*var uri = 'mongodb://'+config.Mongo.user+':'+config.Mongo.password+'@'+config.Mongo.ip+':'+config.Mongo.port+'/'+config.Mongo.dbname;*!/
+                 mongodb.MongoClient.connect(uri, function(error, db)
+                 {
+                 if(error)
+                 {
+                 console.log("DB Opening Error");
+                 db.close();
+                 callback(error,undefined);
+                 }
+                 else
+                 {
+                 db.collection(config.Collection).deleteOne(
+                 { "filename": fileID },
+                 function(err, results) {
+                 //console.log(results);
+                 if(err)
+                 {
+                 console.log("Deletion Error");
+                 db.close();
+                 callback(err,undefined);
+                 }
+                 else
+                 {
+                 RedisPublisher.UpdateFileStorageRecords("RELEASE",resFile.ObjCategory,resFile.Size,Company,Tenant);
+                 resFile.destroy().then(function (resDel) {
+                 console.log("Record destroy success");
+                 db.close();
+                 callback(undefined,resDel);
+                 }).catch(function (errDel) {
+                 console.log("Record destroy error");
+                 db.close();
+                 callback(errDel,undefined);
+                 });
+                 }
+
+                 }
+                 );
+                 }
+                 });
+                 }
+                 else
+                 {
+                 callback(new Error("Invalid DB Option"),undefined);
+                 }
+                 }*/
             }
 
         });
@@ -1839,17 +1839,49 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback) {
 function  SaveNewCategory(categoryData,reqId,callback) {
 
     try {
-        var CatObject = DbConn.FileCategory
-            .build(
-                {
-                    Category: categoryData.Category,
-                    Owner: "user",
-                    Visible: categoryData.Visible,
-                    Encripted: categoryData.Encripted
 
 
-                }
-            )
+        DbConn.FileCategory.findOne({where:[{Company:categoryData.Company},{Tenant:categoryData.Tenant},{Owner:'user'},{Category:categoryData.Category}]}).then(function (resCat) {
+
+            if(resCat)
+            {
+                logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] -  File category %s is already exists for your company',reqId,categoryData.Category);
+                callback(new Error("File category "+categoryData.Category+ "is already exists for your company"), undefined);
+            }
+            else
+            {
+                var CatObject = DbConn.FileCategory
+                    .build(
+                        {
+                            Category: categoryData.Category,
+                            Owner: "user",
+                            Visible: categoryData.Visible,
+                            Encripted: categoryData.Encripted,
+                            Company:categoryData.Company,
+                            Tenant:categoryData.Tenant
+
+
+                        }
+                    )
+
+                CatObject.save().then(function (resSave) {
+
+                    logger.info('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Save new file category succeeded %s',reqId,resSave);
+                    callback(undefined, resSave);
+
+                }).catch(function (errSave) {
+                    logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Error occurred while saving file category %s',reqId,JSON.stringify(CatObject),errSave);
+                    callback(errSave, undefined);
+                });
+            }
+
+        }).catch(function (errCat) {
+
+            logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] -  File category %s is validating failed',reqId,categoryData.Category);
+            callback(errCat, undefined);
+        });
+
+
     }
     catch(ex)
     {
@@ -1857,21 +1889,23 @@ function  SaveNewCategory(categoryData,reqId,callback) {
         callback(ex, undefined);
     }
 
-    CatObject.save().then(function (resSave) {
 
-        logger.info('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Save new file category succeeded %s',reqId,resSave);
-        callback(undefined, resSave);
-
-    }).catch(function (errSave) {
-        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [PGSQL] - Error occurred while saving file category %s',reqId,JSON.stringify(CatObject),errSave);
-        callback(errSave, undefined);
-    });
 }
 
-function  LoadCategories(reqId,callback) {
+function  LoadCategories(reqId,company,tenant,isAll,callback) {
     try
     {
-        DbConn.FileCategory.findAll({where:[{Visible:true}]}).then(function (resFile) {
+        var qObj = {
+            Company:company,
+            Tenant:tenant
+        }
+
+        if(!isAll)
+        {
+            qObj.Visible=true;
+        }
+
+        DbConn.FileCategory.findAll({where:qObj}).then(function (resFile) {
 
 
             callback(undefined,resFile);
@@ -2177,6 +2211,41 @@ function updateFilePath(req,res) {
 
 };
 
+function  UpdateCategory(catId,body,company,tenant,callback) {
+
+    if(body)
+    {
+        if(body.Category)
+        {
+            delete body.Category;
+        }
+        if(body.Owner)
+        {
+            delete body.Owner;
+        }
+        if(body.Company)
+        {
+            delete body.Company;
+        }
+        if(body.Tenant)
+        {
+            delete body.Tenant;
+        }
+    }
+
+    DbConn.FileCategory.findOne({where:[{id:catId},{Company:company},{Tenant:tenant}]}).then(function (resCat) {
+        resCat.updateAttributes(body).then(function (resUpdate) {
+            callback(undefined,resUpdate);
+        }).catch(function (errUpdate) {
+            callback(errUpdate,undefined);
+        })
+    }).catch(function (errCat) {
+        callback(errCat,undefined);
+    });
+
+
+}
+
 
 
 module.exports.PickAttachmentMetaData = PickAttachmentMetaData;
@@ -2209,6 +2278,7 @@ module.exports.FilesWithCategoryListAndDateRange = FilesWithCategoryListAndDateR
 module.exports.FilesWithCategoryList = FilesWithCategoryList;
 module.exports.GetFileDetails = GetFileDetails;
 module.exports.updateFilePath = updateFilePath;
+module.exports.UpdateCategory = UpdateCategory;
 
 
 

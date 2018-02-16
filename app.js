@@ -1726,8 +1726,9 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileCategory',jwt({secret: sec
             res.end(jsonString);
         }
 
-        var Company=req.user.company;
-        var Tenant=req.user.tenant;
+
+        req.body.Company=req.user.company;
+        req.body.Tenant=req.user.tenant;
 
         FileHandler.SaveNewCategory(req.body,reqId,function(err,resz)
         {
@@ -1788,7 +1789,17 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',jwt({secret: se
             res.end(jsonString);
         }
 
-        FileHandler.LoadCategories(reqId,function(err,resz)
+        var company=req.user.company;
+        var tenant=req.user.tenant;
+        var isAll=false;
+
+        if(req.params && req.params.All)
+        {
+            isAll=true;
+        }
+
+
+        FileHandler.LoadCategories(reqId,company,tenant,isAll,function(err,resz)
         {
             if(err)
             {
@@ -1846,7 +1857,8 @@ RestServer.put('/DVP/API/'+version+'/FileService/FileCategory/:CategoryID',jwt({
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        FileHandler.UpdateCategory(req.params.CategoryID,req.body.CatData,function(err,resz)
+
+        FileHandler.UpdateCategory(req.params.CategoryID,req.body,Company,Tenant,function(err,resz)
         {
             if(err)
             {
@@ -1881,7 +1893,49 @@ RestServer.put('/DVP/API/'+version+'/FileService/FileCategory/:CategoryID',jwt({
 
 });
 
+RestServer.get('/DVP/API/'+version+'/FileService/DefaultStorage',jwt({secret: secret.Secret, getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{ var reqId='';
+    try {
 
+        try
+        {
+            reqId = uuid.v1();
+        }
+        catch(ex)
+        {
+
+        }
+
+
+
+        logger.debug('[DVP-FIleService.GetDefaultStorageOption] - [%s] - [HTTP] - Request received - ',reqId);
+
+        if(option)
+        {
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, option);
+            logger.debug('[DVP-FIleService.GetDefaultStorageOption] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, undefined);
+            logger.debug('[DVP-FIleService.GetDefaultStorageOption] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.GetDefaultStorageOption] - [%s] - [HTTP] - Exception occurred when starting GetDefaultStorageOption service',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.debug('[DVP-FIleService.GetDefaultStorageOption] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
 
 RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {
@@ -2111,6 +2165,8 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategoryID/:Categor
     return next();
 
 });
+
+
 
 RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 {

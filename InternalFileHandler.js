@@ -21,10 +21,6 @@ var uploadPath="/usr/local/src/upload";
 
 
 
-//Sprint 5
-
-//var couchbase = require('couchbase');
-var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);
