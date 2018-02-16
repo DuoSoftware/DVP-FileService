@@ -1836,6 +1836,39 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback) {
 
 }
 
+function SaveCategoryBulk(reqId, categoryDataList, company, tenant, callback) {
+
+    try
+    {
+        var newCatList = categoryDataList.map(function(categoryObj)
+        {
+            categoryObj.Company = parseInt(company);
+            categoryObj.Tenant = parseInt(tenant);
+
+            return categoryObj;
+        });
+
+        DbConn.FileCategory.bulkCreate(newCatList).then(function(response)
+        {
+            callback(null, response);
+
+        }).catch(function(err)
+        {
+            callback(err, null);
+
+        });
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-FIleService.SaveNewCategory] - [%s] - [FILECATEGORY] - Exception occurred while creating file category',reqId,ex);
+        callback(ex, null);
+    }
+
+
+}
+
 function  SaveNewCategory(categoryData,reqId,callback) {
 
     try {
@@ -2279,6 +2312,7 @@ module.exports.FilesWithCategoryList = FilesWithCategoryList;
 module.exports.GetFileDetails = GetFileDetails;
 module.exports.updateFilePath = updateFilePath;
 module.exports.UpdateCategory = UpdateCategory;
+module.exports.SaveCategoryBulk = SaveCategoryBulk;
 
 
 

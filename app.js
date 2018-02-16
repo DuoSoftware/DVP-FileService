@@ -1765,6 +1765,63 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileCategory',jwt({secret: sec
 
 });
 
+RestServer.post('/DVP/API/'+version+'/FileService/FileCategory/Bulk',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
+{
+    try
+    {
+
+        var reqId = uuid.v1();
+
+        logger.debug('[DVP-FIleService.SaveNewCategory] - [%s] - [HTTP] - Request received - ',reqId);
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+            logger.debug('[DVP-APPRegistry.DeleteFile] - [%s] - Request response : %s ', reqId, jsonString);
+            res.end(jsonString);
+        }
+        if(req.body)
+        {
+            var fileCategories = req.body.FileCategories;
+
+            FileHandler.SaveCategoryBulk(reqId, fileCategories, req.user.company, req.user.tenant, function(err,resz)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, false);
+                    logger.debug('[DVP-FIleService.SaveNewCategory] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, true);
+                    logger.debug('[DVP-FIleService.SaveNewCategory] - [%s] - Request response : %s ', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+
+
+
+            });
+        }
+
+
+
+
+
+    }
+    catch(ex)
+    {
+        logger.debug('[DVP-FIleService.SaveNewCategory] - [%s] - [HTTP] - Exception occurred when starting LoadCategories service',reqId);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, false);
+        logger.debug('[DVP-FIleService.SaveNewCategory] - [%s] - Request response : %s ', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 RestServer.get('/DVP/API/'+version+'/FileService/FileCategories',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"read"}),function(req,res,next)
 { var reqId='';
     try {
