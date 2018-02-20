@@ -240,7 +240,9 @@ function decrementTotalFileStorage(fileSize,company,tenant)
 
 function updateFileStorageRecord(fileCategory,fileSize,company,tenant)
 {
-    var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
+    if(fileCategory.toUpperCase() !='CONVERSATION')
+    {
+        var fileKey = tenant+":"+company+":STORAGE:"+fileCategory;
         client.get(fileKey, function (errKey,resKey) {
             if(errKey)
             {
@@ -282,6 +284,8 @@ function updateFileStorageRecord(fileCategory,fileSize,company,tenant)
                 }
             }
         })
+    }
+
 }
 
 
@@ -372,6 +376,25 @@ function UpdateFileStorageRecords(action,fileCategory,fileSize,company,tenant)
         }
 }
 
+function GetOrganizationsSpaceLimit(company,tenant,callback) {
+
+    var fileKey = "SpaceLimit:"+tenant+":"+company+":fileSpace";
+    client.get(fileKey, function (errKey,resKey) {
+        if(errKey)
+        {
+            //callback(errKey,resKey);
+            logger.error('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+            callback(errKey,undefined);
+        }
+        else
+        {
+            logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Key found ');
+            callback(undefined,resKey);
+        }
+    })
+
+}
+
 /*function removeAllFileStorageRecords(company,tenant,callback)
 {
     if(client.connected) {
@@ -456,4 +479,5 @@ module.exports.updateFileStorageRecord = updateFileStorageRecord;
 module.exports.getFileStorageRecordByCategory = getFileStorageRecordByCategory;
 module.exports.getTotalFileStorageDetails = getTotalFileStorageDetails;
 module.exports.UpdateFileStorageRecords = UpdateFileStorageRecords;
+module.exports.GetOrganizationsSpaceLimit = GetOrganizationsSpaceLimit;
 /*module.exports.removeAllFileStorageRecords = removeAllFileStorageRecords;*/

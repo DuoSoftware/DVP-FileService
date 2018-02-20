@@ -251,6 +251,12 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
             {
                 var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
                 logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to upload file : %s ', reqId, jsonString);
+
+                if(errz.message =='Allocated memory size exceeded')
+                {
+                    res.status(507);
+                }
+
                 res.end(jsonString);
             }
 
@@ -4014,6 +4020,130 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileRecords/:size/:page',jwt({s
 
 RestServer.put('/DVP/API/'+version+'/FileService/FileInfo/:id/path',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"myUserProfile", action:"read"}),FileHandler.updateFilePath);
 
+
+RestServer.get('/DVP/API/'+version+'/FileService/FileDetails/TotalSize',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    // console.log(req);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.error('[DVP-APPRegistry.UploadFiles] - [%s] - Invalid Authorization details found  ', reqId);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+    try {
+
+
+        logger.debug('[DVP-FIleService.GetTotalSize] - [%s] - [HTTP] - Request received - Inputs - Company : %s Tenant : %s',reqId,Company,Tenant);
+
+
+        DeveloperFileUpoladManager.GetUploadedFileSize(Company,Tenant,function (errSum, resSum) {
+
+          if(errSum)
+          {
+              logger.error('[DVP-FIleService.GetTotalSize] - [%s] - [HTTP] - Error in operation  ',reqId);
+              var jsonString = messageFormatter.FormatMessage(errSum, "EXCEPTION", false, undefined);
+              res.end(jsonString);
+          }
+          else
+          {
+              logger.info('[DVP-FIleService.GetTotalSize] - [%s] - [HTTP] - Error in operation  ',reqId);
+              var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resSum);
+              res.end(jsonString);
+          }
+
+
+        });
+
+
+    }
+    catch(ex)
+    {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.error('[DVP-FIleService.UploadFiles] - [%s] -Exception in operation', reqId);
+
+        res.end(jsonString);
+    }
+    return next();
+});
+
+RestServer.put('/DVP/API/'+version+'/FileService/FileSizeDetails/Restore',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    // console.log(req);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.error('[DVP-APPRegistry.UploadFiles] - [%s] - Invalid Authorization details found  ', reqId);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+    try {
+
+
+        logger.debug('[DVP-FIleService.RestoreFileSizeDetails] - [%s] - [HTTP] - Request received - Inputs - Company : %s Tenant : %s',reqId,Company,Tenant);
+
+
+        DeveloperFileUpoladManager.GetUploadedFileSizesWithCategories(Company,Tenant,function (errSum, resSum) {
+
+            if(errSum)
+            {
+                logger.error('[DVP-FIleService.RestoreFileSizeDetails] - [%s] - [HTTP] - Error in operation  ',reqId);
+                var jsonString = messageFormatter.FormatMessage(errSum, "EXCEPTION", false, undefined);
+                res.end(jsonString);
+            }
+            else
+            {
+                logger.info('[DVP-FIleService.RestoreFileSizeDetails] - [%s] - [HTTP] - Size details received   ',reqId);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resSum);
+                res.end(jsonString);
+            }
+
+
+        });
+
+
+    }
+    catch(ex)
+    {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.error('[DVP-FIleService.UploadFiles] - [%s] -Exception in operation', reqId);
+
+        res.end(jsonString);
+    }
+    return next();
+});
 
 RestServer.get('DVP/API/Test',function (req,res,next) {
 

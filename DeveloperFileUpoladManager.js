@@ -61,8 +61,11 @@ var crptoPwd = config.Crypto.password;
 
 var uploadPath="/usr/local/src/upload";
 
+var request = require('request');
+var validator = require('validator');
+
 var uri = '';
-mongoip = mongoip.split(',')
+mongoip = mongoip.split(',');
 if(util.isArray(mongoip)){
 
     mongoip.forEach(function(item){
@@ -76,11 +79,14 @@ if(util.isArray(mongoip)){
         uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
         console.log("URI ...   "+uri);
     }
-}else{
+}else
+{
 
     uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
     console.log("URI ...   "+uri);
 }
+
+
 
 
 function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
@@ -127,75 +133,75 @@ function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 
 
 /*function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
-{
-    var sizeArray=['75','100','125','150','200'];
-    var thumbnailArray=[];
+ {
+ var sizeArray=['75','100','125','150','200'];
+ var thumbnailArray=[];
 
-    var fileStruct=Fobj.type.split("/")[0];
+ var fileStruct=Fobj.type.split("/")[0];
 
-    try {
-        if (fileStruct == "image") {
-            logger.info('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Image file found to make thumbnails ',reqId,uuid);
-            mkdirp(thumbDir, function (err) {
+ try {
+ if (fileStruct == "image") {
+ logger.info('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Image file found to make thumbnails ',reqId,uuid);
+ mkdirp(thumbDir, function (err) {
 
-                if(err)
-                {
-                    logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Error occurred in making directory for thumbnails of %s ',reqId,uuid);
-                    callback(err, uuid);
-                }
-                else
-                {
-                    console.log(path.join(Fobj.tempPath));
-
-
-                    sizeArray.forEach(function (size) {
+ if(err)
+ {
+ logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Error occurred in making directory for thumbnails of %s ',reqId,uuid);
+ callback(err, uuid);
+ }
+ else
+ {
+ console.log(path.join(Fobj.tempPath));
 
 
-                        thumbnailArray.push(function createContact(callbackThumb) {
-
-                            var readStream=fs.createReadStream(path.join(Fobj.tempPath));
-                            var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
+ sizeArray.forEach(function (size) {
 
 
-                            gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
-                            {
-                                stdout.pipe(writeStream).on('error', function (error) {
-                                    console.log("Error in making thumbnail " + uuid + "_" + size);
-                                    callbackThumb(error, undefined);
-                                }).on('finish', function () {
-                                    console.log("Making thumbnail " + uuid + "_" + size + " Success");
-                                    callbackThumb(undefined, "Done");
-                                });
-                            });
+ thumbnailArray.push(function createContact(callbackThumb) {
+
+ var readStream=fs.createReadStream(path.join(Fobj.tempPath));
+ var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
+
+
+ gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
+ {
+ stdout.pipe(writeStream).on('error', function (error) {
+ console.log("Error in making thumbnail " + uuid + "_" + size);
+ callbackThumb(error, undefined);
+ }).on('finish', function () {
+ console.log("Making thumbnail " + uuid + "_" + size + " Success");
+ callbackThumb(undefined, "Done");
+ });
+ });
 
 
 
-                        });
-                    });
+ });
+ });
 
-                    async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
+ async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
 
-                        callback(undefined, uuid);
-
-
-                    });
-                }
-
-            });
-
-        }
-        else
-        {
-            callback(undefined, uuid);
-        }
-    } catch (e) {
-
-        logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Exception in operation of local thumbnail creation of %s ',reqId,uuid);
-        callback(e, uuid);
-    }
+ callback(undefined, uuid);
 
 
-}*/
+ });
+ }
+
+ });
+
+ }
+ else
+ {
+ callback(undefined, uuid);
+ }
+ } catch (e) {
+
+ logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Exception in operation of local thumbnail creation of %s ',reqId,uuid);
+ callback(e, uuid);
+ }
+
+
+ }*/
 
 function LocalThumbnailMaker(thumObj,callback)
 {
@@ -273,6 +279,10 @@ function LocalThumbnailMaker(thumObj,callback)
 function MongoFileUploader(dataObj,callback)
 {
     try {
+
+
+
+
         var sizeArray = ['75', '100', '125', '150', '200'];
         var thumbnailArray = [];
 
@@ -678,14 +688,14 @@ function localStoreHandler(fileData,callback) {
         var year = Today.getFullYear();
         var file_category = fileData.Fobj.Category;
 
-       /* var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
-        var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());*/
+        /* var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
+         var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());*/
 
         var newDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
         var thumbDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());
 
 
-       fileData.Fobj.thumbDir = thumbDir;
+        fileData.Fobj.thumbDir = thumbDir;
 
         mkdirp(newDir, function (err) {
 
@@ -763,7 +773,7 @@ function localStorageRecordHandler(dataObj, callback)
             else if (resStore) {
                 resStore.Source = "LOCAL";
                 dataObj.Fobj = resStore;
-                RedisPublisher.updateFileStorageRecord(resStore.Category, resStore.sizeInMB, dataObj.cmp, dataObj.ten);
+                RedisPublisher.updateFileStorageRecord(resStore.Category, resStore.sizeInKB, dataObj.cmp, dataObj.ten);
                 recordFileDetails(dataObj, function (err, res) {
 
                     if (err) {
@@ -784,11 +794,11 @@ function localStorageRecordHandler(dataObj, callback)
 
                         }
 
-                       /* LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
+                        /* LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
 
-                            callback(errThumb, dataObj.rand2, dataObj.tempPath);
+                         callback(errThumb, dataObj.rand2, dataObj.tempPath);
 
-                        });*/LocalThumbnailMaker(thumObj, function (errThumb, resThumb) {
+                         });*/LocalThumbnailMaker(thumObj, function (errThumb, resThumb) {
 
                             callback(errThumb, dataObj.rand2, dataObj.tempPath);
 
@@ -811,6 +821,8 @@ function localStorageRecordHandler(dataObj, callback)
 
 function mongoFileAndRecordHandler(dataObj,callback) {
 
+
+
     try {
         MongoFileUploader(dataObj, function (errMongo, resMongo) {
             if (errMongo) {
@@ -819,6 +831,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
             }
             else {
                 dataObj.Fobj.Source = "MONGO";
+                RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInKB, dataObj.cmp, dataObj.ten);
                 recordFileDetails(dataObj, function (err, res) {
                     if (err) {
                         callback(err, undefined, dataObj.tempPath);
@@ -843,14 +856,14 @@ function mongoFileAndRecordHandler(dataObj,callback) {
 
 }
 
-function searchFileCategory(category,reqId,callback) {
+function searchFileCategory(category,company,tenant,reqId,callback) {
 
     try {
         if (category) {
 
             console.log("File category : "+category );
 
-            DbConn.FileCategory.findOne({where: [{Category: category}]}).then(function (resCat) {
+            DbConn.FileCategory.findOne({where: [{Category: category},{Company:company},{Tenant:tenant}]}).then(function (resCat) {
                 if (resCat) {
                     logger.info('[DVP-FIleService.searchFileCategory] - [%s] - [PGSQL] - File Category found : %s', reqId,category);
                     callback(undefined, resCat);
@@ -898,11 +911,13 @@ function DeveloperUploadFiles(fileObj,callback)
 
             fileObj.Fobj.Category=fileObj.Category;
 
-            fileObj.Fobj.sizeInMB=0;
+            //fileObj.Fobj.sizeInMB=0;
+            fileObj.Fobj.sizeInKB=0;
 
             if(fileObj.Fobj.size!=0 && fileObj.Fobj.size)
             {
-                fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
+                //fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
+                fileObj.Fobj.sizeInKB = Math.floor(fileObj.Fobj.size/(1024));
             }
 
             if(fileObj.Fobj.path)
@@ -916,7 +931,7 @@ function DeveloperUploadFiles(fileObj,callback)
             }
 
 
-            searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
+            searchFileCategory(fileObj.Category,fileObj.cmp,fileObj.ten,fileObj.reqId,function (errCat,resCat) {
 
                 if(errCat)
                 {
@@ -939,23 +954,38 @@ function DeveloperUploadFiles(fileObj,callback)
                     }
 
 
+                    checkOrganizationSpaceLimit(fileObj.cmp,fileObj.ten,fileObj.Fobj.sizeInKB,fileObj.Category,function (errCheck,resCheck) {
 
-                    if(fileStore=="MONGO")
-                    {
-                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
-                        console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
-                        mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                            callback(errStore,resStore,tempPath);
-                        });
-                    }
-                    else
-                    {
-                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
-                        console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
-                        localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                            callback(errStore,resStore,tempPath);
-                        });
-                    }
+                        if(errCheck)
+                        {
+                            callback(errCheck,undefined,fileObj.tempPath);
+                        }
+                        else
+                        {
+                            if(fileStore=="MONGO")
+                            {
+                                logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
+                                console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
+                                mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                                    callback(errStore,resStore,tempPath);
+                                });
+                            }
+                            else
+                            {
+                                logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
+                                console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
+                                localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                                    callback(errStore,resStore,tempPath);
+                                });
+                            }
+                        }
+
+                    });
+
+
+
+
+
 
 
                 }
@@ -980,6 +1010,69 @@ function DeveloperUploadFiles(fileObj,callback)
 
 
 }
+
+function GetUploadedFileSize(company,tenant,callback)
+{
+
+    DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant},{ObjCategory:{$ne:'CONVERSATION'}}]}).then(function (resSum) {
+        callback(undefined,resSum);
+    }).catch(function (errSum) {
+        callback(errSum,undefined);
+    })
+
+
+
+
+}
+
+function GetUploadedFileSizesWithCategories(company,tenant,callback) {
+
+    var query =
+        {
+            attributes:['ObjCategory', [DbConn.SequelizeConn.fn('SUM', DbConn.SequelizeConn.col("Size")), 'Sum']],
+            where :[{CompanyId: company, TenantId: tenant}],
+            group: ['ObjCategory']
+        };
+
+
+
+
+    DbConn.FileUpload.findAll(query).then(function (resSum) {
+        //callback(undefined,resSum);
+        SetRedisStorageRecords(resSum);
+    }).catch(function (errSum) {
+        callback(errSum,undefined);
+    });
+
+
+
+    /* DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant}]},{group:['ObjCategory']}).then(function (resSum) {
+     callback(undefined,resSum);
+     }).catch(function (errSum) {
+     callback(errSum,undefined);
+     })*/
+}
+
+function SetRedisStorageRecords(sizeObj,company,tenant,callback) {
+
+    if(sizeObj)
+    {
+        var sizeKeys =[];
+        var totalSize=0;
+        sizeObj.forEach(function (item) {
+
+            if(item.ObjCategory )
+            {
+                sizeKeys.push({
+                    key:tenant+":"+company+":STORAGE:"+item.ObjCategory,
+                    size:item.Sum
+                })
+            }
+
+        });
+    }
+
+};
 
 function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId,callback)
 {
@@ -1019,7 +1112,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
                         //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
                         if (resUpFile) {
 
-                            searchFileCategory(Category,reqId,function (errCat,resCat) {
+                            searchFileCategory(Category,cmp,ten,reqId,function (errCat,resCat) {
 
                                 if(errCat)
                                 {
@@ -1140,7 +1233,7 @@ function recordFileDetails(dataObj,callback) {
                                     CompanyId: dataObj.cmp,
                                     TenantId: dataObj.ten,
                                     RefId: dataObj.ref,
-                                    Size: dataObj.Fobj.sizeInMB,
+                                    Size: dataObj.Fobj.sizeInKB,
                                     Source: dataObj.Fobj.Source
 
 
@@ -1152,7 +1245,7 @@ function recordFileDetails(dataObj,callback) {
 
                             if (resUpFile) {
                                 logger.info('[DVP-FIleService.recordFileDetails] - [%s] - [PGSQL] - New attachment ID %d successfully inserted', dataObj.reqId, dataObj.rand2);
-                                searchFileCategory(dataObj.Category,dataObj.reqId, function (errCat, resCat) {
+                                searchFileCategory(dataObj.Category,dataObj.cmp,dataObj.ten,dataObj.reqId, function (errCat, resCat) {
 
                                     if (errCat) {
                                         callback(errCat, undefined);
@@ -1205,6 +1298,193 @@ function recordFileDetails(dataObj,callback) {
 }
 
 
+function checkOrganizationSpaceLimit(company,tenant,newFileSize,category,callback) {
+
+    if(category !="CONVERSATION")
+    {
+        RedisPublisher.GetOrganizationsSpaceLimit(company,tenant,function (errKey,resKey) {
+
+            if(errKey)
+            {
+                console.log('Space Limit checking failed:', err);
+                logger.error('[DVP-FIleService.checkOrganizationSpaceLimit]  - Space Limit checking failed ');
+                callback(errKey,undefined);
+            }
+            else
+            {
+                if(resKey)
+                {
+                    //var sizeInMB =0;
+                    var sizeInKB =0;
+                    var orgBody=JSON.parse(resKey);
+                    switch(orgBody.spaceUnit)
+                    {
+                        case "MB" : sizeInKB = orgBody.spaceLimit * 1024;
+                            break;
+
+                        case "GB" : sizeInKB = orgBody.spaceLimit * (1024 * 1024);
+                            break;
+
+                        case "TB" : sizeInKB= orgBody.spaceLimit * (1024 * 1024 * 1024);
+                            break;
+
+                        default :sizeInKB=orgBody.spaceLimit * 1024;
+
+
+                    }
+
+                    RedisPublisher.getTotalFileStorageDetails(company,tenant,function (errTotal,resTotal) {
+
+                        if(errTotal)
+                        {
+                            logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed ');
+                            callback(undefined,true);
+                        }
+                        else
+                        {
+                            if(resTotal)
+                            {
+                                var totalSizeWithNewFile = parseInt(resTotal)+parseInt(newFileSize);
+
+                                //if(totalSizeWithNewFile < sizeInMB)
+                                if(totalSizeWithNewFile < sizeInKB)
+                                {
+
+                                    callback(undefined,true);
+                                }
+                                else
+                                {
+                                    logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - Allocated Limit Exceeded ');
+
+                                    callback(new Error("Allocated memory size exceeded"),undefined);
+                                }
+                            }
+                            else
+                            {
+                                logger.error('[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed, Uploading Continued ');
+
+                                callback(undefined,true);
+                            }
+
+                        }
+                    });
+                }
+                else
+                {
+                    logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - No limitation Info found, Uploading continued ');
+                    callback(undefined,true);
+                }
+            }
+        });
+
+
+        /*var accessToken = util.format("bearer %s", config.Services.accessToken);
+         var internalAccessToken = util.format("%d:%d", tenant, company);
+
+         var organizationURL = util.format("http://%s/DVP/API/%s/Organisation/SpaceLimit/%s",config.Services.userServiceHost, config.Services.userServiceVersion,"fileSpace");
+         if (validator.isIP(config.Services.userServiceHost)) {
+         organizationURL = util.format("http://%s/DVP/API/%s/Organisation/SpaceLimit/%s",config.Services.userServiceHost, config.Services.userServiceVersion,"fileSpace");
+         }
+
+         var options = {
+         url: organizationURL,
+         method: 'GET',
+         headers: {
+
+         'authorization': accessToken,
+         'companyinfo': internalAccessToken
+         }
+         };
+
+         try {
+         request(options, function optionalCallback(err, httpResponse, body) {
+         if (err) {
+
+         }
+         else
+         {
+         if(body && JSON.parse(body).Result[0].SpaceLimit.SpaceLimit && JSON.parse(body).Result[0].SpaceLimit.SpaceUnit)
+         {
+         var sizeInMB =0;
+         var orgBody=JSON.parse(body).Result[0].SpaceLimit;
+
+         switch(orgBody.SpaceUnit)
+         {
+         case "MB" : sizeInMB = orgBody.SpaceLimit;
+         break;
+
+         case "GB" : sizeInMB = orgBody.SpaceLimit * 1024;
+         break;
+
+         case "TB" : sizeInMB= orgBody.SpaceLimit * 1024 * 1024;
+         break;
+
+         default :sizeInMB=orgBody.SpaceLimit;
+
+
+         }
+
+         RedisPublisher.getTotalFileStorageDetails(company,tenant,function (errTotal,resTotal) {
+
+         if(errTotal)
+         {
+         logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed ');
+         callback(undefined,true);
+         }
+         else
+         {
+         if(resTotal)
+         {
+         var totalSizeWithNewFile = parseInt(resTotal)+parseInt(newFileSize);
+
+         if(totalSizeWithNewFile < sizeInMB)
+         {
+
+         callback(undefined,true);
+         }
+         else
+         {
+         logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - Allocated Limit Exceeded ');
+
+         callback(new Error("Allocated memory size exceeded"),undefined);
+         }
+         }
+         else
+         {
+         logger.error('[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed ');
+
+         callback(new Error("Allocated memory size exceeded"),undefined);
+         }
+
+         }
+         });
+
+
+         }
+         else
+         {
+         logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - No limitation Info found, Uploading continued ');
+         callback(undefined,true);
+         }
+         }
+
+
+         });
+         }catch(ex){
+         logger.info('[DVP-FIleService.checkOrganizationSpaceLimit]  - Exception in operation ');
+         callback(ex,undefined);
+         }*/
+    }
+    else
+    {
+        callback(undefined,true);
+    }
+
+
+}
+
+
+
 
 
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
@@ -1214,6 +1494,10 @@ module.exports.DetachFromApplication = DetachFromApplication;
 module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
 module.exports.LocalThumbnailMaker = LocalThumbnailMaker;
 module.exports.localStoreHandler = localStoreHandler;
+module.exports.GetUploadedFileSize = GetUploadedFileSize;
+module.exports.GetUploadedFileSizesWithCategories = GetUploadedFileSizesWithCategories;
+
+
 
 
 
