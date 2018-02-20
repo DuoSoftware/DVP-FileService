@@ -1891,7 +1891,8 @@ function  SaveNewCategory(categoryData,reqId,callback) {
                             Visible: categoryData.Visible,
                             Encripted: categoryData.Encripted,
                             Company:categoryData.Company,
-                            Tenant:categoryData.Tenant
+                            Tenant:categoryData.Tenant,
+                            Source:categoryData.Store
 
 
                         }

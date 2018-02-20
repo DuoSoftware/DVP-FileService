@@ -1025,7 +1025,7 @@ function GetUploadedFileSize(company,tenant,callback)
 
 }
 
-function GetUploadedFileSizesWithCategories(company,tenant,callback) {
+/*function GetUploadedFileSizesWithCategories(company,tenant,callback) {
 
     var query =
         {
@@ -1046,11 +1046,11 @@ function GetUploadedFileSizesWithCategories(company,tenant,callback) {
 
 
 
-    /* DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant}]},{group:['ObjCategory']}).then(function (resSum) {
+    /!* DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant}]},{group:['ObjCategory']}).then(function (resSum) {
      callback(undefined,resSum);
      }).catch(function (errSum) {
      callback(errSum,undefined);
-     })*/
+     })*!/
 }
 
 function SetRedisStorageRecords(sizeObj,company,tenant,callback) {
@@ -1070,9 +1070,24 @@ function SetRedisStorageRecords(sizeObj,company,tenant,callback) {
             }
 
         });
+
+        GetUploadedFileSize(company,tenant,function (errTotal,resTotal) {
+
+            if(errTotal)
+            {
+
+            }
+            else
+            {
+                sizeKeys.push({
+                    key:tenant+":"+company+":STORAGE:TOTAL",
+                    size:resTotal
+                })
+            }
+        });
     }
 
-};
+};*/
 
 function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId,callback)
 {
@@ -1495,7 +1510,7 @@ module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
 module.exports.LocalThumbnailMaker = LocalThumbnailMaker;
 module.exports.localStoreHandler = localStoreHandler;
 module.exports.GetUploadedFileSize = GetUploadedFileSize;
-module.exports.GetUploadedFileSizesWithCategories = GetUploadedFileSizesWithCategories;
+/*module.exports.GetUploadedFileSizesWithCategories = GetUploadedFileSizesWithCategories;*/
 
 
 

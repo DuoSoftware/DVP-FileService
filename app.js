@@ -4083,7 +4083,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileDetails/TotalSize',jwt({sec
     return next();
 });
 
-RestServer.put('/DVP/API/'+version+'/FileService/FileSizeDetails/Restore',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+/*RestServer.put('/DVP/API/'+version+'/FileService/FileSizeDetails/Restore',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
 
     // console.log(req);
@@ -4143,7 +4143,7 @@ RestServer.put('/DVP/API/'+version+'/FileService/FileSizeDetails/Restore',jwt({s
         res.end(jsonString);
     }
     return next();
-});
+});*/
 
 RestServer.get('DVP/API/Test',function (req,res,next) {
 
