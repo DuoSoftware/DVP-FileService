@@ -1892,7 +1892,7 @@ function  SaveNewCategory(categoryData,reqId,callback) {
                             Encripted: categoryData.Encripted,
                             Company:categoryData.Company,
                             Tenant:categoryData.Tenant,
-                            Source:categoryData.Store
+                            Source:categoryData.Source
 
 
                         }
