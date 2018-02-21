@@ -1036,20 +1036,21 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
                     lte:endDateTime
                 },
                 CompanyId :  Company,
-                TenantId: Tenant,
-                $or:[]
+                TenantId: Tenant/*,
+                $or:[]*/
             };
 
-            req.body.categoryList.forEach(function (item) {
+            /*req.body.categoryList.forEach(function (item) {
                 conditionalData.$or.push({ObjCategory:item})
-            });
+            });*/
 
 
             if(req.params.rowCount && req.params.pageNo)
             {
 
-
-                DbConn.FileUpload.findAll({where:[conditionalData],offset:((req.params.pageNo - 1) * req.params.rowCount),
+                DbConn.FileUpload.findAll({where:[conditionalData],
+                    include:[{model:DbConn.FileCategory, as:"FileCategory" , where:{Visible:true}}],
+                    offset:((req.params.pageNo - 1) * req.params.rowCount),
                     limit: req.params.rowCount,
                     order: [['updatedAt', 'DESC']]})
                     .then(function (result) {
@@ -1069,7 +1070,7 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
             }
             else
             {
-                DbConn.FileUpload.findAll({where:conditionalData})
+                DbConn.FileUpload.findAll({where:conditionalData,include:[{model:DbConn.FileCategory, as:"FileCategory",where:{Visible:true}}]})
                     .then(function (result) {
                         if(result.length==0)
                         {
@@ -1145,7 +1146,8 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
                 DbConn.FileUpload.findAll({ where:[conditionalData],
                     offset:((req.params.pageNo - 1) * req.params.rowCount),
                     limit: req.params.rowCount,
-                    order: [['updatedAt','DESC']]})
+                    order: [['updatedAt','DESC']],
+                    include:[{model:DbConn.FileCategory , as:"FileCategory" , where:{Visible:true}}]})
                     .then(function (result) {
                         if(result.length==0)
                         {
