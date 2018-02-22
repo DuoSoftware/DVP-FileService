@@ -82,5 +82,6 @@ module.exports = {
         "userServiceHost": "userservice.app.veery.cloud",
         "userServiceServicePort": "3638",
         "userServiceVersion": "1.0.0.0"
-    }
+    },
+    "UploadSize":"5120"
 };

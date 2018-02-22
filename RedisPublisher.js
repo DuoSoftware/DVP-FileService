@@ -383,15 +383,46 @@ function GetOrganizationsSpaceLimit(company,tenant,callback) {
         if(errKey)
         {
             //callback(errKey,resKey);
-            logger.error('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+            logger.error('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Error in getting Keys ');
             callback(errKey,undefined);
         }
         else
         {
-            logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Key found ');
+            logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationsSpaceLimit] - [%s] -[REDIS] - [FS] - Keys found ');
             callback(undefined,resKey);
         }
     })
+
+}
+
+function GetOrganizationSpaceDetails(company,tenant,callback) {
+    var fileKey = "SpaceLimit:"+tenant+":"+company+":fileSpace";
+    var storageKey =tenant+":"+company+":STORAGE:TOTAL";
+
+    client.mget(fileKey,storageKey, function (errKey,resKey) {
+        if(errKey)
+        {
+            //callback(errKey,resKey);
+            logger.error('[DVP-FIleService.RedisPublisher.GetOrganizationSpaceDetails] - [%s] -[REDIS] - [FS] - Error in getting Key ');
+            callback(errKey,undefined);
+        }
+        else
+        {
+            if(Array.isArray(resKey))
+
+                var orgSpace = {
+                    spaceLimit: JSON.parse(resKey[0]).spaceLimit,
+                    spaceUnit:JSON.parse(resKey[0]).spaceUnit,
+                    currTotal:resKey[1]
+            };
+
+
+            logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationSpaceDetails] - [%s] -[REDIS] - [FS] - Keys found ');
+            callback(undefined,orgSpace);
+        }
+    })
+
+
 
 }
 
@@ -449,6 +480,7 @@ function GetOrganizationsSpaceLimit(company,tenant,callback) {
 }*/
 
 
+
 /*
  function TestIt()
  {
@@ -480,4 +512,5 @@ module.exports.getFileStorageRecordByCategory = getFileStorageRecordByCategory;
 module.exports.getTotalFileStorageDetails = getTotalFileStorageDetails;
 module.exports.UpdateFileStorageRecords = UpdateFileStorageRecords;
 module.exports.GetOrganizationsSpaceLimit = GetOrganizationsSpaceLimit;
+module.exports.GetOrganizationSpaceDetails = GetOrganizationSpaceDetails;
 /*module.exports.removeAllFileStorageRecords = removeAllFileStorageRecords;*/

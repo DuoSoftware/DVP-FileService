@@ -1025,6 +1025,16 @@ function GetUploadedFileSize(company,tenant,callback)
 
 }
 
+
+function GetOrganozationStorageSizes(company,tenant,callback) {
+    
+    RedisPublisher.GetOrganizationSpaceDetails(company,tenant,function (errLim,resLim) {
+        callback(errLim,resLim);
+    })
+
+}
+
+
 /*function GetUploadedFileSizesWithCategories(company,tenant,callback) {
 
     var query =
@@ -1510,6 +1520,7 @@ module.exports.DeveloperReserveFiles = DeveloperReserveFiles;
 module.exports.LocalThumbnailMaker = LocalThumbnailMaker;
 module.exports.localStoreHandler = localStoreHandler;
 module.exports.GetUploadedFileSize = GetUploadedFileSize;
+module.exports.GetOrganozationStorageSizes = GetOrganozationStorageSizes;
 /*module.exports.GetUploadedFileSizesWithCategories = GetUploadedFileSizesWithCategories;*/
 
 

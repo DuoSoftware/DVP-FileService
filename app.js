@@ -29,6 +29,8 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 var option = config.Option;
 
+var upLimit = config.UploadSize;
+
 
 //restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
@@ -112,7 +114,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var Company=req.user.company;
     var Tenant=req.user.tenant;
 
-
     var prov=1;
 
     var Clz='';
@@ -166,129 +167,170 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         var rand2 = uuid.v4().toString();
         var fileKey = Object.keys(req.files)[0];
         var file = req.files[fileKey];
+        var fSize=Math.floor(file.size/(1024));
 
-        if(file.type)
+        if(fSize>parseInt(upLimit))
         {
-            Type=file.type;
-        }
+            logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - File is too large to upload  ',reqId);
+            var jsonString = messageFormatter.FormatMessage(new Error('File is too large to upload'), "EXCEPTION", false, undefined);
 
+            var unlinkPath="";
 
-        if(req.body.mediatype && req.body.filetype){
-
-            file.type = req.body.mediatype + "/" + req.body.filetype;
-        }
-
-
-        if(req.body.display){
-
-
-            file.display = req.body.display;
-        }
-
-        if(req.body.filename)
-        {
-            file.name=req.body.filename;
-        }
-
-
-        logger.info('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
-
-
-        var ValObj={
-
-            "tenent":Tenant,
-            "company":Company,
-            "filename":file.name,
-            "type":file.type,
-            "id":rand2
-
-        };
-
-        var AttchVal=JSON.stringify(ValObj);
-
-
-        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
-
-
-        var fileObj =
+            if(attachedFile.tempPath)
             {
-                Fobj:file,
-                rand2:rand2,
-                cmp:Company,
-                ten:Tenant,
-                ref:ref,
-                option:option,
-                Clz:Clz,
-                Type:Type,
-                Category:Category,
-                resvID:resvID,
-                reqId:reqId
-
+                unlinkPath=attachedFile.tempPath;
+            }
+            else
+            {
+                unlinkPath=tempPath;
             }
 
 
-        DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPath) {
+            fs.unlink(path.join(unlinkPath),function (errUnlink) {
 
-            if(tempPath)
-            {
-                fs.unlink(path.join(tempPath),function (errUnlink) {
-
-                    if(errUnlink)
-                    {
-                        console.log("Error status Removing Temp file",errUnlink);
-                    }
-                    else
-                    {
-                        console.log("Temp file removed successfully");
-                    }
-
-
-                });
-            }
-
-            if(errz)
-            {
-                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
-                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to upload file : %s ', reqId, jsonString);
-
-                if(errz.message =='Allocated memory size exceeded')
+                if(errUnlink)
                 {
-                    res.status(507);
+                    console.log("Error status Removing Temp file",errUnlink);
+                }
+                else
+                {
+                    console.log("Temp file removed successfully");
                 }
 
-                res.end(jsonString);
+
+            });
+            res.status(507);
+            res.end(jsonString);
+        }
+        else
+        {
+            if(file.type)
+            {
+                Type=file.type;
             }
 
-            else{
+
+            if(req.body.mediatype && req.body.filetype){
+
+                file.type = req.body.mediatype + "/" + req.body.filetype;
+            }
 
 
-                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - File uploaded successfully',reqId,AttchVal);
-                RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
-                        if (errRDS)
+            if(req.body.display){
+
+
+                file.display = req.body.display;
+            }
+
+            if(req.body.filename)
+            {
+                file.name=req.body.filename;
+            }
+
+
+            logger.info('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
+
+
+            var ValObj={
+
+                "tenent":Tenant,
+                "company":Company,
+                "filename":file.name,
+                "type":file.type,
+                "id":rand2
+
+            };
+
+            var AttchVal=JSON.stringify(ValObj);
+
+
+            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+
+
+            var fileObj =
+                {
+                    Fobj:file,
+                    rand2:rand2,
+                    cmp:Company,
+                    ten:Tenant,
+                    ref:ref,
+                    option:option,
+                    Clz:Clz,
+                    Type:Type,
+                    Category:Category,
+                    resvID:resvID,
+                    reqId:reqId
+
+                }
+
+
+            DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPath) {
+
+                if(tempPath)
+                {
+                    fs.unlink(path.join(tempPath),function (errUnlink) {
+
+                        if(errUnlink)
                         {
-                            var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
-                            logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to publish on redis : %s ', reqId, jsonString);
-                            res.end(jsonString);
-
+                            console.log("Error status Removing Temp file",errUnlink);
                         }
                         else
                         {
-                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
-                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Successfully published on redis ', reqId);
-                            res.end(jsonString);
-
+                            console.log("Temp file removed successfully");
                         }
 
 
+                    });
+                }
+
+                if(errz)
+                {
+                    var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                    logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to upload file : %s ', reqId, jsonString);
+
+                    if(errz.message =='Allocated memory size exceeded')
+                    {
+                        res.status(507);
                     }
-                );
+
+                    res.end(jsonString);
+                }
+
+                else{
 
 
-            }
+                    logger.debug('[DVP-FIleService.UploadFiles] - [%s] - File uploaded successfully',reqId,AttchVal);
+                    RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
+                            if (errRDS)
+                            {
+                                var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+                                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to publish on redis : %s ', reqId, jsonString);
+                                res.end(jsonString);
+
+                            }
+                            else
+                            {
+                                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+                                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Successfully published on redis ', reqId);
+                                res.end(jsonString);
+
+                            }
+
+
+                        }
+                    );
+
+
+                }
 
 
 
-        });
+            });
+        }
+
+
+
+
 
 
     }
@@ -4061,7 +4103,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileDetails/TotalSize',jwt({sec
             }
             else
             {
-                logger.info('[DVP-FIleService.GetTotalSize] - [%s] - [HTTP] - Error in operation  ',reqId);
+                logger.info('[DVP-FIleService.GetTotalSize] - [%s] - [HTTP] - Total size found  ',reqId);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resSum);
                 res.end(jsonString);
             }
@@ -4075,12 +4117,75 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileDetails/TotalSize',jwt({sec
     {
 
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        logger.error('[DVP-FIleService.UploadFiles] - [%s] -Exception in operation', reqId);
+        logger.error('[DVP-FIleService.GetTotalSize] - [%s] -Exception in operation', reqId);
 
         res.end(jsonString);
     }
     return next();
 });
+
+RestServer.get('/DVP/API/'+version+'/FileService/FileStorage/Sizes',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    // console.log(req);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid Authorization details found "), "ERROR/EXCEPTION", false, undefined);
+        logger.error('[DVP-APPRegistry.UploadFiles] - [%s] - Invalid Authorization details found  ', reqId);
+        res.end(jsonString);
+    }
+
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+    try {
+
+
+        logger.debug('[DVP-FIleService.GetOrganizationStorageSizes] - [%s] - [HTTP] - Request received - Inputs - Company : %s Tenant : %s',reqId,Company,Tenant);
+
+
+        DeveloperFileUpoladManager.GetOrganozationStorageSizes(Company,Tenant,function (errSum, resSum) {
+
+            if(errSum)
+            {
+                logger.error('[DVP-FIleService.GetOrganizationStorageSizes] - [%s] - [HTTP] - Error in operation  ',reqId);
+                var jsonString = messageFormatter.FormatMessage(errSum, "EXCEPTION", false, undefined);
+                res.end(jsonString);
+            }
+            else
+            {
+                logger.info('[DVP-FIleService.GetOrganizationStorageSizes] - [%s] - [HTTP] - Storage details found  ',reqId);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resSum);
+                res.end(jsonString);
+            }
+
+
+        });
+
+
+    }
+    catch(ex)
+    {
+
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        logger.error('[DVP-FIleService.GetOrganizationStorageSizes] - [%s] -Exception in operation', reqId);
+
+        res.end(jsonString);
+    }
+    return next();
+});
+
 
 /*RestServer.put('/DVP/API/'+version+'/FileService/FileSizeDetails/Restore',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
  {
