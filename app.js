@@ -169,7 +169,9 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         var file = req.files[fileKey];
         var fSize=Math.floor(file.size/(1024));
 
-        if(fSize>parseInt(upLimit))
+
+
+        if(!isNaN(upLimit) && fSize>parseInt(upLimit))
         {
             logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - File is too large to upload  ',reqId);
             var jsonString = messageFormatter.FormatMessage(new Error('File is too large to upload'), "EXCEPTION", false, undefined);
@@ -4183,6 +4185,39 @@ RestServer.get('/DVP/API/'+version+'/FileService/FileStorage/Sizes',jwt({secret:
 
         res.end(jsonString);
     }
+    return next();
+});
+
+RestServer.get('/DVP/API/'+version+'/FileService/MaxUploadSize',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
+{
+
+    // console.log(req);
+    var reqId='';
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    if(upLimit)
+    {
+        logger.info('[DVP-FIleService.GetMaxUploadSize] - [%s] - [HTTP] - Storage details found  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, upLimit);
+        res.end(jsonString);
+    }
+    else
+    {
+        logger.info('[DVP-FIleService.GetMaxUploadSize] - [%s] - [HTTP] - Storage details found  ',reqId);
+        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, 0);
+        res.end(jsonString);
+    }
+
+
+
+
     return next();
 });
 
