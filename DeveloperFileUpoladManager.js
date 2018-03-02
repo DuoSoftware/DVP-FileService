@@ -58,6 +58,9 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 
+
+var uploadPath="/usr/local/src/upload";
+
 var uri = '';
 mongoip = mongoip.split(',')
 if(util.isArray(mongoip)){
@@ -80,12 +83,12 @@ if(util.isArray(mongoip)){
 }
 
 
-function FindCurrentVersion(fname,company,tenant,reqId,callback)
+function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 {
     try
     {
         logger.debug('[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - Searching for current version of %s',reqId,fname);
-        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant}]}).then(function (resFile) {
+        DbConn.FileUpload.max('Version',{where: [{Filename: fname},{CompanyId:company},{TenantId:tenant},{ObjCategory:Category}]}).then(function (resFile) {
 
             if(resFile)
             {
@@ -123,7 +126,7 @@ function FindCurrentVersion(fname,company,tenant,reqId,callback)
 }
 
 
-function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
+/*function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
 {
     var sizeArray=['75','100','125','150','200'];
     var thumbnailArray=[];
@@ -192,7 +195,79 @@ function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
     }
 
 
+}*/
+
+function LocalThumbnailMaker(thumObj,callback)
+{
+    var sizeArray=['75','100','125','150','200'];
+    var thumbnailArray=[];
+
+    var fileStruct=thumObj.type.split("/")[0];
+
+    try {
+        if (fileStruct == "image") {
+            logger.info('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Image file found to make thumbnails ',thumObj.reqId,thumObj.uuid);
+            mkdirp(thumObj.thumbDir, function (err) {
+
+                if(err)
+                {
+                    logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Error occurred in making directory for thumbnails of %s ',reqId,uuid);
+                    callback(err, thumObj.uuid);
+                }
+                else
+                {
+                    console.log(path.join(thumObj.tempPath));
+
+
+                    sizeArray.forEach(function (size) {
+
+
+                        thumbnailArray.push(function createContact(callbackThumb) {
+
+                            var readStream=fs.createReadStream(path.join(thumObj.tempPath));
+                            var writeStream = fs.createWriteStream(path.join(thumObj.thumbDir, thumObj.uuid.toString() + "_" + size.toString()));
+
+
+                            gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
+                            {
+                                stdout.pipe(writeStream).on('error', function (error) {
+                                    console.log("Error in making thumbnail " + thumObj.uuid + "_" + size);
+                                    callbackThumb(error, undefined);
+                                }).on('finish', function () {
+                                    console.log("Making thumbnail " + thumObj.uuid + "_" + size + " Success");
+                                    callbackThumb(undefined, "Done");
+                                });
+                            });
+
+
+
+                        });
+                    });
+
+                    async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
+
+                        callback(undefined, thumObj.uuid);
+
+
+                    });
+                }
+
+            });
+
+        }
+        else
+        {
+            callback(undefined, thumObj.uuid);
+        }
+    } catch (e) {
+
+        logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Exception in operation of local thumbnail creation of %s ',thumObj.reqId,thumObj.uuid);
+        callback(e, thumObj.uuid);
+    }
+
+
 }
+
 
 
 function MongoFileUploader(dataObj,callback)
@@ -603,9 +678,14 @@ function localStoreHandler(fileData,callback) {
         var year = Today.getFullYear();
         var file_category = fileData.Fobj.Category;
 
-        var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
-        var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());
-        fileData.Fobj.thumbDir = thumbDir;
+       /* var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
+        var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());*/
+
+        var newDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
+        var thumbDir = path.join(uploadPath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());
+
+
+       fileData.Fobj.thumbDir = thumbDir;
 
         mkdirp(newDir, function (err) {
 
@@ -691,7 +771,24 @@ function localStorageRecordHandler(dataObj, callback)
                     }
                     else {
                         console.log("File record added");
-                        LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
+
+                        var thumObj = {
+                            uuid:dataObj.rand2,
+                            resStore:resStore,
+                            Category:dataObj.Category,
+                            thumbDir:resStore.thumbDir,
+                            reqId:dataObj.reqId,
+                            tempPath:dataObj.tempPath,
+                            type:dataObj.Fobj.type
+
+
+                        }
+
+                       /* LocalThumbnailMaker(dataObj.rand2, resStore, dataObj.Category, resStore.thumbDir,dataObj.reqId, function (errThumb, resThumb) {
+
+                            callback(errThumb, dataObj.rand2, dataObj.tempPath);
+
+                        });*/LocalThumbnailMaker(thumObj, function (errThumb, resThumb) {
 
                             callback(errThumb, dataObj.rand2, dataObj.tempPath);
 
@@ -785,82 +882,93 @@ function DeveloperUploadFiles(fileObj,callback)
         var DisplayName="";
         fileObj.tempPath="";
 
-        if(fileObj.Fobj.display){
-
-
-            DisplayName = fileObj.Fobj.display;
-            fileObj.DisplayName=DisplayName;
-        }
-        else
+        if(fileObj.Fobj)
         {
-            DisplayName=fileObj.Fobj.name;
-            fileObj.DisplayName=DisplayName;
-        }
-
-        fileObj.Fobj.Category=fileObj.Category;
-
-        fileObj.Fobj.sizeInMB=0;
-
-        if(fileObj.Fobj.size!=0 && fileObj.Fobj.size)
-        {
-            fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
-        }
-
-        if(fileObj.Fobj.path)
-        {
-            fileObj.tempPath=fileObj.Fobj.path;
-        }
-
-        if(fileObj.resvID)
-        {
-            fileObj.rand2=fileObj.resvID;
-        }
+            if(fileObj.Fobj.display){
 
 
-        searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
-
-            if(errCat)
-            {
-                logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId);
-                callback(errCat,undefined,fileObj.tempPath);
+                DisplayName = fileObj.Fobj.display;
+                fileObj.DisplayName=DisplayName;
             }
             else
             {
-                fileObj.encNeeded=resCat.Encripted;
-
-                var fileStore="LOCAL";
-
-                if(resCat.Source)
-                {
-                    fileStore=resCat.Source;
-                }
-                else
-                {
-                    fileStore=fileObj.option.toUpperCase();
-                }
-
-
-
-                if(fileStore=="MONGO")
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
-                    console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
-                    mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                        callback(errStore,resStore,tempPath);
-                    });
-                }
-                else
-                {
-                    logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
-                    console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
-                    localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
-                        callback(errStore,resStore,tempPath);
-                    });
-                }
-
-
+                DisplayName=fileObj.Fobj.name;
+                fileObj.DisplayName=DisplayName;
             }
-        });
+
+            fileObj.Fobj.Category=fileObj.Category;
+
+            fileObj.Fobj.sizeInMB=0;
+
+            if(fileObj.Fobj.size!=0 && fileObj.Fobj.size)
+            {
+                fileObj.Fobj.sizeInMB = Math.floor(fileObj.Fobj.size/(1024*1024));
+            }
+
+            if(fileObj.Fobj.path)
+            {
+                fileObj.tempPath=fileObj.Fobj.path;
+            }
+
+            if(fileObj.resvID)
+            {
+                fileObj.rand2=fileObj.resvID;
+            }
+
+
+            searchFileCategory(fileObj.Category,fileObj.reqId,function (errCat,resCat) {
+
+                if(errCat)
+                {
+                    logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - Error in checking file categories ',fileObj.reqId);
+                    callback(errCat,undefined,fileObj.tempPath);
+                }
+                else
+                {
+                    fileObj.encNeeded=resCat.Encripted;
+
+                    var fileStore="LOCAL";
+
+                    if(resCat.Source)
+                    {
+                        fileStore=resCat.Source;
+                    }
+                    else
+                    {
+                        fileStore=fileObj.option.toUpperCase();
+                    }
+
+
+
+                    if(fileStore=="MONGO")
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
+                        console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
+                        mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+                    else
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
+                        console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
+                        localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+
+
+                }
+            });
+        }
+        else
+        {
+            logger.error('[DVP-FIleService.DeveloperUploadFiles] - [%s] - No file object found ',fileObj.reqId);
+            callback(new Error("No file object found"),undefined,fileObj.tempPath);
+        }
+
+
+
 
 
     }
@@ -879,7 +987,7 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
     try
     {
 
-        FindCurrentVersion( fileName,cmp, ten, reqId, function (errVersion, resVersion) {
+        FindCurrentVersion( fileName,cmp, ten, reqId,Category, function (errVersion, resVersion) {
 
             if(errVersion)
             {
@@ -1008,7 +1116,7 @@ function recordFileDetails(dataObj,callback) {
             // not a reserved file
 
 
-            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId, function (errVersion, resVersion) {
+            FindCurrentVersion(dataObj.Fobj.name, dataObj.cmp, dataObj.ten, dataObj.reqId,dataObj.Category, function (errVersion, resVersion) {
                 if (errVersion) {
                     callback(errVersion, undefined);
                 }

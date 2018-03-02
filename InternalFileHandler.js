@@ -16,7 +16,7 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
-
+var uploadPath="/usr/local/src/upload";
 
 
 
@@ -109,7 +109,7 @@ function localTubmnailDownloader(res,dataObj) {
         var file_category=dataObj.ObjCategory;
         //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
 
-        var SourcePath = path.join(config.BasePath,"Company_"+dataObj.Company.toString()+"_Tenant_"+dataObj.Tenant.toString(),file_category+"_thumb",dataObj.year.toString()+"-"+dataObj.month.toString()+"-"+dataObj.date.toString(),(dataObj.UUID+"_"+dataObj.thumbSize).toString());
+        var SourcePath = path.join(uploadPath,"Company_"+dataObj.Company.toString()+"_Tenant_"+dataObj.Tenant.toString(),file_category+"_thumb",dataObj.year.toString()+"-"+dataObj.month.toString()+"-"+dataObj.date.toString(),(dataObj.UUID+"_"+dataObj.thumbSize).toString());
 
         /*var SourcePath=path.parse(resUpFile.URL.toString()).root;
          pathObj.forEach(function (value,index) {
@@ -267,6 +267,8 @@ function DownloadThumbnailByID(res,fileObj)
                     fileObj.date=date;
                     fileObj.month=month;
                     fileObj.year=year;
+                    fileObj.ObjCategory=resUpFile.ObjCategory;
+
 
                     var fileStore="LOCAL";
 
@@ -289,230 +291,6 @@ function DownloadThumbnailByID(res,fileObj)
                     }
 
 
-                    /* if(resUpFile.Source=="MONGO")
-                     {
-                     MongoThumbnailDownloader(res,fileObj.UUID,fileObj.thumbSize,fileObj.reqId);
-                     }
-                     else if(resUpFile.Source=="LOCAL")
-                     {
-                     localTubmnailDownloader(res,fileObj);
-                     }
-                     else
-                     {
-                     if(fileObj.option.toUpperCase()=="MONGO")
-                     {
-                     MongoThumbnailDownloader(res,fileObj.UUID,fileObj.thumbSize,fileObj.reqId);
-                     }
-                     else
-                     {
-                     localTubmnailDownloader(res,fileObj);
-                     }
-                     }*/
-
-                    /*
-
-
-
-
-                     if(option.toUpperCase()=="MONGO")
-                     {
-
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Mongo',reqId,JSON.stringify(resUpFile));
-
-
-                     try {
-                     var extArr = resUpFile.FileStructure.split('/');
-                     var extension = extArr[1];
-
-                     /!*var uri = 'mongodb://' + config.Mongo.user + ':' + config.Mongo.password + '@' + config.Mongo.ip + ':'+config.Mongo.port+'/' + config.Mongo.dbname;*!/
-
-                     mongodb.MongoClient.connect(uri, function (error, db) {
-                     console.log(uri);
-
-                     if (error) {
-                     console.log("Mongo connection error " + error);
-                     res.status(400);
-                     if(db)
-                     {
-                     db.close();
-                     }
-
-                     res.end();
-                     }
-                     else {
-                     var ThumbBucket = new mongodb.GridFSBucket(db, {
-                     chunkSizeBytes: 1024,
-                     bucketName: 'thumbnails'
-                     });
-                     /!*  easyimg.thumbnail({
-                     src:bucket.openDownloadStreamByName(UUID), dst:res,
-                     width:128, height:128,
-                     x:0, y:0
-                     }).then(function (image) {
-                     console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-                     res.status(200);
-                     db.close();
-                     res.end();
-
-                     },function (err) {
-                     console.log(err);
-                     res.status(400);
-                     db.close();
-                     res.end();
-                     });*!/
-                     // var thumbName=UUID + "_"+thumbSize+"X"+thumbSize;
-
-
-
-                     var thumbName=UUID+"_"+thumbSize.toString();
-                     console.log(thumbName);
-
-                     console.log("Piping Started");
-
-                     ThumbBucket.openDownloadStreamByName(thumbName).
-                     pipe(res).
-                     on(
-                     'error',
-                     function(error) {
-                     console.log('Error in piping !'+error);
-                     res.status(400);
-                     db.close();
-                     res.end();
-
-                     }).
-                     on('finish', function () {
-                     console.log('done! Piping Succeeded');
-                     res.status(200);
-                     db.close();
-                     res.end();
-
-                     });
-                     }
-                     });
-                     } catch (e)
-                     {
-                     console.log('Exception '+e);
-                     res.status(400);
-                     db.close();
-                     res.end();
-                     }
-
-
-
-                     }
-                     else if(option.toUpperCase()=="COUCH")
-                     {
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [MONGO] - Downloading from Couch',reqId,JSON.stringify(resUpFile));
-
-                     var bucket = cluster.openBucket(Cbucket);
-
-                     bucket.get(UUID, function(err, result) {
-                     if (err)
-                     {
-                     console.log(err);
-
-                     callback(err,undefined);
-                     res.status(400);
-                     res.end();
-                     }else
-                     {
-                     console.log(resUpFile.FileStructure);
-                     res.setHeader('Content-Type', resUpFile.FileStructure);
-
-                     var s = streamifier.createReadStream(result.value);
-
-                     s.pipe(res);
-
-
-                     s.on('end', function (result) {
-
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Streaming succeeded',reqId);
-                     SaveDownloadDetails(resUpFile,reqId,function(errSv,resSv)
-                     {
-                     if(errSv)
-                     {
-                     callback(errSv,undefined);
-                     }
-                     else
-                     {
-                     callback(undefined,resSv);
-                     }
-                     });
-
-
-                     console.log("ENDED");
-                     res.status(200);
-                     res.end();
-                     });
-                     s.on('error', function (err) {
-
-                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in streaming',reqId,err);
-                     console.log("ERROR");
-                     res.status(400);
-                     res.end();
-                     });
-
-                     }
-
-
-                     });
-                     }
-                     else
-                     {
-
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - Record found for File upload %s',reqId,JSON.stringify(resUpFile));
-                     try {
-
-                     res.setHeader('Content-Type', resUpFile.FileStructure);
-                     var file_category=resUpFile.ObjCategory;
-                     //var SourcePath = (resUpFile.URL.toString()).replace('\',' / '');
-
-                     var SourcePath = path.join(config.BasePath,"Company_"+Company.toString()+"_Tenant_"+Tenant.toString(),file_category+"_thumb",year.toString()+"-"+month.toString()+"-"+date.toString(),(UUID+"_"+thumbSize).toString());
-
-                     /!*var SourcePath=path.parse(resUpFile.URL.toString()).root;
-                     pathObj.forEach(function (value,index) {
-                     if(index==(pathObj.length-5))
-                     {
-                     value=value+"_thumb"
-                     }
-                     if(index==pathObj.length-1)
-                     {
-                     value=value+"_"+thumbSize;
-                     }
-
-                     SourcePath=path.join(SourcePath,value.toString());
-                     });
-                     //var SourcePath = (SourcePath.toString()).replace('\',' / '');*!/
-                     console.log(SourcePath);
-
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',reqId,SourcePath);
-
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - ReadStream is starting',reqId);
-
-
-                     var source = fs.createReadStream(SourcePath.toString());
-
-                     source.pipe(res);
-                     source.on('end', function (result) {
-                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',reqId);
-                     res.status(200);
-                     res.end();
-                     });
-                     source.on('error', function (err) {
-                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',reqId,err);
-                     res.status(400);
-                     res.end();
-                     });
-                     }
-                     catch(ex)
-                     {
-                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',reqId,ex);
-
-                     callback(ex, undefined);
-                     res.status(400);
-                     res.end();
-                     }
-                     }*/
 
                 }
 

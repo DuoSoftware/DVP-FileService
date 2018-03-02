@@ -74,8 +74,7 @@ module.exports = {
     {
         "algo":"CRYPTO_ALGO",
         "password":"CRYPTO_PASSWORD"
-    },
-    "BasePath":"SYS_FILE_BASEPATH"
+    }
 };
 
 //NODE_CONFIG_DIR
