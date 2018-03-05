@@ -4286,7 +4286,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/MaxUploadSize',jwt({secret: sec
 
 RestServer.post('DVP/API/Test',function (req,res,next) {
 
-    mkdirp('/tmp/foo/bar/baz', function (err) {
+    mkdirp('./yooo/iiii', function (err) {
         if (err) {
             console.error(err);
             res.end();
