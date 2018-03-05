@@ -35,7 +35,7 @@ var mkdirp = require('mkdirp');
 //restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
 
-
+var path=require('path');
 
 
 var RestServer = restify.createServer({

@@ -59,7 +59,7 @@ var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 
 
-var uploadPath="/usr/local/src/upload";
+var uploadPath=config.BasePath;
 
 var request = require('request');
 var validator = require('validator');

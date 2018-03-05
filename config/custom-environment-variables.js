@@ -80,7 +80,8 @@ module.exports = {
         "userServiceHost": "SYS_USERSERVICE_HOST",
         "userServicePort": "SYS_USERSERVICE_PORT",
         "userServiceVersion": "SYS_USERSERVICE_VERSION"
-    }
+    },
+    "BasePath":"SYS_FILE_BASEPATH"
 };
 
 //NODE_CONFIG_DIR
