@@ -170,8 +170,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         var fSize=Math.floor(file.size/(1024));
 
 
-
-        if(!isNaN(upLimit) && fSize>parseInt(upLimit))
+        if(Category !="CONVERSATION" && (!isNaN(upLimit) && fSize>parseInt(upLimit)))
         {
             logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - File is too large to upload  ',reqId);
             var jsonString = messageFormatter.FormatMessage(new Error('File is too large to upload'), "EXCEPTION", false, undefined);
