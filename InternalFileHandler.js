@@ -16,7 +16,7 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
-var uploadPath="/usr/local/src/upload";
+var uploadPath=config.BasePath;
 
 
 
