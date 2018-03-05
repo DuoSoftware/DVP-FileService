@@ -30,7 +30,7 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var option = config.Option;
 
 var upLimit = config.UploadSize;
-
+var mkdirp = require('mkdirp');
 
 //restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
 
@@ -4284,30 +4284,19 @@ RestServer.get('/DVP/API/'+version+'/FileService/MaxUploadSize',jwt({secret: sec
  return next();
  });*/
 
-RestServer.get('DVP/API/Test',function (req,res,next) {
+RestServer.post('DVP/API/Test',function (req,res,next) {
 
-    var person =
-        {
-            "person":[
-                {
-                    "name":"John",
-                    "age":"23"
-
-                },
-                {
-                    "name":"Sansa",
-                    "age":"18"
-                },
-                {
-                    "name":"Arya",
-                    "age":"16"
-                }
-            ]
+    mkdirp('/tmp/foo/bar/baz', function (err) {
+        if (err) {
+            console.error(err);
+            res.end();
         }
-
-
-    res.end(JSON.stringify(person));
-    return next();
+        else
+        {
+            console.log('pow!');
+            res.end();
+        }
+    });
 
 });
 

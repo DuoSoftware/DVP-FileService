@@ -697,6 +697,10 @@ function localStoreHandler(fileData,callback) {
 
         fileData.Fobj.thumbDir = thumbDir;
 
+        console.log("Uploading Directory "+newDir);
+        console.log("Thumbnail Uploading Directory "+thumbDir);
+
+
         mkdirp(newDir, function (err) {
 
             if (err) {
