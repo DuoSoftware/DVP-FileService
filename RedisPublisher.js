@@ -408,17 +408,27 @@ function GetOrganizationSpaceDetails(company,tenant,callback) {
         }
         else
         {
-            if(Array.isArray(resKey))
-
+            if(Array.isArray(resKey) && JSON.parse(resKey[0]).spaceLimit && JSON.parse(resKey[0]).spaceUnit)
+            {
                 var orgSpace = {
                     spaceLimit: JSON.parse(resKey[0]).spaceLimit,
                     spaceUnit:JSON.parse(resKey[0]).spaceUnit,
                     currTotal:resKey[1]
-            };
+                };
+                logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationSpaceDetails] - [%s] -[REDIS] - [FS] - Keys found ');
+                callback(undefined,orgSpace);
+            }
+            else
+            {
+                logger.error('[DVP-FIleService.RedisPublisher.GetOrganizationSpaceDetails] - [%s] -[REDIS] - [FS] - Error in getting Keys ');
+                callback(new Error("Error in getting Keys "),undefined);
+            }
 
 
-            logger.info('[DVP-FIleService.RedisPublisher.GetOrganizationSpaceDetails] - [%s] -[REDIS] - [FS] - Keys found ');
-            callback(undefined,orgSpace);
+
+
+
+
         }
     })
 
