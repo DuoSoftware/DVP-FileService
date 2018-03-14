@@ -16,15 +16,11 @@ const crypto = require('crypto');
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
-var uploadPath="/usr/local/src/upload";
+var uploadPath=config.BasePath;
 
 
 
 
-//Sprint 5
-
-//var couchbase = require('couchbase');
-var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);

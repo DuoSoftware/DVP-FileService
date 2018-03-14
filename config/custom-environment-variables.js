@@ -74,7 +74,14 @@ module.exports = {
     {
         "algo":"CRYPTO_ALGO",
         "password":"CRYPTO_PASSWORD"
-    }
+    },
+    "Services" : {
+        "accessToken": "HOST_TOKEN",
+        "userServiceHost": "SYS_USERSERVICE_HOST",
+        "userServicePort": "SYS_USERSERVICE_PORT",
+        "userServiceVersion": "SYS_USERSERVICE_VERSION"
+    },
+    "BasePath":"SYS_FILE_BASEPATH"
 };
 
 //NODE_CONFIG_DIR
