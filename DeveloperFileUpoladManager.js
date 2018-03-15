@@ -772,6 +772,7 @@ function localStorageRecordHandler(dataObj, callback)
 
             if (errStore) {
                 logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [PGSQL] - Failed to lod specific location to save', dataObj.reqId);
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
                 callback(errStore, undefined, dataObj.tempPath);
             }
             else if (resStore) {
@@ -812,6 +813,7 @@ function localStorageRecordHandler(dataObj, callback)
                 });
             }
             else {
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
                 logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [PGSQL] - Error in operation', dataObj.reqId);
                 callback(new Error("Error in operation"), undefined, dataObj.tempPath);
             }
@@ -830,7 +832,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
     try {
         MongoFileUploader(dataObj, function (errMongo, resMongo) {
             if (errMongo) {
-
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
                 callback(errMongo, undefined, dataObj.tempPath);
             }
             else {
@@ -1031,7 +1033,7 @@ function GetUploadedFileSize(company,tenant,callback)
 
 
 function GetOrganozationStorageSizes(company,tenant,callback) {
-    
+
     RedisPublisher.GetOrganizationSpaceDetails(company,tenant,function (errLim,resLim) {
         callback(errLim,resLim);
     })
@@ -1039,69 +1041,92 @@ function GetOrganozationStorageSizes(company,tenant,callback) {
 }
 
 
-/*function GetUploadedFileSizesWithCategories(company,tenant,callback) {
-
-    var query =
+function removeSourceEmptyRecord (company,tenant,recId)
+{
+    DbConn.FileCategory.destroy(
         {
-            attributes:['ObjCategory', [DbConn.SequelizeConn.fn('SUM', DbConn.SequelizeConn.col("Size")), 'Sum']],
-            where :[{CompanyId: company, TenantId: tenant}],
-            group: ['ObjCategory']
-        };
+            UniqueId: recId,
+            CompanyId: company,
+            TenantId: tenant
 
+        }).then(function (resCat) {
+        if (resCat) {
+            logger.info('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - File removed : %s', reqId);
 
+        }
+        else {
+            logger.error('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - No such file to remove', reqId);
 
+        }
+    }).catch(function (errCat) {
+        logger.error('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - Error in removing file', reqId);
 
-    DbConn.FileUpload.findAll(query).then(function (resSum) {
-        //callback(undefined,resSum);
-        SetRedisStorageRecords(resSum);
-    }).catch(function (errSum) {
-        callback(errSum,undefined);
     });
-
-
-
-    /!* DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant}]},{group:['ObjCategory']}).then(function (resSum) {
-     callback(undefined,resSum);
-     }).catch(function (errSum) {
-     callback(errSum,undefined);
-     })*!/
 }
 
-function SetRedisStorageRecords(sizeObj,company,tenant,callback) {
+/*function GetUploadedFileSizesWithCategories(company,tenant,callback) {
 
-    if(sizeObj)
-    {
-        var sizeKeys =[];
-        var totalSize=0;
-        sizeObj.forEach(function (item) {
+ var query =
+ {
+ attributes:['ObjCategory', [DbConn.SequelizeConn.fn('SUM', DbConn.SequelizeConn.col("Size")), 'Sum']],
+ where :[{CompanyId: company, TenantId: tenant}],
+ group: ['ObjCategory']
+ };
 
-            if(item.ObjCategory )
-            {
-                sizeKeys.push({
-                    key:tenant+":"+company+":STORAGE:"+item.ObjCategory,
-                    size:item.Sum
-                })
-            }
 
-        });
 
-        GetUploadedFileSize(company,tenant,function (errTotal,resTotal) {
 
-            if(errTotal)
-            {
+ DbConn.FileUpload.findAll(query).then(function (resSum) {
+ //callback(undefined,resSum);
+ SetRedisStorageRecords(resSum);
+ }).catch(function (errSum) {
+ callback(errSum,undefined);
+ });
 
-            }
-            else
-            {
-                sizeKeys.push({
-                    key:tenant+":"+company+":STORAGE:TOTAL",
-                    size:resTotal
-                })
-            }
-        });
-    }
 
-};*/
+
+ /!* DbConn.FileUpload.sum('Size',{where:[{CompanyId:company},{TenantId:tenant}]},{group:['ObjCategory']}).then(function (resSum) {
+ callback(undefined,resSum);
+ }).catch(function (errSum) {
+ callback(errSum,undefined);
+ })*!/
+ }
+
+ function SetRedisStorageRecords(sizeObj,company,tenant,callback) {
+
+ if(sizeObj)
+ {
+ var sizeKeys =[];
+ var totalSize=0;
+ sizeObj.forEach(function (item) {
+
+ if(item.ObjCategory )
+ {
+ sizeKeys.push({
+ key:tenant+":"+company+":STORAGE:"+item.ObjCategory,
+ size:item.Sum
+ })
+ }
+
+ });
+
+ GetUploadedFileSize(company,tenant,function (errTotal,resTotal) {
+
+ if(errTotal)
+ {
+
+ }
+ else
+ {
+ sizeKeys.push({
+ key:tenant+":"+company+":STORAGE:TOTAL",
+ size:resTotal
+ })
+ }
+ });
+ }
+
+ };*/
 
 function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId,callback)
 {
