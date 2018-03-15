@@ -759,6 +759,7 @@ function localStorageRecordHandler(dataObj, callback)
             if (errStore) {
                 logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [PGSQL] - Failed to lod specific location to save', dataObj.reqId);
                 callback(errStore, undefined, dataObj.tempPath);
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
             }
             else if (resStore) {
                 resStore.Source = "LOCAL";
@@ -798,12 +799,14 @@ function localStorageRecordHandler(dataObj, callback)
                 });
             }
             else {
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
                 logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [PGSQL] - Error in operation', dataObj.reqId);
                 callback(new Error("Error in operation"), undefined, dataObj.tempPath);
             }
 
         });
     } catch (e) {
+        removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
         logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [HTTP] - Exception occurred', dataObj.reqId);
         callback(e, undefined, dataObj.tempPath);
     }
@@ -816,6 +819,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
             if (errMongo) {
 
                 callback(errMongo, undefined, dataObj.tempPath);
+                removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
             }
             else {
                 dataObj.Fobj.Source = "MONGO";
@@ -838,6 +842,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
 
         });
     } catch (e) {
+        removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
         callback(e, undefined, dataObj.tempPath);
     }
 
@@ -1081,6 +1086,8 @@ function DeveloperReserveFiles(Display,fileName,rand2,cmp,ten,Clz,Category,reqId
 }
 
 
+
+
 function recordFileDetails(dataObj,callback) {
 
     try {
@@ -1205,7 +1212,28 @@ function recordFileDetails(dataObj,callback) {
 }
 
 
+function removeSourceEmptyRecord (company,tenant,recId)
+{
+    DbConn.FileCategory.destroy(
+        {
+            UniqueId: recId,
+            CompanyId: company,
+            TenantId: tenant
 
+        }).then(function (resCat) {
+        if (resCat) {
+            logger.info('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - File removed : %s', reqId);
+
+        }
+        else {
+            logger.info('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - No such file to remove', reqId);
+
+        }
+    }).catch(function (errCat) {
+        logger.error('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - Error in removing file', reqId);
+
+    });
+}
 
 module.exports.DeveloperUploadFiles = DeveloperUploadFiles;
 module.exports.FileAssignWithApplication = FileAssignWithApplication;

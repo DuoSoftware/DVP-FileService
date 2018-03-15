@@ -1595,8 +1595,11 @@ function LocalFileRemover(resFile,Company,Tenant,callback) {
         }
         else
         {
-            console.log("No file path found");
-            callback(new Error("No file path found"),undefined);
+            resFile.destroy().then(function (resDel) {
+                callback(undefined,resDel);
+            }).catch(function (errDel) {
+                callback(errDel,undefined);
+            });
         }
 
     }
@@ -1685,6 +1688,7 @@ function DeleteFile(fileID,Company,Tenant,option,reqId,callback) {
 
                     if(resFile.Source=="LOCAL" && resFile.URL)
                     {
+
                         LocalFileRemover(resFile,Company,Tenant,function (errDel,resDel) {
                             callback(errDel,resDel);
                         });
