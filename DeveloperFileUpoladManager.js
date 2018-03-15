@@ -1055,7 +1055,7 @@ function removeSourceEmptyRecord (company,tenant,recId)
 
         }
         else {
-            logger.error('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - No such file to remove', reqId);
+            logger.info('[DVP-FIleService.removeSourceEmptyRecord] - [%s] - [PGSQL] - No such file to remove', reqId);
 
         }
     }).catch(function (errCat) {
