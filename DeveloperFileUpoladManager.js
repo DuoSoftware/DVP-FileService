@@ -820,6 +820,7 @@ function localStorageRecordHandler(dataObj, callback)
 
         });
     } catch (e) {
+        removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
         logger.info('[DVP-FIleService.DeveloperUploadFiles.localStorageRecordHandler] - [%s] - [HTTP] - Exception occurred', dataObj.reqId);
         callback(e, undefined, dataObj.tempPath);
     }
@@ -857,6 +858,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
 
         });
     } catch (e) {
+        removeSourceEmptyRecord(dataObj.cmp, dataObj.ten,dataObj.resvID);
         callback(e, undefined, dataObj.tempPath);
     }
 
