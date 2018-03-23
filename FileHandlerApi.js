@@ -1599,15 +1599,21 @@ function LocalFileRemover(resFile,Company,Tenant,callback) {
         }
         else
         {
-            console.log("No file path found");
-            callback(new Error("No file path found"),undefined);
+            resFile.destroy().then(function (resDel) {
+                callback(undefined,resDel);
+            }).catch(function (errDel) {
+                callback(errDel,undefined);
+            });
         }
 
     }
     catch (e)
     {
-        console.log("Exception in LOcal file remover");
-        callback(e,undefined);
+        resFile.destroy().then(function (resDel) {
+            callback(undefined,resDel);
+        }).catch(function (errDel) {
+            callback(errDel,undefined);
+        });
     }
 
 
