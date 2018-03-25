@@ -175,7 +175,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
             logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - File is too large to upload  ',reqId);
             var jsonString = messageFormatter.FormatMessage(new Error('File is too large to upload'), "EXCEPTION", false, undefined);
 
-            var unlinkPath="";
+            /*var unlinkPath="";
 
             if(attachedFile.tempPath)
             {
@@ -184,10 +184,10 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
             else
             {
                 unlinkPath=tempPath;
-            }
+            }*/
 
 
-            fs.unlink(path.join(unlinkPath),function (errUnlink) {
+            fs.unlink(path.join(tempPath),function (errUnlink) {
 
                 if(errUnlink)
                 {
@@ -267,9 +267,9 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
 
             DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPathVal) {
 
-                if(tempPathVal)
+                if(tempPath)
                 {
-                    fs.unlink(path.join(tempPathVal),function (errUnlink) {
+                    fs.unlink(path.join(tempPath),function (errUnlink) {
 
                         if(errUnlink)
                         {
@@ -340,7 +340,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - Exception occurred when Developer file upload request starts  ',reqId);
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
         logger.error('[DVP-FIleService.UploadFiles] - [%s] - Request response : %s ', reqId, jsonString);
-        var unlinkPath="";
+        /*var unlinkPath="";
 
         if(attachedFile.tempPath)
         {
@@ -349,10 +349,10 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         else
         {
             unlinkPath=tempPath;
-        }
+        }*/
 
 
-        fs.unlink(path.join(unlinkPath),function (errUnlink) {
+        fs.unlink(path.join(tempPath),function (errUnlink) {
 
             if(errUnlink)
             {
