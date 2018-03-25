@@ -709,11 +709,11 @@ function localStoreHandler(fileData,callback) {
             }
             else {
                 console.log("Uploading path : " + path.join(newDir, fileData.rand2.toString()));
-                const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
+
 
                 if (fileData.encNeeded) {
 
-
+                    const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
                     fs.createReadStream(fileData.Fobj.path).pipe(cipher)
                         .pipe(fs.createWriteStream(path.join(newDir, fileData.rand2.toString())))
                         .on('error', function (error) {
