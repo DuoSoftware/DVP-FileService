@@ -265,11 +265,11 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
                 }
 
 
-            DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPath) {
+            DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPathVal) {
 
-                if(tempPath)
+                if(tempPathVal)
                 {
-                    fs.unlink(path.join(tempPath),function (errUnlink) {
+                    fs.unlink(path.join(tempPathVal),function (errUnlink) {
 
                         if(errUnlink)
                         {
