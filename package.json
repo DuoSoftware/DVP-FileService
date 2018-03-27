@@ -33,7 +33,7 @@
     "path": "^0.11.14",
     "redis": "^0.12.1",
     "request": "^2.83.0",
-    "restify": "^3.0.3",
+    "restify": "^4.0.3",
     "restify-jwt": "^0.4.0",
     "streamifier": "^0.1.1",
     "util": "^0.10.3",
