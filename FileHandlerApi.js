@@ -276,8 +276,10 @@ function LocalFileDownloader(fileObj,res) {
             source.pipe(decrypt).pipe(res);
             source.on('end', function (result) {
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
+                decrypt.end();
             }).on('error', function (err) {
                 logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
+                decrypt.end();
             });
 
 
