@@ -7,7 +7,7 @@
 
 #EXPOSE 8812
 
-FROM node:5.10.0
+FROM node:9.9.0
 ARG VERSION_TAG
 RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-FileService.git /usr/local/src/fileservice
 RUN cd /usr/local/src/fileservice;
