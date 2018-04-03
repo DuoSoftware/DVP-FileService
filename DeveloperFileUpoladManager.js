@@ -6,18 +6,13 @@
 //.....................................................................................................
 
 var DbConn = require('dvp-dbmodels');
-//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var fs=require('fs');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+
 var config = require('config');
 // sprint 5
 
-//var couchbase = require('couchbase');
-var Cbucket=config.Couch.bucket;
-var CHip=config.Couch.ip;
-//var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
-//
+var Cbucket=config.Couch.bucket;
+
 
 
 var fs=require('fs');
@@ -132,76 +127,7 @@ function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 }
 
 
-/*function LocalThumbnailMaker(uuid,Fobj,Category,thumbDir,reqId,callback)
- {
- var sizeArray=['75','100','125','150','200'];
- var thumbnailArray=[];
 
- var fileStruct=Fobj.type.split("/")[0];
-
- try {
- if (fileStruct == "image") {
- logger.info('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Image file found to make thumbnails ',reqId,uuid);
- mkdirp(thumbDir, function (err) {
-
- if(err)
- {
- logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Error occurred in making directory for thumbnails of %s ',reqId,uuid);
- callback(err, uuid);
- }
- else
- {
- console.log(path.join(Fobj.tempPath));
-
-
- sizeArray.forEach(function (size) {
-
-
- thumbnailArray.push(function createContact(callbackThumb) {
-
- var readStream=fs.createReadStream(path.join(Fobj.tempPath));
- var writeStream = fs.createWriteStream(path.join(thumbDir, uuid.toString() + "_" + size.toString()));
-
-
- gm(readStream).resize(size, size).quality(50).stream(function(err,stdout,stderr)
- {
- stdout.pipe(writeStream).on('error', function (error) {
- console.log("Error in making thumbnail " + uuid + "_" + size);
- callbackThumb(error, undefined);
- }).on('finish', function () {
- console.log("Making thumbnail " + uuid + "_" + size + " Success");
- callbackThumb(undefined, "Done");
- });
- });
-
-
-
- });
- });
-
- async.series(thumbnailArray, function (errThumbMake, resThumbMake) {
-
- callback(undefined, uuid);
-
-
- });
- }
-
- });
-
- }
- else
- {
- callback(undefined, uuid);
- }
- } catch (e) {
-
- logger.error('[DVP-FIleService.LocalThumbnailMaker] - [%s] - Exception in operation of local thumbnail creation of %s ',reqId,uuid);
- callback(e, uuid);
- }
-
-
- }*/
 
 function LocalThumbnailMaker(thumObj,callback)
 {

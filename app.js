@@ -1,7 +1,7 @@
 /**
  * Created by pawan on 2/23/2015.
  */
-var DbConn = require('dvp-dbmodels');
+
 var restify = require('restify');
 var cors = require('cors');
 var FileHandler=require('./FileHandlerApi.js');
@@ -23,7 +23,6 @@ var config = require('config');
 var port = config.Host.port || 3000;
 
 var version=config.Host.version;
-var hpath=config.Host.hostpath;
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
@@ -3458,7 +3457,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj, function (errz, respg, tempPath) {
 
             if (tempPath) {
-                cosole.log("Temp Path --------------- "+tempPath);
+                console.log("Temp Path --------------- "+tempPath);
                 fs.unlink(path.join(tempPath), function (errUnlink) {
 
                     if (errUnlink) {
