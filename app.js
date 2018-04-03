@@ -269,6 +269,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
 
                 if(tempPathVal)
                 {
+                    console.log("TempPath ---------- "+tempPathVal);
                     fs.unlink(path.join(tempPathVal),function (errUnlink) {
 
                         if(errUnlink)
@@ -3457,6 +3458,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj, function (errz, respg, tempPath) {
 
             if (tempPath) {
+                cosole.log("Temp Path --------------- "+tempPath);
                 fs.unlink(path.join(tempPath), function (errUnlink) {
 
                     if (errUnlink) {
