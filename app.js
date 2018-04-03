@@ -3458,7 +3458,7 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj, function (errz, respg, tempPath) {
 
             if (tempPath) {
-                cosole.log("Temp Path --------------- "+tempPath);
+                console.log("Temp Path --------------- "+tempPath);
                 fs.unlink(path.join(tempPath), function (errUnlink) {
 
                     if (errUnlink) {
