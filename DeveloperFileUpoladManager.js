@@ -281,8 +281,6 @@ function MongoFileUploader(dataObj,callback)
     try {
 
 
-
-
         var sizeArray = ['75', '100', '125', '150', '200'];
         var thumbnailArray = [];
 

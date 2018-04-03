@@ -16,7 +16,7 @@ var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
-var uploadPath="/usr/local/src/upload";
+var uploadPath=config.BasePath;
 //
 
 
