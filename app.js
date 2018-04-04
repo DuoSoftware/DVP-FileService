@@ -3463,6 +3463,11 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
 RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:company',function(req,res,next)
 {
 
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log(process.memoryUsage());
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+
     var reqId='';
     try
     {
