@@ -221,8 +221,10 @@ function MongoFileUploader(dataObj,callback)
                 callback(error, undefined);
             }
             else {
-                var bucket = new mongodb.GridFSBucket(db);
-                var ThumbBucket = new mongodb.GridFSBucket(db, {bucketName: 'thumbnails'});
+                //var bucket = new mongodb.GridFSBucket(db);
+                var bucket = new GridFSBucket(db);
+                //var ThumbBucket = new mongodb.GridFSBucket(db, {bucketName: 'thumbnails'});
+                var ThumbBucket = new GridFSBucket(db, {bucketName: 'thumbnails'});
                 console.log(dataObj.Fobj.path);
                 var uploadReadStream = fs.createReadStream(dataObj.Fobj.path);
                 var bucketUploadStream = bucket.openUploadStream(dataObj.rand2);
