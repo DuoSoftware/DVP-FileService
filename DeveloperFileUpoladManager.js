@@ -776,7 +776,7 @@ function localStorageRecordHandler(dataObj, callback)
             else if (resStore) {
                 resStore.Source = "LOCAL";
                 dataObj.Fobj = resStore;
-                RedisPublisher.updateFileStorageRecord(resStore.Category, resStore.sizeInKB, dataObj.cmp, dataObj.ten);
+                //RedisPublisher.updateFileStorageRecord(resStore.Category, resStore.sizeInKB, dataObj.cmp, dataObj.ten);
                 recordFileDetails(dataObj, function (err, res) {
 
                     if (err) {
@@ -959,8 +959,25 @@ function DeveloperUploadFiles(fileObj,callback)
                         fileStore=fileObj.option.toUpperCase();
                     }
 
+                    if(fileStore=="MONGO")
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
+                        console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
+                        mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+                    else
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
+                        console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
+                        localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
 
-                    checkOrganizationSpaceLimit(fileObj.cmp,fileObj.ten,fileObj.Fobj.sizeInKB,fileObj.Category,function (errCheck,resCheck) {
+
+                   /* checkOrganizationSpaceLimit(fileObj.cmp,fileObj.ten,fileObj.Fobj.sizeInKB,fileObj.Category,function (errCheck,resCheck) {
 
                         if(errCheck)
                         {
@@ -986,7 +1003,7 @@ function DeveloperUploadFiles(fileObj,callback)
                             }
                         }
 
-                    });
+                    });*/
 
 
 

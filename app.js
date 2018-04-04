@@ -228,7 +228,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
         var fSize=Math.floor(file.size/(1024));
 
 
-        if(Category !="CONVERSATION" && (!isNaN(upLimit) && fSize>parseInt(upLimit)))
+       /* if(Category !="CONVERSATION" && (!isNaN(upLimit) && fSize>parseInt(upLimit)))
         {
             logger.error('[DVP-FIleService.UploadFiles] - [%s] - [HTTP] - File is too large to upload  ',reqId);
             var jsonString = messageFormatter.FormatMessage(new Error('File is too large to upload'), "EXCEPTION", false, undefined);
@@ -386,8 +386,130 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
 
 
             });
+        }*/
+        if(file.type)
+        {
+            Type=file.type;
         }
 
+
+        if(req.body.mediatype && req.body.filetype){
+
+            file.type = req.body.mediatype + "/" + req.body.filetype;
+        }
+
+
+        if(req.body.display){
+
+
+            file.display = req.body.display;
+        }
+
+        if(req.body.filename)
+        {
+            file.name=req.body.filename;
+        }
+
+
+        logger.info('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - File path %s ',reqId,file.path);
+
+
+        var ValObj={
+
+            "tenent":Tenant,
+            "company":Company,
+            "filename":file.name,
+            "type":file.type,
+            "id":rand2
+
+        };
+
+        var AttchVal=JSON.stringify(ValObj);
+
+
+        logger.debug('[DVP-FIleService.UploadFiles] - [%s] - [FILEUPLOAD] - Attachment values %s',reqId,AttchVal);
+
+
+        var fileObj =
+            {
+                Fobj:file,
+                rand2:rand2,
+                cmp:Company,
+                ten:Tenant,
+                ref:ref,
+                option:option,
+                Clz:Clz,
+                Type:Type,
+                Category:Category,
+                resvID:resvID,
+                reqId:reqId
+
+            }
+
+
+        DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPathVal) {
+
+            if(tempPathVal)
+            {
+                console.log("TempPath ---------- "+tempPathVal);
+                fs.unlink(path.join(tempPathVal),function (errUnlink) {
+
+                    if(errUnlink)
+                    {
+                        console.log("Error status Removing Temp file",errUnlink);
+                    }
+                    else
+                    {
+                        console.log("Temp file removed successfully");
+                    }
+
+
+                });
+            }
+
+            if(errz)
+            {
+                var jsonString = messageFormatter.FormatMessage(errz, "ERROR/EXCEPTION", false, undefined);
+                logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to upload file : %s ', reqId, jsonString);
+
+                if(errz.message =='Allocated memory size exceeded')
+                {
+                    res.status(507);
+                }
+
+                res.end(jsonString);
+            }
+
+            else{
+
+
+                logger.debug('[DVP-FIleService.UploadFiles] - [%s] - File uploaded successfully',reqId,AttchVal);
+                RedisPublisher.RedisPublish(respg, AttchVal,reqId, function (errRDS, resRDS) {
+                        if (errRDS)
+                        {
+                            var jsonString = messageFormatter.FormatMessage(errRDS, "ERROR/EXCEPTION", false, undefined);
+                            logger.error('[DVP-FIleService.UploadFiles] - [%s] - Failed to publish on redis : %s ', reqId, jsonString);
+                            res.end(jsonString);
+
+                        }
+                        else
+                        {
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, rand2);
+                            logger.debug('[DVP-FIleService.UploadFiles] - [%s] - Successfully published on redis ', reqId);
+                            res.end(jsonString);
+
+                        }
+
+
+                    }
+                );
+
+
+            }
+
+
+
+        });
 
 
 
