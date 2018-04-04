@@ -7,7 +7,6 @@ var config = require('config');
 
 //Sprint 5
 //var couchbase = require('couchbase');
-var streamifier = require('streamifier');
 var Cbucket=config.Couch.bucket;
 var CHip=config.Couch.ip;
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);
@@ -24,7 +23,6 @@ var uploadPath="/usr/local/src/upload";
 var sys=require('sys');
 var done       =       false;
 var fs=require('fs');
-var log4js=require('log4js');
 
 
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
@@ -32,7 +30,6 @@ var config = require('config');
 var mongodb = require('mongodb');
 
 var moment= require('moment');
-var easyimg = require('easyimage');
 var util = require('util');
 
 
@@ -63,9 +60,6 @@ var config = require('config');
 
 var hpath=config.Host.hostpath;
 
-
-log4js.configure(config.Host.logfilepath, { cwd: hpath });
-var log = log4js.getLogger("fhandler");
 
 var crptoAlgo = config.Crypto.algo;
 var crptoPwd = config.Crypto.password;

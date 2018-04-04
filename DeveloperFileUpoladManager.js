@@ -22,7 +22,6 @@ var CHip=config.Couch.ip;
 
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
-var easyimg = require('easyimage');
 var RedisPublisher=require('./RedisPublisher.js');
 var util = require('util');
 
