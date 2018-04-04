@@ -1,5 +1,5 @@
 //var attachmate = require('attachmate');
-var fstream = require('fstream');
+
 var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
