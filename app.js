@@ -115,7 +115,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var Category="";
     var ref="tempRef";
     var resvID="";
-    var encripNeeded=false;
 
     var upldFileKey = Object.keys(req.files)[0];
     var attachedFile = req.files[upldFileKey];
@@ -3059,14 +3058,11 @@ RestServer.put('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:co
         var Company = req.params.company;
         var Tenant = req.params.tenant;
 
-        var prov = 1;
-
         var Clz = '';
         var Type = '';
         var Category = "";
         var ref = "tempRef";
         var resvID = "";
-        var encripNeeded = false;
         req.readable = true;
         var FilePath = "";
 
@@ -3293,14 +3289,12 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
         var Company = req.params.company;
         var Tenant = req.params.tenant;
 
-        var prov = 1;
 
         var Clz = '';
         var Type = '';
         var Category = "";
         var ref = "tempRef";
         var resvID = "";
-        var encripNeeded = false;
         req.readable = true;
         var FilePath = "";
 
@@ -3723,7 +3717,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/Agent/FileUpload',jwt({secret:
     var Category="";
     var ref="tempRef";
     var resvID="";
-    var encripNeeded=false;
 
     var upldFileKey = Object.keys(req.files)[0];
     var attachedFile = req.files[upldFileKey];

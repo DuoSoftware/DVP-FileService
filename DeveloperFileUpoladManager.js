@@ -888,7 +888,24 @@ function DeveloperUploadFiles(fileObj,callback)
                     }
 
 
-                    checkOrganizationSpaceLimit(fileObj.cmp,fileObj.ten,fileObj.Fobj.sizeInKB,fileObj.Category,function (errCheck,resCheck) {
+                    if(fileStore=="MONGO")
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
+                        console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
+                        mongoFileAndRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+                    else
+                    {
+                        logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL',fileObj.reqId);
+                        console.log("TO LOCAL >>>>>>>>> "+fileObj.rand2);
+                        localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
+                            callback(errStore,resStore,tempPath);
+                        });
+                    }
+
+                   /* checkOrganizationSpaceLimit(fileObj.cmp,fileObj.ten,fileObj.Fobj.sizeInKB,fileObj.Category,function (errCheck,resCheck) {
 
                         if(errCheck)
                         {
@@ -896,7 +913,7 @@ function DeveloperUploadFiles(fileObj,callback)
                         }
                         else
                         {
-                            if(fileStore=="MONGO")
+                            /!*if(fileStore=="MONGO")
                             {
                                 logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to MongoDB',fileObj.reqId);
                                 console.log("TO MONGO >>>>>>>>> "+fileObj.rand2);
@@ -911,10 +928,10 @@ function DeveloperUploadFiles(fileObj,callback)
                                 localStorageRecordHandler(fileObj,function (errStore,resStore,tempPath) {
                                     callback(errStore,resStore,tempPath);
                                 });
-                            }
+                            }*!/
                         }
 
-                    });
+                    });*/
 
 
 
