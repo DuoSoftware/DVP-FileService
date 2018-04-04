@@ -835,7 +835,7 @@ function mongoFileAndRecordHandler(dataObj,callback) {
             }
             else {
                 dataObj.Fobj.Source = "MONGO";
-                RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInKB, dataObj.cmp, dataObj.ten);
+               // RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInKB, dataObj.cmp, dataObj.ten);
                 recordFileDetails(dataObj, function (err, res) {
                     if (err) {
                         callback(err, undefined, dataObj.tempPath);
