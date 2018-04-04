@@ -16,9 +16,11 @@ var path = require('path');
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
+var config = require('config');
+var mkdirp = require('mkdirp');
 //...............................................
 restify.CORS.ALLOW_HEADERS.push('authorization');
-var config = require('config');
+
 
 var port = config.Host.port || 3000;
 
@@ -29,13 +31,6 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var option = config.Option;
 
 var upLimit = config.UploadSize;
-var mkdirp = require('mkdirp');
-
-//restify.CORS.ALLOW_HEADERS.push('Access-Control-Request-Method');
-
-
-var path=require('path');
-
 
 var RestServer = restify.createServer({
     name: "myapp",

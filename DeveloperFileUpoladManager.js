@@ -6,22 +6,11 @@
 //.....................................................................................................
 
 var DbConn = require('dvp-dbmodels');
-
 var config = require('config');
-// sprint 5
-
-
-var Cbucket=config.Couch.bucket;
-
-
-
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
-var easyimg = require('easyimage');
 var RedisPublisher=require('./RedisPublisher.js');
 var util = require('util');
-
-
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
     Server = require('mongodb').Server,
@@ -56,8 +45,6 @@ var crptoPwd = config.Crypto.password;
 
 var uploadPath=config.BasePath;
 
-var request = require('request');
-var validator = require('validator');
 
 var uri = '';
 mongoip = mongoip.split(',');
@@ -80,6 +67,19 @@ if(util.isArray(mongoip)){
     uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
     console.log("URI ...   "+uri);
 }
+
+
+
+
+
+// sprint 5
+
+
+//var Cbucket=config.Couch.bucket;
+
+
+
+
 
 
 
