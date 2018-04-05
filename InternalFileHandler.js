@@ -6,7 +6,6 @@ var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
 var config = require('config');
-var streamifier = require('streamifier');
 var fs=require('fs');
 var gm = require('gm').subClass({imageMagick: true});
 var async= require('async');

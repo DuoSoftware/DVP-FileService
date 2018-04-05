@@ -22,7 +22,6 @@ var CHip=config.Couch.ip;
 
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
-var easyimg = require('easyimage');
 var RedisPublisher=require('./RedisPublisher.js');
 var util = require('util');
 
@@ -313,7 +312,7 @@ function MongoFileUploader(dataObj,callback)
                     }).on('finish', function () {
                         logger.info('[DVP-FIleService.MongoFileUploader] - [%s]  - Encripted and uploaded to Mongo successfully ',dataObj.reqId);
                         cipher.end();
-                        RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
+                        //RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
 
                         if (fileStruct == "image") {
                             sizeArray.forEach(function (size) {
@@ -365,7 +364,7 @@ function MongoFileUploader(dataObj,callback)
                         callback(error, undefined);
                     }).on('finish', function () {
                         logger.info('[DVP-FIleService.MongoFileUploader] - [%s]  - File uploaded to Mongo successfully ',dataObj.reqId);
-                        RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
+                        //RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
 
                         if (fileStruct == "image") {
                             sizeArray.forEach(function (size) {
