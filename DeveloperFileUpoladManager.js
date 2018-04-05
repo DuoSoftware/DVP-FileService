@@ -10,6 +10,7 @@ var DbConn = require('dvp-dbmodels');
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
+var pump = require('pump')
 // sprint 5
 
 //var couchbase = require('couchbase');
@@ -730,24 +731,36 @@ function localStoreHandler(fileData,callback) {
                     });
                 }
                 else {
-                    fs.createReadStream(fileData.Fobj.path)
-                        .pipe(fs.createWriteStream(path.join(newDir, fileData.rand2.toString())))
-                        .on('error', function (error) {
 
-                            console.log("Error in piping ");
-                            logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping', fileData.reqId);
-                            callback(error, undefined);
+                    var readable= fs.createReadStream(fileData.Fobj.path);
+                    var writable = fs.createWriteStream(path.join(newDir, fileData.rand2.toString()));
 
-
-
-                        }).on('finish', function () {
+                    pump(readable, writable, function(err) {
+                        console.log('pipe finished', err)
                         console.log("File stored");
                         fileData.Fobj.path = path.join(newDir, fileData.rand2.toString());
                         fileData.Fobj.thumbDir = thumbDir;
                         logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - File stored', fileData.reqId);
                         callback(undefined, fileData.Fobj);
+                    })
 
-                    });
+                    // readable.pipe(writable)
+                    //     .on('error', function (error) {
+                    //
+                    //         console.log("Error in piping ");
+                    //         logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - Error in piping', fileData.reqId);
+                    //         callback(error, undefined);
+                    //
+                    //
+                    //
+                    //     }).on('finish', function () {
+                    //     console.log("File stored");
+                    //     fileData.Fobj.path = path.join(newDir, fileData.rand2.toString());
+                    //     fileData.Fobj.thumbDir = thumbDir;
+                    //     logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - File stored', fileData.reqId);
+                    //     callback(undefined, fileData.Fobj);
+                    //
+                    // });
                 }
 
             }
