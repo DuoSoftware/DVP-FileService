@@ -281,8 +281,6 @@ function MongoFileUploader(dataObj,callback)
     try {
 
 
-
-
         var sizeArray = ['75', '100', '125', '150', '200'];
         var thumbnailArray = [];
 
@@ -315,7 +313,7 @@ function MongoFileUploader(dataObj,callback)
                     }).on('finish', function () {
                         logger.info('[DVP-FIleService.MongoFileUploader] - [%s]  - Encripted and uploaded to Mongo successfully ',dataObj.reqId);
                         cipher.end();
-                        RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
+                        //RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
 
                         if (fileStruct == "image") {
                             sizeArray.forEach(function (size) {
@@ -367,7 +365,7 @@ function MongoFileUploader(dataObj,callback)
                         callback(error, undefined);
                     }).on('finish', function () {
                         logger.info('[DVP-FIleService.MongoFileUploader] - [%s]  - File uploaded to Mongo successfully ',dataObj.reqId);
-                        RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
+                        //RedisPublisher.updateFileStorageRecord(dataObj.Category, dataObj.Fobj.sizeInMB, dataObj.cmp, dataObj.ten);
 
                         if (fileStruct == "image") {
                             sizeArray.forEach(function (size) {
@@ -709,11 +707,11 @@ function localStoreHandler(fileData,callback) {
             }
             else {
                 console.log("Uploading path : " + path.join(newDir, fileData.rand2.toString()));
-                const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
+
 
                 if (fileData.encNeeded) {
 
-
+                    const cipher = crypto.createCipher(crptoAlgo, crptoPwd);
                     fs.createReadStream(fileData.Fobj.path).pipe(cipher)
                         .pipe(fs.createWriteStream(path.join(newDir, fileData.rand2.toString())))
                         .on('error', function (error) {

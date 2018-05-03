@@ -115,7 +115,6 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var Tenant=req.user.tenant;
 
     var prov=1;
-
     var Clz='';
     var Type='';
     var Category="";
@@ -126,6 +125,65 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
     var upldFileKey = Object.keys(req.files)[0];
     var attachedFile = req.files[upldFileKey];
     var tempPath = req.files[upldFileKey].path;
+
+
+    if (req.params) {
+        if (req.params.class) {
+            Clz = req.params.class;
+
+        }
+        if (req.params.type) {
+
+            Type = req.params.type;
+        }
+        if (req.params.category) {
+            Category = req.params.category;
+
+        }
+        if (req.params.referenceid) {
+            ref = req.params.referenceid;
+        }
+        if (req.params.fileCategory) {
+            Category = req.params.fileCategory;
+
+        }
+    }
+
+    if (req.query) {
+        if (req.query.put_file) {
+            FilePath = req.query.put_file;
+        }
+
+        if (req.query.class) {
+            Clz = req.query.class;
+        }
+        if (req.query.type) {
+            Type = req.query.type;
+        }
+        if (req.query.category) {
+            Category = req.query.category;
+        }
+        if (req.query.sessionid) {
+            ref = req.query.sessionid;
+        }
+        if (req.query.mediatype && req.query.filetype) {
+            if (req.query.filetype == "wav" || req.query.filetype == "mp3") {
+                FileStructure = "audio/" + req.query.filetype;
+            }
+            else {
+                FileStructure = req.query.mediatype + "/" + req.query.filetype;
+            }
+
+        }
+        if (req.query.sessionid && req.query.filetype) {
+            FileName = req.query.sessionid + "." + req.query.filetype;
+        }
+        if (req.query.display) {
+            DisplayName = req.query.display;
+        }
+
+
+    }
 
     if(req.body.class)
     {
@@ -265,11 +323,12 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secr
                 }
 
 
-            DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPath) {
+            DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj,function (errz, respg,tempPathVal) {
 
-                if(tempPath)
+                if(tempPathVal)
                 {
-                    fs.unlink(path.join(tempPath),function (errUnlink) {
+                    console.log("TempPath ---------- "+tempPathVal);
+                    fs.unlink(path.join(tempPathVal),function (errUnlink) {
 
                         if(errUnlink)
                         {
@@ -3451,11 +3510,13 @@ RestServer.post('/DVP/API/'+version+'/InternalFileService/File/Upload/:tenant/:c
                 resvID: resvID,
                 reqId: reqId
 
+
             }
 
         DeveloperFileUpoladManager.DeveloperUploadFiles(fileObj, function (errz, respg, tempPath) {
 
             if (tempPath) {
+                console.log("Temp Path --------------- "+tempPath);
                 fs.unlink(path.join(tempPath), function (errUnlink) {
 
                     if (errUnlink) {

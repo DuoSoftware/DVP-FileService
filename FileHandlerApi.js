@@ -1,5 +1,5 @@
 //var attachmate = require('attachmate');
-var fstream = require('fstream');
+
 var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
@@ -16,7 +16,7 @@ var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
-var uploadPath="/usr/local/src/upload";
+var uploadPath=config.BasePath;
 //
 
 
@@ -276,8 +276,10 @@ function LocalFileDownloader(fileObj,res) {
             source.pipe(decrypt).pipe(res);
             source.on('end', function (result) {
                 logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
+                decrypt.end();
             }).on('error', function (err) {
                 logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
+                decrypt.end();
             });
 
 
