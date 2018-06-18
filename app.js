@@ -398,9 +398,16 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Reserve',jwt({secret: sec
         }
 
 
-
-
-        DeveloperFileUpoladManager.DeveloperReserveFiles(Display,fileName,rand2,Company, Tenant,Clz,Category,reqId,function (errReserve, resReserve) {
+        
+        if(!fileName && !Display )
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Filename or Display name not found"), "ERROR/EXCEPTION", false, undefined);
+                logger.error('[DVP-FIleService.ReserveFiles] - [%s] - Filename or Display name not found : %s ', reqId, jsonString);
+                res.end(jsonString);
+        }
+        else
+        {
+            DeveloperFileUpoladManager.DeveloperReserveFiles(Display,fileName,rand2,Company, Tenant,Clz,Category,reqId,function (errReserve, resReserve) {
 
 
             if(errReserve)
@@ -424,6 +431,11 @@ RestServer.post('/DVP/API/'+version+'/FileService/File/Reserve',jwt({secret: sec
 
 
         });
+        }
+       
+
+
+        
 
 
     }
