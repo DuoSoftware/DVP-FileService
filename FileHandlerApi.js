@@ -137,16 +137,20 @@ function PickAttachmentMetaData(UUID,Company,Tenant,reqId,callback) {
 function PickAttachmentMetaDataByName(FileName,Company,Tenant,reqId,callback) {
     try {
         if (FileName) {
+            console.log("FileName : "+FileName);
             try {
                 logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Searching for Uploaded file %s', reqId, FileName);
 
                 DbConn.FileUpload.max('Version', {where: [{Filename: FileName}, {CompanyId: Company}, {TenantId: Tenant}]}).then(function (resMax) {
                     if (resMax) {
+                        console.log("File Version : "+resMax);
                         logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Max version found for file %s', reqId, FileName);
 
                         DbConn.FileUpload.find({where: [{CompanyId: Company}, {TenantId: Tenant}, {Filename: FileName}, {Version: resMax}]}).then(function (resUpFile) {
 
                             if (resUpFile) {
+                                
+                                console.log("File Record : "+resUpFile);
                                 logger.debug('[DVP-FIleService.PickAttachmentMetaDataByName] - [%s] - Fie found', reqId, FileName);
                                 callback(undefined, resUpFile);
 
