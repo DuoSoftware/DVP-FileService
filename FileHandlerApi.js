@@ -263,6 +263,12 @@ function LocalFileDownloader(fileObj,res) {
     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [PGSQL] - File record found  %s',fileObj.reqId,fileObj.id);
     try {
         res.setHeader('Content-Type', fileObj.FileStructure);
+        if(!fileObj.URL)
+        {
+           logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - No File path found',fileObj.reqId);
+        res.status(400);
+        res.end(); 
+        }
         var SourcePath = path.join(fileObj.URL.toString());
         logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',fileObj.reqId,SourcePath);
 
@@ -299,7 +305,7 @@ function LocalFileDownloader(fileObj,res) {
     {
         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Exception occurred when download section starts',fileObj.reqId,ex);
 
-        callback(ex, undefined);
+        //callback(ex, undefined);
         res.status(400);
         res.end();
     }
