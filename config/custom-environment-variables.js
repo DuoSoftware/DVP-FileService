@@ -81,7 +81,8 @@ module.exports = {
         "userServicePort": "SYS_USERSERVICE_PORT",
         "userServiceVersion": "SYS_USERSERVICE_VERSION"
     },
-    "BasePath":"SYS_FILE_BASEPATH"
+    "BasePath":"SYS_FILE_BASEPATH",
+    "UploadSize":"SYS_UPLOAD_SIZE"
 };
 
 //NODE_CONFIG_DIR
