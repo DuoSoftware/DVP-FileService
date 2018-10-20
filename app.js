@@ -2158,30 +2158,30 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        if(!(startDateTime && endDateTime))
-        {
-            FileHandler.AllFilesWithCategory(req.params.Category,Company,Tenant,reqId,function(err,resz)
-            {
-                if(err)
-                {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.error('[DVP-FIleService.PickFilesWithCategory] - [%s] - Error in searching Files with category : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
-                else
-                {
-                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                    logger.error('[DVP-FIleService.PickFilesWithCategory] - [%s] - Files found ', reqId);
-                    res.end(jsonString);
-                }
-
-
-
-
-            });
-        }
-        else
-        {
+        // if(!(startDateTime && endDateTime))
+        // {
+        //     FileHandler.AllFilesWithCategory(req.params.Category,Company,Tenant,reqId,function(err,resz)
+        //     {
+        //         if(err)
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+        //             logger.error('[DVP-FIleService.PickFilesWithCategory] - [%s] - Error in searching Files with category : %s ', reqId, jsonString);
+        //             res.end(jsonString);
+        //         }
+        //         else
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+        //             logger.error('[DVP-FIleService.PickFilesWithCategory] - [%s] - Files found ', reqId);
+        //             res.end(jsonString);
+        //         }
+        //
+        //
+        //
+        //
+        //     });
+        // }
+        // else
+        // {
 
             FileHandler.AllFilesWithCategoryAndDateRange(req.params.Category,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
             {
@@ -2203,7 +2203,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/Files/infoByCategory/:Category'
 
             });
 
-        }
+        //}
 
 
 
@@ -2373,30 +2373,30 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList',jwt({
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        if(!(startDateTime && endDateTime))
-        {
-            FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
-            {
-                if(err)
-                {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - Error in searching files with category list : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
-                else
-                {
-                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - files returned given with category list ', reqId);
-                    res.end(jsonString);
-                }
-
-
-
-
-            });
-        }
-        else
-        {
+        // if(!(startDateTime && endDateTime))
+        // {
+        //     FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
+        //     {
+        //         if(err)
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+        //             logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - Error in searching files with category list : %s ', reqId, jsonString);
+        //             res.end(jsonString);
+        //         }
+        //         else
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+        //             logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - files returned given with category list ', reqId);
+        //             res.end(jsonString);
+        //         }
+        //
+        //
+        //
+        //
+        //     });
+        // }
+        // else
+        // {
 
             FileHandler.FilesWithCategoryListAndDateRange(req,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
             {
@@ -2418,10 +2418,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList',jwt({
 
             });
 
-        }
-
-
-
+        //}
 
     }
     catch(ex)
@@ -2477,62 +2474,62 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList/count'
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        if(!(startDateTime && endDateTime))
-        {
-            FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
+        // if(!(startDateTime && endDateTime))
+        // {
+        //     FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
+        //     {
+        //         if(err)
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+        //             logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - Error in searching files with category list : %s ', reqId, jsonString);
+        //             res.end(jsonString);
+        //         }
+        //         else
+        //         {
+        //             if(resz)
+        //             {
+        //                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz.length);
+        //                 logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Files returned with category list ', reqId, jsonString);
+        //                 res.end(jsonString);
+        //             }
+        //             else
+        //             {
+        //                 var jsonString = messageFormatter.FormatMessage(new Error("No data returned"), "ERROR/EXCEPTION", false, undefined);
+        //                 logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - No data returned : %s ', reqId, jsonString);
+        //                 res.end(jsonString);
+        //             }
+        //
+        //         }
+        //
+        //
+        //
+        //
+        //     });
+        // }
+        // else
+        // {
+
+            FileHandler.FilesWithCategoryListAndDateRangeCount(req,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
             {
                 if(err)
                 {
                     var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - Error in searching files with category list : %s ', reqId, jsonString);
+                    logger.debug('[DVP-FIleService.FilesWithCategoryListAndDateRangeCount] - [%s] - Error in counting Files With Category List And DateRange : %s ', reqId, jsonString);
                     res.end(jsonString);
                 }
                 else
                 {
-                    if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz.length);
-                        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Files returned with category list ', reqId, jsonString);
-                        res.end(jsonString);
-                    }
-                    else
-                    {
-                        var jsonString = messageFormatter.FormatMessage(new Error("No data returned"), "ERROR/EXCEPTION", false, undefined);
-                        logger.error('[DVP-FIleService.infoByCategoryList] - [%s] - No data returned : %s ', reqId, jsonString);
-                        res.end(jsonString);
-                    }
-
+                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                    logger.debug('[DVP-FIleService.FilesWithCategoryListAndDateRangeCount] - [%s] - file count found with category list and date range', reqId);
+                    res.end(jsonString);
                 }
 
 
 
 
             });
-        }
-        else
-        {
 
-            FileHandler.FilesWithCategoryListAndDateRange(req,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
-            {
-                if(err)
-                {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Error in searching Files With Category List And DateRange : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
-                else
-                {
-                    var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz.length);
-                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Files found with category list and date range', reqId);
-                    res.end(jsonString);
-                }
-
-
-
-
-            });
-
-        }
+        // }
 
 
 
@@ -2593,40 +2590,40 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList/:rowCo
         var Company=req.user.company;
         var Tenant=req.user.tenant;
 
-        if(!(startDateTime && endDateTime))
-        {
-            FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
-            {
-                if(err)
-                {
-                    var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                    logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
-                    res.end(jsonString);
-                }
-                else
-                {
-                    if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
-                        res.end(jsonString);
-                    }
-                    else
-                    {
-                        var jsonString = messageFormatter.FormatMessage(new Error("No data returned"), "ERROR/EXCEPTION", false, undefined);
-                        logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
-                        res.end(jsonString);
-                    }
-
-                }
-
-
-
-
-            });
-        }
-        else
-        {
+        // if(!(startDateTime && endDateTime))
+        // {
+        //     FileHandler.FilesWithCategoryList(req,Company,Tenant,reqId,function(err,resz)
+        //     {
+        //         if(err)
+        //         {
+        //             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+        //             logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+        //             res.end(jsonString);
+        //         }
+        //         else
+        //         {
+        //             if(resz)
+        //             {
+        //                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+        //                 logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+        //                 res.end(jsonString);
+        //             }
+        //             else
+        //             {
+        //                 var jsonString = messageFormatter.FormatMessage(new Error("No data returned"), "ERROR/EXCEPTION", false, undefined);
+        //                 logger.debug('[DVP-FIleService.infoByCategoryList] - [%s] - Request response : %s ', reqId, jsonString);
+        //                 res.end(jsonString);
+        //             }
+        //
+        //         }
+        //
+        //
+        //
+        //
+        //     });
+        // }
+        // else
+        // {
 
             FileHandler.FilesWithCategoryListAndDateRange(req,Company,Tenant,startDateTime,endDateTime,reqId,function(err,resz)
             {
@@ -2648,7 +2645,7 @@ RestServer.post('/DVP/API/'+version+'/FileService/FileInfo/ByCategoryList/:rowCo
 
             });
 
-        }
+       // }
 
 
 
