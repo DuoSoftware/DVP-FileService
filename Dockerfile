@@ -14,6 +14,7 @@ RUN cd /usr/local/src/fileservice;
 #RUN apt-get update -y
 #RUN apt-get install imagemagick -y
 WORKDIR /usr/local/src/fileservice
+RUN chown -R nobody /usr/local/lib/node_modules
 RUN npm install
 #RUN npm install memory-usage -g
 RUN npm install memory-usage --save
