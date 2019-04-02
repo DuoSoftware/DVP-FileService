@@ -15,6 +15,7 @@ RUN cd /usr/local/src/fileservice;
 #RUN apt-get install imagemagick -y
 WORKDIR /usr/local/src/fileservice
 RUN npm install
+RUN npm install memory-usage -g
 RUN npm install memory-usage --save
 RUN mkdir /usr/local/src/upload
 RUN chmod +x /usr/local/src/upload
