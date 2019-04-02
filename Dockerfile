@@ -11,8 +11,8 @@ FROM node:5.10.0
 ARG VERSION_TAG
 RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-FileService.git /usr/local/src/fileservice
 RUN cd /usr/local/src/fileservice;
-RUN apt-get update -y
-RUN apt-get install imagemagick -y
+#RUN apt-get update -y
+#RUN apt-get install imagemagick -y
 WORKDIR /usr/local/src/fileservice
 RUN npm install
 RUN npm install memory-usage --save
