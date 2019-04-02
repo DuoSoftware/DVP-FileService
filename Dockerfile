@@ -16,7 +16,7 @@ RUN chown -R nobody /usr/local/lib/node_modules/memory-usage
 #RUN apt-get install imagemagick -y
 WORKDIR /usr/local/src/fileservice
 RUN npm install
-RUN npm install memory-usage -g
+#RUN npm install memory-usage -g
 RUN npm install memory-usage --save
 RUN mkdir /usr/local/src/upload
 RUN chmod +x /usr/local/src/upload
