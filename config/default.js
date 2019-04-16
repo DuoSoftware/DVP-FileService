@@ -83,5 +83,5 @@ module.exports = {
         "userServiceServicePort": "3638",
         "userServiceVersion": "1.0.0.0"
     },
-     "UploadSize":"102400"
+    "UploadSize":"102400"
 };

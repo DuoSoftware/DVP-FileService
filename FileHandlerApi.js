@@ -4,6 +4,7 @@ var path = require('path');
 var uuid = require('node-uuid');
 var DbConn = require('dvp-dbmodels');
 var config = require('config');
+var pump = require('pump');
 
 
 //Sprint 5
@@ -265,9 +266,9 @@ function LocalFileDownloader(fileObj,res) {
         res.setHeader('Content-Type', fileObj.FileStructure);
         if(!fileObj.URL)
         {
-         logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - No file Path found',fileObj.reqId);
+           logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - No File path found',fileObj.reqId);
         res.status(400);
-        res.end();
+        res.end(); 
         }
         var SourcePath = path.join(fileObj.URL.toString());
         logger.debug('[DVP-FIleService.DownloadFile] - [%s]  - [FILEDOWNLOAD] - SourcePath of file %s',fileObj.reqId,SourcePath);
@@ -298,6 +299,18 @@ function LocalFileDownloader(fileObj,res) {
             }).on('error', function (err) {
                 logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
             });
+
+//             pump(source, res, function(err) {
+
+//                 if(err) {
+//                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
+
+//                 }else{
+
+//                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
+//                 }
+//             });
+
         }
 
     }
@@ -962,35 +975,33 @@ function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDa
         console.log("Start Time"+startDate);
         console.log("End Time"+endDate);
 
-        var stratDateTime = startDate;
+        var startDateTime = startDate;
         var endDateTime = endDate;
         //console.log(stratDateTime);
 
         //var stratDateTime = new Date(startDate);
         //var endDateTime = new Date(endDate);
 
-        if(parseInt(CategoryID)>0)
-        {
-            var conditionalData = {
-                createdAt: {
-                    gte: stratDateTime,
-                    lte:endDateTime
-                },
-                FileCategoryId:CategoryID,
-                CompanyId :  Company,
-                TenantId: Tenant
-            };
+        var conditionalData = {
+
+            CompanyId :  Company,
+            TenantId: Tenant
+        };
+
+
+        if(parseInt(CategoryID)>0) {
+
+            conditionalData.FileCategoryId = CategoryID;
+
         }
-        else
-        {
-            var conditionalData = {
-                createdAt: {
-                    gte: stratDateTime,
-                    lte:endDateTime
-                },
-                CompanyId :  Company,
-                TenantId: Tenant
-            };
+
+
+        if((startDateTime && endDateTime) &&  (endDateTime > startDateTime)){
+
+            conditionalData.createdAt = {
+                gt: startDateTime,
+                lt: endDateTime
+            }
         }
 
 
@@ -1022,91 +1033,127 @@ function FilesWithCategoryAndDateRange(CategoryID,Company,Tenant,startDate,endDa
 function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,reqId,callback) {
     try {
 
-        console.log("Start Time"+startDate);
-        console.log("End Time"+endDate);
+        console.log("Start Time" + startDate);
+        console.log("End Time" + endDate);
 
-        var stratDateTime = startDate;
+        var startDateTime = startDate;
         var endDateTime = endDate;
-        //console.log(stratDateTime);
-
-        //var stratDateTime = new Date(startDate);
-        //var endDateTime = new Date(endDate);
 
 
+        var conditionalData = {
+
+            CompanyId: Company,
+            TenantId: Tenant,
+
+        };
 
 
-        if(req.body.categoryList.length>0)
-        {
+        if ((startDateTime && endDateTime) && (endDateTime > startDateTime)) {
 
-            var conditionalData = {
-                createdAt: {
-                    gte: stratDateTime,
-                    lte:endDateTime
-                },
-                CompanyId :  Company,
-                TenantId: Tenant/*,
-                $or:[]*/
-            };
-
-            /*req.body.categoryList.forEach(function (item) {
-                conditionalData.$or.push({ObjCategory:item})
-            });*/
-
-
-            if(req.params.rowCount && req.params.pageNo)
-            {
-
-                DbConn.FileUpload.findAll({where:[conditionalData],
-                    include:[{model:DbConn.FileCategory, as:"FileCategory" , where:{Visible:true}}],
-                    offset:((req.params.pageNo - 1) * req.params.rowCount),
-                    limit: req.params.rowCount,
-                    order: [['updatedAt', 'DESC']]})
-                    .then(function (result) {
-                        if(result.length==0)
-                        {
-                            callback(new Error("No record found"),undefined);
-                        }
-                        else
-                        {
-                            callback(undefined,result);
-                        }
-                    }).catch(function (err) {
-                    callback(err, undefined);
-                });
-
-
+            conditionalData.createdAt = {
+                gt: startDateTime,
+                lt: endDateTime
             }
-            else
-            {
-                DbConn.FileUpload.findAll({where:conditionalData,include:[{model:DbConn.FileCategory, as:"FileCategory",where:{Visible:true}}]})
-                    .then(function (result) {
-                        if(result.length==0)
-                        {
-                            callback(new Error("No record found"),undefined);
-                        }
-                        else
-                        {
-                            callback(undefined,result);
-                        }
-                    }).catch(function (err) {
-                    callback(err, undefined);
-                });
-            }
+        }
 
 
-
-
-
+        if (req.body && req.body.categoryList) {
+            conditionalData.ObjCategory = req.body.categoryList;
 
         }
-        else
-        {
-            callback(new Error("No record found"),undefined);
+
+        var query = {
+            where: [conditionalData],
+            include: [{model: DbConn.FileCategory, as: "FileCategory", where: {Visible: true}}],
+            order: [['updatedAt', 'DESC']]
+        };
+
+        if (req.params.rowCount && req.params.pageNo) {
+
+            query.offset = ((req.params.pageNo - 1) * req.params.rowCount);
+            query.limit = req.params.rowCount;
         }
+
+
+        DbConn.FileUpload.findAll(query)
+            .then(function (result) {
+                if (result.length == 0) {
+                    callback(new Error("No record found"), undefined);
+                }
+                else {
+                    callback(undefined, result);
+                }
+            }).catch(function (err) {
+            callback(err, undefined);
+        });
+
 
 
     }
 
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+}
+
+function FilesWithCategoryListAndDateRangeCount(req,Company,Tenant,startDate,endDate,reqId,callback) {
+    try {
+
+        console.log("Start Time" + startDate);
+        console.log("End Time" + endDate);
+
+        var startDateTime = startDate;
+        var endDateTime = endDate;
+
+
+        var conditionalData = {
+
+            CompanyId: Company,
+            TenantId: Tenant,
+
+        };
+
+
+        if ((startDateTime && endDateTime) && (endDateTime > startDateTime)) {
+
+            conditionalData.createdAt = {
+                gt: startDateTime,
+                lt: endDateTime
+            }
+        }
+
+
+        if (req.body && req.body.categoryList) {
+            conditionalData.ObjCategory = req.body.categoryList;
+
+        }
+
+        var query = {
+            where: [conditionalData],
+            include: [{model: DbConn.FileCategory, as: "FileCategory", where: {Visible: true}}],
+            order: [['updatedAt', 'DESC']]
+        };
+
+        if (req.params.rowCount && req.params.pageNo) {
+
+            query.offset = ((req.params.pageNo - 1) * req.params.rowCount);
+            query.limit = req.params.rowCount;
+        }
+
+
+        DbConn.FileUpload.count(query)
+            .then(function (result) {
+
+                callback(undefined, result);
+
+            }).catch(function (err) {
+            callback(err, undefined);
+        });
+
+    }
 
     catch (ex) {
         callback(ex, undefined);
@@ -1122,25 +1169,16 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
 
             CompanyId :  Company,
             TenantId: Tenant,
-            $or:[]
+            //$or:[]
         };
-
-
-
-
-
 
         if(req.body.categoryList)
         {
-
-            req.body.categoryList.forEach(function (item) {
-                conditionalData.$or.push({ObjCategory:item})
-            });
-
-
+            conditionalData.ObjCategory = req.body.categoryList;
+            // req.body.categoryList.forEach(function (item) {
+            //     conditionalData.$or.push({ObjCategory:item})
+            // });
         }
-
-
 
 
         if(req.body.categoryList.length>0)
@@ -1148,8 +1186,6 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
 
             if(req.params.rowCount && req.params.pageNo)
             {
-
-
 
                 DbConn.FileUpload.findAll({ where:[conditionalData],
                     offset:((req.params.pageNo - 1) * req.params.rowCount),
@@ -1213,18 +1249,75 @@ function FilesWithCategoryList(req,Company,Tenant,reqId,callback) {
 function AllFilesWithCategoryAndDateRange(Category,Company,Tenant,startDate,endDate,reqId,callback) {
     try {
 
-        var stratDateTime = new Date(startDate);
+        var startDateTime = new Date(startDate);
         var endDateTime = new Date(endDate);
 
         var conditionalData = {
-            createdAt: {
-                gt: stratDateTime,
-                lt:endDateTime
-            },
-            ObjCategory:Category,
             CompanyId :  Company,
             TenantId: Tenant
         };
+
+        if((startDateTime && endDateTime) &&  (endDateTime > startDateTime)){
+
+            conditionalData.createdAt = {
+                gt: startDateTime,
+                lt: endDateTime
+            }
+        }
+
+        if(Category)
+        {
+            conditionalData.ObjCategory = Category;
+        }
+
+
+        DbConn.FileUpload.findAll({where:conditionalData})
+            .then(function (result) {
+                if(result.length==0)
+                {
+                    callback(new Error("No record found"),undefined);
+                }
+                else
+                {
+                    callback(undefined,result);
+                }
+            }).catch(function (err) {
+            callback(err, undefined);
+        });
+
+    }
+
+
+    catch (ex) {
+        callback(ex, undefined);
+    }
+
+
+};
+
+function AllFilesWithCategoryAndDateRangeCount(Category,Company,Tenant,startDate,endDate,reqId,callback) {
+    try {
+
+        var startDateTime = new Date(startDate);
+        var endDateTime = new Date(endDate);
+
+        var conditionalData = {
+            CompanyId :  Company,
+            TenantId: Tenant
+        };
+
+        if((startDateTime && endDateTime) &&  (endDateTime > startDateTime)){
+
+            conditionalData.createdAt = {
+                gt: startDateTime,
+                lt: endDateTime
+            }
+        }
+
+        if(Category)
+        {
+            conditionalData.ObjCategory = Category;
+        }
 
 
         DbConn.FileUpload.findAll({where:conditionalData})
@@ -1345,12 +1438,12 @@ function PickFilesByCategoryList(rowCount,pageNo,Company,Tenant,req,reqId,callba
             var conditionObj = {
                 CompanyId:Company,
                 TenantId:Tenant,
-                $or:[]
+                //$or:[]
             };
 
-            categoryList.forEach(function (item) {
-                conditionObj.$or.push({ObjCategory:item})
-            });
+            //categoryList.forEach(function (item) {
+                conditionObj.ObjCategory = categoryList;
+            //});
 
 
 
@@ -1984,7 +2077,8 @@ function PickFileCountsOFCategories(catID,company,tenant,callback) {
         else
         {
             //DbConn.FileUpload.count({where: ['"FileCategoryId" = '+ catID.toString(),{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
-            DbConn.FileUpload.count({where: [{FileCategoryId: catID.toString()},{CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
+            DbConn.FileUpload.count({where: [{FileCategoryId: catID.toString()},
+                {CompanyId:company},{TenantId:tenant}]}).then(function (resCount) {
 
 
                 console.log(resCount+"Files found for category");
@@ -2325,6 +2419,7 @@ module.exports.PickAttachmentMetaDataByName = PickAttachmentMetaDataByName;
 module.exports.SaveNewCategory = SaveNewCategory;
 module.exports.PickFilesByCategoryList = PickFilesByCategoryList;
 module.exports.FilesWithCategoryListAndDateRange = FilesWithCategoryListAndDateRange;
+module.exports.FilesWithCategoryListAndDateRangeCount =FilesWithCategoryListAndDateRangeCount;
 module.exports.FilesWithCategoryList = FilesWithCategoryList;
 module.exports.GetFileDetails = GetFileDetails;
 module.exports.updateFilePath = updateFilePath;
