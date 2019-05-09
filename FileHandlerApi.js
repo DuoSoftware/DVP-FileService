@@ -285,23 +285,23 @@ function LocalFileDownloader(fileObj,res) {
         }
         else
         {
-            // source.pipe(res);
-            // source.on('end', function (result) {
-            //     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
-            // }).on('error', function (err) {
-            //     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
-            // });
-
-            pump(source, res, function(err) {
-
-                if(err) {
-                    logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
-
-                }else{
-
-                    logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
-                }
+            source.pipe(res);
+            source.on('end', function (result) {
+                logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
+            }).on('error', function (err) {
+                logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
             });
+
+//             pump(source, res, function(err) {
+
+//                 if(err) {
+//                     logger.error('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Error in Piping',fileObj.reqId,err);
+
+//                 }else{
+
+//                     logger.debug('[DVP-FIleService.DownloadFile] - [%s] - [FILEDOWNLOAD] - Piping succeeded',fileObj.reqId);
+//                 }
+//             });
 
         }
 
