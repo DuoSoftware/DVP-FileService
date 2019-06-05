@@ -7,12 +7,6 @@ var config = require('config');
 var pump = require('pump');
 
 
-//Sprint 5
-//var couchbase = require('couchbase');
-var streamifier = require('streamifier');
-var Cbucket=config.Couch.bucket;
-var CHip=config.Couch.ip;
-//var cluster = new couchbase.Cluster("couchbase://"+CHip);
 var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
@@ -21,8 +15,6 @@ var uploadPath=config.BasePath;
 //
 
 
-//var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-//var couchbase = require('couchbase');
 var sys=require('sys');
 var done       =       false;
 var fs=require('fs');
@@ -1353,6 +1345,7 @@ function AllFilesWithCategoryID(CategoryID,rowCount,pageNo,Company,Tenant,reqId,
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
             include:[{model:DbConn.FileCategory, as:"FileCategory"},{model:DbConn.Application, as:"Application"}],
+            order: [['createdAt','DESC']]
 
         })
             .then(function (result) {
@@ -1453,7 +1446,8 @@ function PickFilesByCategoryList(rowCount,pageNo,Company,Tenant,req,reqId,callba
                 where:conditionObj,
                 offset:((pageNo - 1) * rowCount),
                 limit: rowCount
-                ,include:[CategoryObj,{model:DbConn.Application, as:"Application"}]}).then(function (resFile) {
+                ,include:[CategoryObj,{model:DbConn.Application, as:"Application"}],
+            order:[["createdAt","DESC"]]}).then(function (resFile) {
 
 
                 callback(undefined,resFile);
@@ -1585,7 +1579,7 @@ function PickAllFilesWithPaging(rowCount,pageNo,Company,Tenant,isVisibleCat,reqI
             offset:((pageNo - 1) * rowCount),
             limit: rowCount,
             include:[categoryObj,{model:DbConn.Application, as:"Application"}],
-            order: [['updatedAt','DESC']]
+            order: [['createdAt','DESC']]
 
 
         }).then(function (resFile) {

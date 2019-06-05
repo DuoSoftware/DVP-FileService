@@ -2854,6 +2854,7 @@ RestServer.get('/DVP/API/'+version+'/FileService/File/Count/Category/:categoryID
 });
 
 
+
 // Internal file service services
 
 RestServer.get('/DVP/API/'+version+'/InternalFileService/File/Download/:tenant/:company/:id/:displayname',function(req,res,next)
@@ -4386,6 +4387,12 @@ function Clientaccesspolicy(req,res,next){
 RestServer.get("/crossdomain.xml",Crossdomain);
 RestServer.get("/clientaccesspolicy.xml",Clientaccesspolicy);
 
-
+process.on('unhandledRejection', function(reason, p) {
+    console.error(reason, 'Unhandled Rejection at Promise', p);
+})
+.on('uncaughtException', function(err) {
+    console.error(err, 'Uncaught Exception thrown');
+process.exit(1);
+});
 
 
