@@ -20,7 +20,7 @@
 # EXPOSE 8812
 # CMD ["memory-usage", "/usr/local/src/fileservice/app.js"]
 
-FROM node:10-alpine
+FROM node:9.9.0
 WORKDIR /usr/local/src/fileservice
 COPY package*.json ./
 RUN npm install
