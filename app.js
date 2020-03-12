@@ -16,6 +16,7 @@ var path = require('path');
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
+var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 //...............................................
 restify.CORS.ALLOW_HEADERS.push('authorization');
 var config = require('config');
@@ -100,6 +101,8 @@ var GetToken = function fromHeaderOrQuerystring (req) {
     return null;
 }
 
+var hc = new healthcheck(RestServer, {redis: RedisPublisher.client, pg: DbConn.SequelizeConn});     // Mongo connection is available but not a mongoose connection
+hc.Initiate();
 
 RestServer.post('/DVP/API/'+version+'/FileService/File/Upload',jwt({secret: secret.Secret,getToken: GetToken}),authorization({resource:"fileservice", action:"write"}),function(req,res,next)
 {
