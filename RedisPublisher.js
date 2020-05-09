@@ -523,4 +523,5 @@ module.exports.getTotalFileStorageDetails = getTotalFileStorageDetails;
 module.exports.UpdateFileStorageRecords = UpdateFileStorageRecords;
 module.exports.GetOrganizationsSpaceLimit = GetOrganizationsSpaceLimit;
 module.exports.GetOrganizationSpaceDetails = GetOrganizationSpaceDetails;
+module.exports.client = client;
 /*module.exports.removeAllFileStorageRecords = removeAllFileStorageRecords;*/
