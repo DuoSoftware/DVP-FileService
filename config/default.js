@@ -57,7 +57,8 @@ module.exports = {
     "port":"27017",
     "dbname":"",
     "password":"",
-    "user":""
+    "user":"",
+    "type": "mongodb+srv"
   },
 
   "Couch":

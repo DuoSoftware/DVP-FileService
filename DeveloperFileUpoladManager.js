@@ -2,7 +2,7 @@
  * Created by pawan on 4/9/2015.
  */
 //.....................................................................................................
-// change mongodb module to mongoose
+// change mongodb module to mongoDB (NOTE: not mongoose )
 //.....................................................................................................
 
 var DbConn = require('dvp-dbmodels');
@@ -19,75 +19,94 @@ var CHip=config.Couch.ip;
 
 //
 
-
 var fs=require('fs');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var easyimg = require('easyimage');
 var RedisPublisher=require('./RedisPublisher.js');
 var util = require('util');
 
-
-var Db = require('mongodb').Db,
-    MongoClient = require('mongodb').MongoClient,
-    Server = require('mongodb').Server,
-    ReplSetServers = require('mongodb').ReplSetServers,
-    ObjectID = require('mongodb').ObjectID,
-    Binary = require('mongodb').Binary,
-    GridStore = require('mongodb').GridStore,
-    Grid = require('mongodb').Grid,
-    Code = require('mongodb').Code,
-    assert = require('assert');
-
-
-
 var mongoip = config.Mongo.ip;
-var mongoport=config.Mongo.port;
-var mongodbase=config.Mongo.dbname;
-var mongopass=config.Mongo.password;
-var mongouser=config.Mongo.user;
-var mongoreplicaset=config.Mongo.replicaset;
+var mongoport = config.Mongo.port;
+var mongodb = config.Mongo.dbname;
+var mongouser = config.Mongo.user;
+var mongopass = config.Mongo.password;
+var mongoreplicaset = config.Mongo.replicaset;
+var mongotype = config.Mongo.type;
 
-var mongodb = require('mongodb');
-var gm = require('gm').subClass({imageMagick: true});
-var async= require('async');
-var path=require('path');
-var mkdirp = require('mkdirp');
+var connectionstring = "";
+mongoip = mongoip.split(",");
 
-const crypto = require('crypto');
-
-var crptoAlgo = config.Crypto.algo;
-var crptoPwd = config.Crypto.password;
-
-
-var uploadPath=config.BasePath;
-
-var request = require('request');
-var validator = require('validator');
-
-var uri = '';
-mongoip = mongoip.split(',');
-if(util.isArray(mongoip)){
-
-    mongoip.forEach(function(item){
-        uri += util.format('%s:%d,',item,mongoport)
+if (util.isArray(mongoip)) {
+  if (mongoip.length > 1) {
+    mongoip.forEach(function (item) {
+      connectionstring +=
+        mongoport == ""
+          ? util.format("%s,", item)
+          : util.format("%s:%d,", item, mongoport);
     });
 
-    uri = uri.substring(0, uri.length - 1);
-    uri = util.format('mongodb://%s:%s@%s/%s',mongouser,mongopass,uri,mongodbase);
+    connectionstring = connectionstring.substring(
+      0,
+      connectionstring.length - 1
+    );
+    connectionstring = util.format(
+      "%s://%s:%s@%s/%s",
+      mongotype,
+      mongouser,
+      mongopass,
+      connectionstring,
+      mongodb
+    );
 
-    if(mongoreplicaset){
-        uri = util.format('%s?replicaSet=%s',uri,mongoreplicaset) ;
-        console.log("URI ...   "+uri);
+    if (mongoreplicaset) {
+      connectionstring = util.format(
+        "%s?replicaSet=%s",
+        connectionstring,
+        mongoreplicaset
+      );
     }
-}else
-{
-
-    uri = util.format('mongodb://%s:%s@%s:%d/%s',mongouser,mongopass,mongoip,mongoport,mongodbase);
-    console.log("URI ...   "+uri);
+  } else {
+    connectionstring =
+      mongoport == ""
+        ? util.format(
+            "%s://%s:%s@%s/%s",
+            mongotype,
+            mongouser,
+            mongopass,
+            mongoip[0],
+            mongodb
+          )
+        : util.format(
+            "%s://%s:%s@%s:%d/%s",
+            mongotype,
+            mongouser,
+            mongopass,
+            mongoip[0],
+            mongoport,
+            mongodb
+          );
+  }
+} else {
+  connectionstring =
+    mongoport == ""
+      ? util.format(
+          "%s://%s:%s@%s/%s",
+          mongotype,
+          mongouser,
+          mongopass,
+          mongoip,
+          mongodb
+        )
+      : util.format(
+          "%s://%s:%s@%s:%d/%s",
+          mongotype,
+          mongouser,
+          mongopass,
+          mongoip,
+          mongoport,
+          mongodb
+        );
 }
-
-
-
 
 function FindCurrentVersion(fname,company,tenant,reqId,Category,callback)
 {
@@ -286,7 +305,7 @@ function MongoFileUploader(dataObj,callback)
 
         var fileStruct = dataObj.Fobj.type.split("/")[0];
 
-        mongodb.MongoClient.connect(uri, function (error, db) {
+        mongodb.MongoClient.connect(connectionstring, function (error, db) {
 
             if (error) {
                 console.log("Mongo connection error " + error);
