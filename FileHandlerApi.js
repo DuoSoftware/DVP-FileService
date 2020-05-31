@@ -9,7 +9,7 @@ var pump = require('pump');
 
 var RedisPublisher=require('./RedisPublisher.js');
 const crypto = require('crypto');
-var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('dvp-common-lite/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 var uploadPath=config.BasePath;
 //
@@ -21,7 +21,7 @@ var fs=require('fs');
 var log4js=require('log4js');
 
 
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 var mongodb = require('mongodb');
 

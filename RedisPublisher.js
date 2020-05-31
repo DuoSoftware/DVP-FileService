@@ -8,7 +8,7 @@ var redis=require('ioredis');
 
 var config = require('config');
 var hpath=config.Host.hostpath;
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 
 
 

@@ -6,7 +6,7 @@ var restify = require('restify');
 var cors = require('cors');
 var FileHandler=require('./FileHandlerApi.js');
 var InternalFileHandler=require('./InternalFileHandler.js');
-var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('dvp-common-lite/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var CallServerChooser=require('./CallServerChooser.js');
 var RedisPublisher=require('./RedisPublisher.js');
 var DeveloperFileUpoladManager=require('./DeveloperFileUpoladManager.js');
@@ -14,8 +14,8 @@ var uuid = require('node-uuid');
 var fs=require('fs');
 var path = require('path');
 var jwt = require('restify-jwt');
-var secret = require('dvp-common/Authentication/Secret.js');
-var authorization = require('dvp-common/Authentication/Authorization.js');
+var secret = require('dvp-common-lite/Authentication/Secret.js');
+var authorization = require('dvp-common-lite/Authentication/Authorization.js');
 var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 //...............................................
 restify.CORS.ALLOW_HEADERS.push('authorization');
@@ -25,7 +25,7 @@ var port = config.Host.port || 3000;
 
 var version=config.Host.version;
 var hpath=config.Host.hostpath;
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 
 
 var option = config.Option;

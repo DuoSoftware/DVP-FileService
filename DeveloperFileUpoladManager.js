@@ -8,7 +8,7 @@
 var DbConn = require('dvp-dbmodels');
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var fs=require('fs');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var config = require('config');
 // sprint 5
 
@@ -20,7 +20,7 @@ var CHip=config.Couch.ip;
 //
 
 var fs=require('fs');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var easyimg = require('easyimage');
 var RedisPublisher=require('./RedisPublisher.js');
 var util = require('util');

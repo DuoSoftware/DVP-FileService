@@ -11,6 +11,7 @@
     "couchbase": "^2.1.5",
     "crypto": "0.0.3",
     "dvp-common": "^1.1.0",
+    "dvp-common-lite": "^1.1.0",
     "dvp-dbmodels": "^2.2.7",
     "dvp-healthcheck": "^1.0.6",
     "easyimage": "^2.1.0",

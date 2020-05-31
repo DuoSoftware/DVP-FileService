@@ -24,7 +24,7 @@ var uploadPath=config.BasePath;
 var CHip=config.Couch.ip;
 
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 var RedisPublisher=require('./RedisPublisher.js');
 
 var mongodb= require('mongodb');
