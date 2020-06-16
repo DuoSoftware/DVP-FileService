@@ -4,6 +4,7 @@
 //.....................................................................................................
 // change mongodb module to mongoDB (NOTE: not mongoose )
 //.....................................................................................................
+const path = require("path");
 
 var DbConn = require("dvp-dbmodels");
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
