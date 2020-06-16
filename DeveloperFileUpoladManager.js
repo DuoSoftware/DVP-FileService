@@ -695,7 +695,7 @@ function localStoreHandler(fileData, callback) {
       month = "0" + month;
     }
     var year = Today.getFullYear();
-    var file_category = fileData.Fobj.Category;
+    var file_category = fileData.Fobj.Category || fileData.Category;
 
     /* var newDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category, year.toString() + "-" + month.toString() + "-" + date.toString());
          var thumbDir = path.join(config.BasePath, "Company_" + fileData.cmp.toString() + "_Tenant_" + fileData.ten.toString(), file_category + "_thumb", year.toString() + "-" + month.toString() + "-" + date.toString());*/
