@@ -4,7 +4,6 @@
 //.....................................................................................................
 // change mongodb module to mongoDB (NOTE: not mongoose )
 //.....................................................................................................
-const path = require("path");
 
 var DbConn = require("dvp-dbmodels");
 //var messageFormatter = require('./DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
@@ -19,6 +18,17 @@ var CHip = config.Couch.ip;
 //var cluster = new couchbase.Cluster("couchbase://"+CHip);
 
 //
+var gm = require("gm").subClass({ imageMagick: true });
+var async = require("async");
+var path = require("path");
+var mkdirp = require("mkdirp");
+
+const crypto = require("crypto");
+
+var crptoAlgo = config.Crypto.algo;
+var crptoPwd = config.Crypto.password;
+
+var uploadPath = config.BasePath;
 
 var fs = require("fs");
 var logger = require("dvp-common-lite/LogHandler/CommonLogHandler.js").logger;
