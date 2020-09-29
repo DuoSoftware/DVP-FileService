@@ -58,7 +58,7 @@ module.exports = {
     "dbname":"",
     "password":"",
     "user":"",
-    "type": "mongodb+srv"
+    "type": "mongodb"
   },
 
   "Couch":
