@@ -137,7 +137,7 @@ function FindCurrentVersion(fname, company, tenant, reqId, Category, callback) {
       .then(function (resFile) {
         if (resFile) {
           logger.debug(
-            "[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Old version of % is found and New version will be %d",
+            "[DVP-FIleService.FindCurrentVersion.FindCurrentVersion] - [%s] - [PGSQL] - Old version of %s is found and New version will be %d",
             reqId,
             fname,
             parseInt(resFile + 1)
@@ -412,15 +412,15 @@ function MongoFileUploader(dataObj, callback) {
                   });
                 });
 
-                async.series(thumbnailArray, function (
-                  errThumbMake,
-                  resThumbMake
-                ) {
-                  console.log(dataObj.Fobj.tempPath);
-                  //fs.unlink(path.join(Fobj.tempPath));
-                  db.close();
-                  callback(undefined, dataObj.rand2);
-                });
+                async.series(
+                  thumbnailArray,
+                  function (errThumbMake, resThumbMake) {
+                    console.log(dataObj.Fobj.tempPath);
+                    //fs.unlink(path.join(Fobj.tempPath));
+                    db.close();
+                    callback(undefined, dataObj.rand2);
+                  }
+                );
               } else {
                 //fs.unlink(path.join(Fobj.tempPath));
                 db.close();
@@ -481,14 +481,14 @@ function MongoFileUploader(dataObj, callback) {
                   });
                 });
 
-                async.series(thumbnailArray, function (
-                  errThumbMake,
-                  resThumbMake
-                ) {
-                  console.log("End of Thumbnail making");
-                  db.close();
-                  callback(undefined, dataObj.rand2);
-                });
+                async.series(
+                  thumbnailArray,
+                  function (errThumbMake, resThumbMake) {
+                    console.log("End of Thumbnail making");
+                    db.close();
+                    callback(undefined, dataObj.rand2);
+                  }
+                );
               } else {
                 db.close();
                 callback(undefined, dataObj.rand2);
@@ -1037,26 +1037,24 @@ function DeveloperUploadFiles(fileObj, callback) {
                       fileObj.reqId
                     );
                     console.log("TO MONGO >>>>>>>>> " + fileObj.rand2);
-                    mongoFileAndRecordHandler(fileObj, function (
-                      errStore,
-                      resStore,
-                      tempPath
-                    ) {
-                      callback(errStore, resStore, tempPath);
-                    });
+                    mongoFileAndRecordHandler(
+                      fileObj,
+                      function (errStore, resStore, tempPath) {
+                        callback(errStore, resStore, tempPath);
+                      }
+                    );
                   } else {
                     logger.info(
                       "[DVP-FIleService.DeveloperUploadFiles] - [%s]  - New attachment on process of uploading to LOCAL",
                       fileObj.reqId
                     );
                     console.log("TO LOCAL >>>>>>>>> " + fileObj.rand2);
-                    localStorageRecordHandler(fileObj, function (
-                      errStore,
-                      resStore,
-                      tempPath
-                    ) {
-                      callback(errStore, resStore, tempPath);
-                    });
+                    localStorageRecordHandler(
+                      fileObj,
+                      function (errStore, resStore, tempPath) {
+                        callback(errStore, resStore, tempPath);
+                      }
+                    );
                   }
                 }
               }
@@ -1098,12 +1096,13 @@ function GetUploadedFileSize(company, tenant, callback) {
 }
 
 function GetOrganozationStorageSizes(company, tenant, callback) {
-  RedisPublisher.GetOrganizationSpaceDetails(company, tenant, function (
-    errLim,
-    resLim
-  ) {
-    callback(errLim, resLim);
-  });
+  RedisPublisher.GetOrganizationSpaceDetails(
+    company,
+    tenant,
+    function (errLim, resLim) {
+      callback(errLim, resLim);
+    }
+  );
 }
 
 function removeSourceEmptyRecord(company, tenant, recId) {
@@ -1209,89 +1208,96 @@ function DeveloperReserveFiles(
   callback
 ) {
   try {
-    FindCurrentVersion(fileName, cmp, ten, reqId, Category, function (
-      errVersion,
-      resVersion
-    ) {
-      if (errVersion) {
-        callback(errVersion, undefined);
-      } else {
-        try {
-          var NewUploadObj = DbConn.FileUpload.build({
-            UniqueId: rand2,
-            ObjClass: Clz,
-            ObjCategory: Category,
-            Filename: fileName,
-            Version: resVersion,
-            DisplayName: Display,
-            CompanyId: cmp,
-            TenantId: ten,
-            Status: "PROCESSING",
-            UploadTimestamp: Date.now(),
-          });
-          //logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
-          NewUploadObj.save()
-            .then(function (resUpFile) {
-              //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
-              if (resUpFile) {
-                searchFileCategory(Category, cmp, ten, reqId, function (
-                  errCat,
-                  resCat
-                ) {
-                  if (errCat) {
-                    callback(errCat, undefined);
-                  } else {
-                    resUpFile
-                      .setFileCategory(resCat.id)
-                      .then(function (resCatset) {
-                        logger.info(
-                          "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Attach file category %s to file %s",
-                          reqId,
-                          resCat.id,
-                          rand2
-                        );
-                        callback(undefined, resUpFile.UniqueId);
-                      })
-                      .catch(function (errCatSet) {
-                        logger.error(
-                          "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Error in attaching file category %s to file %s",
-                          reqId,
-                          resCat.id,
-                          rand2
-                        );
-                        callback(errCatSet, undefined);
-                      });
-                  }
-                });
-              } else {
-                logger.error(
-                  "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Uploaded file record saving failed",
-                  reqId
-                );
-                callback(
-                  new Error("Uploaded file record saving failed"),
-                  undefined
-                );
-              }
-            })
-            .catch(function (errUpFile) {
-              logger.error(
-                "[DVP-FIleService.DeveloperReserveFiles.saveFileRecord] - [%s] - [PGSQL] - Error in saving uploaded file record",
-                reqId,
-                errUpFile
-              );
-              callback(errUpFile, undefined);
+    FindCurrentVersion(
+      fileName,
+      cmp,
+      ten,
+      reqId,
+      Category,
+      function (errVersion, resVersion) {
+        if (errVersion) {
+          callback(errVersion, undefined);
+        } else {
+          try {
+            var NewUploadObj = DbConn.FileUpload.build({
+              UniqueId: rand2,
+              ObjClass: Clz,
+              ObjCategory: Category,
+              Filename: fileName,
+              Version: resVersion,
+              DisplayName: Display,
+              CompanyId: cmp,
+              TenantId: ten,
+              Status: "PROCESSING",
+              UploadTimestamp: Date.now(),
             });
-        } catch (ex) {
-          logger.error(
-            "[DVP-FIleService.DeveloperReserveFiles.saveFileRecord] - [%s] - [PGSQL] - Exception in saving uploaded file record",
-            reqId,
-            ex
-          );
-          callback(ex, undefined);
+            //logger.debug('[DVP-FIleService.DeveloperUploadFiles] - [%s] - New attachment object %s',reqId,JSON.stringify(NewUploadObj));
+            NewUploadObj.save()
+              .then(function (resUpFile) {
+                //logger.info('[DVP-FIleService.DeveloperUploadFiles] - [%s] - [PGSQL] - New attachment object %s successfully inserted',reqId,JSON.stringify(NewUploadObj));
+                if (resUpFile) {
+                  searchFileCategory(
+                    Category,
+                    cmp,
+                    ten,
+                    reqId,
+                    function (errCat, resCat) {
+                      if (errCat) {
+                        callback(errCat, undefined);
+                      } else {
+                        resUpFile
+                          .setFileCategory(resCat.id)
+                          .then(function (resCatset) {
+                            logger.info(
+                              "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Attach file category %s to file %s",
+                              reqId,
+                              resCat.id,
+                              rand2
+                            );
+                            callback(undefined, resUpFile.UniqueId);
+                          })
+                          .catch(function (errCatSet) {
+                            logger.error(
+                              "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Error in attaching file category %s to file %s",
+                              reqId,
+                              resCat.id,
+                              rand2
+                            );
+                            callback(errCatSet, undefined);
+                          });
+                      }
+                    }
+                  );
+                } else {
+                  logger.error(
+                    "[DVP-FIleService.DeveloperReserveFiles.setFileCategory] - [%s] - [HTTP] - Uploaded file record saving failed",
+                    reqId
+                  );
+                  callback(
+                    new Error("Uploaded file record saving failed"),
+                    undefined
+                  );
+                }
+              })
+              .catch(function (errUpFile) {
+                logger.error(
+                  "[DVP-FIleService.DeveloperReserveFiles.saveFileRecord] - [%s] - [PGSQL] - Error in saving uploaded file record",
+                  reqId,
+                  errUpFile
+                );
+                callback(errUpFile, undefined);
+              });
+          } catch (ex) {
+            logger.error(
+              "[DVP-FIleService.DeveloperReserveFiles.saveFileRecord] - [%s] - [PGSQL] - Exception in saving uploaded file record",
+              reqId,
+              ex
+            );
+            callback(ex, undefined);
+          }
         }
       }
-    });
+    );
   } catch (ex) {
     logger.error(
       "[DVP-FIleService.DeveloperReserveFiles] - [%s] - Exception occurred when placing reservation for a file  ",
@@ -1460,82 +1466,84 @@ function checkOrganizationSpaceLimit(
   callback
 ) {
   if (category != "CONVERSATION") {
-    RedisPublisher.GetOrganizationsSpaceLimit(company, tenant, function (
-      errKey,
-      resKey
-    ) {
-      if (errKey) {
-        console.log("Space Limit checking failed:", err);
-        logger.error(
-          "[DVP-FIleService.checkOrganizationSpaceLimit]  - Space Limit checking failed "
-        );
-        callback(errKey, undefined);
-      } else {
-        if (resKey) {
-          //var sizeInMB =0;
-          var sizeInKB = 0;
-          var orgBody = JSON.parse(resKey);
-          switch (orgBody.spaceUnit) {
-            case "MB":
-              sizeInKB = orgBody.spaceLimit * 1024;
-              break;
+    RedisPublisher.GetOrganizationsSpaceLimit(
+      company,
+      tenant,
+      function (errKey, resKey) {
+        if (errKey) {
+          console.log("Space Limit checking failed:", err);
+          logger.error(
+            "[DVP-FIleService.checkOrganizationSpaceLimit]  - Space Limit checking failed "
+          );
+          callback(errKey, undefined);
+        } else {
+          if (resKey) {
+            //var sizeInMB =0;
+            var sizeInKB = 0;
+            var orgBody = JSON.parse(resKey);
+            switch (orgBody.spaceUnit) {
+              case "MB":
+                sizeInKB = orgBody.spaceLimit * 1024;
+                break;
 
-            case "GB":
-              sizeInKB = orgBody.spaceLimit * (1024 * 1024);
-              break;
+              case "GB":
+                sizeInKB = orgBody.spaceLimit * (1024 * 1024);
+                break;
 
-            case "TB":
-              sizeInKB = orgBody.spaceLimit * (1024 * 1024 * 1024);
-              break;
+              case "TB":
+                sizeInKB = orgBody.spaceLimit * (1024 * 1024 * 1024);
+                break;
 
-            default:
-              sizeInKB = orgBody.spaceLimit * 1024;
-          }
+              default:
+                sizeInKB = orgBody.spaceLimit * 1024;
+            }
 
-          RedisPublisher.getTotalFileStorageDetails(company, tenant, function (
-            errTotal,
-            resTotal
-          ) {
-            if (errTotal) {
-              logger.info(
-                "[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed "
-              );
-              callback(undefined, true);
-            } else {
-              if (resTotal) {
-                var totalSizeWithNewFile =
-                  parseInt(resTotal) + parseInt(newFileSize);
-
-                //if(totalSizeWithNewFile < sizeInMB)
-                if (totalSizeWithNewFile < sizeInKB) {
+            RedisPublisher.getTotalFileStorageDetails(
+              company,
+              tenant,
+              function (errTotal, resTotal) {
+                if (errTotal) {
+                  logger.info(
+                    "[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed "
+                  );
                   callback(undefined, true);
                 } else {
-                  logger.info(
-                    "[DVP-FIleService.checkOrganizationSpaceLimit]  - Allocated Limit Exceeded "
-                  );
+                  if (resTotal) {
+                    var totalSizeWithNewFile =
+                      parseInt(resTotal) + parseInt(newFileSize);
 
-                  callback(
-                    new Error("Allocated memory size exceeded"),
-                    undefined
-                  );
+                    //if(totalSizeWithNewFile < sizeInMB)
+                    if (totalSizeWithNewFile < sizeInKB) {
+                      callback(undefined, true);
+                    } else {
+                      logger.info(
+                        "[DVP-FIleService.checkOrganizationSpaceLimit]  - Allocated Limit Exceeded "
+                      );
+
+                      callback(
+                        new Error("Allocated memory size exceeded"),
+                        undefined
+                      );
+                    }
+                  } else {
+                    logger.error(
+                      "[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed, Uploading Continued "
+                    );
+
+                    callback(undefined, true);
+                  }
                 }
-              } else {
-                logger.error(
-                  "[DVP-FIleService.checkOrganizationSpaceLimit]  - Current total space limit searching  failed, Uploading Continued "
-                );
-
-                callback(undefined, true);
               }
-            }
-          });
-        } else {
-          logger.info(
-            "[DVP-FIleService.checkOrganizationSpaceLimit]  - No limitation Info found, Uploading continued "
-          );
-          callback(undefined, true);
+            );
+          } else {
+            logger.info(
+              "[DVP-FIleService.checkOrganizationSpaceLimit]  - No limitation Info found, Uploading continued "
+            );
+            callback(undefined, true);
+          }
         }
       }
-    });
+    );
 
     /*var accessToken = util.format("bearer %s", config.Services.accessToken);
          var internalAccessToken = util.format("%d:%d", tenant, company);
