@@ -1049,6 +1049,11 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
         }
 
 
+        if (req.body && req.body.recordsList) {
+            conditionalData.UniqueId = req.body.recordsList;
+
+        }
+
         if (req.body && req.body.categoryList) {
             conditionalData.ObjCategory = req.body.categoryList;
 
@@ -1120,6 +1125,11 @@ function FilesWithCategoryListAndDateRangeCount(req,Company,Tenant,startDate,end
 
         if (req.body && req.body.categoryList) {
             conditionalData.ObjCategory = req.body.categoryList;
+
+        }
+
+        if (req.body && req.body.recordsList) {
+            conditionalData.UniqueId = req.body.recordsList;
 
         }
 
