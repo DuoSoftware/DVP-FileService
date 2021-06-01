@@ -1062,6 +1062,11 @@ function FilesWithCategoryListAndDateRange(req,Company,Tenant,startDate,endDate,
 
         }
 
+        if (req.body && req.body.recordsList) {
+            conditionalData.UniqueId = req.body.recordsList;
+
+        }
+
         var query = {
             where: [conditionalData],
             include: [{model: DbConn.FileCategory, as: "FileCategory", where: {Visible: true}}],
@@ -1123,6 +1128,11 @@ function FilesWithCategoryListAndDateRangeCount(req,Company,Tenant,startDate,end
                 gt: startDateTime,
                 lt: endDateTime
             }
+        }
+
+        if (req.body && req.body.recordsList) {
+            conditionalData.UniqueId = req.body.recordsList;
+
         }
 
 
